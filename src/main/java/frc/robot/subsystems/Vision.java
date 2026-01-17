@@ -41,9 +41,9 @@ public class Vision implements Subsystem {
                 m_timestamp = questFrame.dataTimestamp();
 
                 // Transform by the mount pose to get your robot pose 
-                m_robotPose = questPose.toPose2d(); // TO DO: offset from quest to center of robot
+                m_robotPose = questPose.toPose2d(); // TODO: offset from quest to center of robot
 
-                // TO DO: You can put some sort of filtering here if you would like! 
+                // TODO: You can put some sort of filtering here if you would like! 
 
                 // Add the measurement to our estimator
                 
