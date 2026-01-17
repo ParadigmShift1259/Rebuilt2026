@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
@@ -25,7 +26,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Vision;
-
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveCommands;
 
 public class RobotContainer {
@@ -58,8 +60,18 @@ public class RobotContainer {
     public final Vision vision = new Vision();
 
     private boolean isinBump = false;
+    private boolean isinTransition = false;
+    private final double X_START_BUMP = 1.0;
+    private final double X_STOP_BUMP = 4.0;
+    private final double TRANSITION_OFFSET = 0.25;
+    private final double X_START_TRANSITION = X_START_BUMP - TRANSITION_OFFSET;
+    private final double X_STOP_TRANSITION = X_STOP_BUMP + TRANSITION_OFFSET;
+
+    public final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
+        autoChooser = AutoBuilder.buildAutoChooser("Tests");
+        SmartDashboard.putData("Auto Mode", autoChooser);
         configureBindings();
     }
 
@@ -74,14 +86,21 @@ public class RobotContainer {
                     double rotDouble = Math.round((rot.getDegrees() - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees
                     Rotation2d targetRot = new Rotation2d(rotDouble / 180 * Math.PI);
                     return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
-                    .withTargetDirection(targetRot);
-
+                                     .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
+                                     .withTargetDirection(targetRot);
+                }
+                else if (isinTransition) {
+                    Rotation2d rot = drivetrain.getState().Pose.getRotation();
+                    double rotDouble = Math.round((rot.getDegrees()) / 90.0) * 90.0; // Rounds to the nearest 90 degrees
+                    Rotation2d targetRot = new Rotation2d(rotDouble / 180 * Math.PI);
+                    return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed)
+                                     .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+                                     .withTargetDirection(targetRot);
                 }
                 else{
                     return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive counterclockwise with negative X (left)
+                                .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                                .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive counterclockwise with negative X (left)
                 }
             })
         );
@@ -95,6 +114,7 @@ public class RobotContainer {
 
         joystick.b().onTrue(m_resetQuest);
         joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain, new Pose2d(5.7, 0.5, Rotation2d.kZero)));
+        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, Pose2d.kZero));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -110,27 +130,16 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        // Simple drive forward auton
-        final var idle = new SwerveRequest.Idle();
-        return Commands.sequence(
-            // Reset our field centric heading to match the robot
-            // facing away from our alliance station wall (0 deg).
-            drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
-            // Then slowly drive forward (away from us) for 5 seconds.
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(0.5)
-                    .withVelocityY(0)
-                    .withRotationalRate(0)
-            )
-            .withTimeout(5.0),
-            // Finally idle for the rest of auton
-            drivetrain.applyRequest(() -> idle)
-        );
+        return autoChooser.getSelected();
     }
 
     public void periodic() {
-        drivetrain.addVisionMeasurement(vision.getRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
-        isinBump = drivetrain.getState().Pose.getX() > 1.0 && drivetrain.getState().Pose.getX() < 4.0;
+        if (vision.isTracking()){
+            drivetrain.addVisionMeasurement(vision.getRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
+        }
+        double x = drivetrain.getState().Pose.getX();
+        isinBump = x > X_START_BUMP && x < X_STOP_BUMP;
+        isinTransition = (x > X_START_TRANSITION && x < X_START_BUMP) || (x > X_STOP_BUMP && x < X_STOP_TRANSITION);
     }
 
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(Pose3d.kZero));

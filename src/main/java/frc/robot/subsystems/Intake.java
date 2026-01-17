@@ -7,9 +7,9 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 // import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Intake implements Subsystem {
+public class Intake extends SubsystemBase {
     private SparkMax m_deployMotor = new SparkMax(21, SparkMax.MotorType.kBrushless);
     private RelativeEncoder m_deployEnc = m_deployMotor.getEncoder();
     private SparkClosedLoopController m_deployClc = m_deployMotor.getClosedLoopController();

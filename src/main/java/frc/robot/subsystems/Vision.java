@@ -5,12 +5,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import gg.questnav.questnav.QuestNav;
 import gg.questnav.questnav.PoseFrame;
 
-public class Vision implements Subsystem {
+public class Vision extends SubsystemBase {
     
     private QuestNav m_questNav = new QuestNav();
     private double m_timestamp = 0.0;
@@ -19,6 +18,7 @@ public class Vision implements Subsystem {
 
     public double getTimestamp() { return m_timestamp; }
     public Pose2d getRobotPose() { return m_robotPose; }
+    public boolean isTracking()  { return m_questNav.isTracking(); }
     
     public Vision() {
         SmartDashboard.putData(m_field);
@@ -28,6 +28,8 @@ public class Vision implements Subsystem {
     public void periodic() {
         
         m_questNav.commandPeriodic();
+
+        SmartDashboard.putBoolean("QuestTracking", m_questNav.isTracking());
 
         if (m_questNav.isTracking()) {
             // Get the latest pose data frames from the Quest

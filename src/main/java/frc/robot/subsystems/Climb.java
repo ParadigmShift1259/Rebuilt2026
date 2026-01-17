@@ -1,20 +1,17 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.servohub.ServoHub.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel;
 
 // import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Climb implements Subsystem {
+public class Climb extends SubsystemBase {
     private SparkFlex m_motor1 = new SparkFlex(11, SparkLowLevel.MotorType.kBrushless);
     private SparkFlex m_motor2 = new SparkFlex(12, SparkLowLevel.MotorType.kBrushless);
     private RelativeEncoder m_enc1 = m_motor1.getEncoder();
