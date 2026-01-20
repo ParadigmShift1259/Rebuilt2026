@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -26,7 +28,7 @@ public class Climb extends SubsystemBase {
             .inverted(false)
             .closedLoopRampRate(0.0)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
-        m_motor1.configure(config, SparkFlex.ResetMode.kNoResetSafeParameters, SparkFlex.PersistMode.kNoPersistParameters);
+        m_motor1.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         m_enc1.setPosition(0.0);
         m_enc2.setPosition(0.0);
     }

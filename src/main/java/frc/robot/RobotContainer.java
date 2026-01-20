@@ -138,8 +138,10 @@ public class RobotContainer {
             drivetrain.addVisionMeasurement(vision.getRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
         double x = drivetrain.getState().Pose.getX();
-        isinBump = x > X_START_BUMP && x < X_STOP_BUMP;
-        isinTransition = (x > X_START_TRANSITION && x < X_START_BUMP) || (x > X_STOP_BUMP && x < X_STOP_TRANSITION);
+        // isinBump = x > X_START_BUMP && x < X_STOP_BUMP;
+        isinBump = false;
+        isinTransition = false;
+        // isinTransition = (x > X_START_TRANSITION && x < X_START_BUMP) || (x > X_STOP_BUMP && x < X_STOP_TRANSITION);
     }
 
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(Pose3d.kZero));

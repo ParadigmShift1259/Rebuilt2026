@@ -52,10 +52,9 @@ public class Drive extends TunerSwerveDrivetrain implements Subsystem {
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
-    /*
+
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
-    */
     
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
@@ -76,7 +75,6 @@ public class Drive extends TunerSwerveDrivetrain implements Subsystem {
     );
 
     /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
-    /*
     private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
         new SysIdRoutine.Config(
             null,        // Use default ramp rate (1 V/s)
@@ -91,7 +89,6 @@ public class Drive extends TunerSwerveDrivetrain implements Subsystem {
             this
         )
     );
-    */
     
     /*
      * SysId routine for characterizing rotation.
@@ -123,7 +120,7 @@ public class Drive extends TunerSwerveDrivetrain implements Subsystem {
     */
 
     /* The SysId routine to test */
-    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
