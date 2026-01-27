@@ -23,12 +23,12 @@ import frc.robot.LimelightHelpers;
 public class Vision extends SubsystemBase {
     
     private QuestNav m_questNav = new QuestNav();
-    private PhotonCamera m_photonCamera = new PhotonCamera("Camera2");
+    private PhotonCamera m_photonCamera = new PhotonCamera("Camera1");
     // private List<PhotonPipelineResult> m_photonResults;
     private PhotonPipelineResult m_photonResult;
     private double m_timestamp = 0.0;
     private Pose2d m_robotPose = Pose2d.kZero;
-    private Field2d m_field = new Field2d();
+    // private Field2d m_field = new Field2d();
     private static final String LIMELIGHT_NAME = "limelight-fuel";
 
     public double getTimestamp() { return m_timestamp; }
@@ -36,7 +36,7 @@ public class Vision extends SubsystemBase {
     public boolean isTracking()  { return m_questNav.isTracking(); }
     
     public Vision() {
-        SmartDashboard.putData(m_field);
+    // SmartDashboard.putData("RobotPose", m_field);
     }
 
     @Override 
@@ -71,7 +71,7 @@ public class Vision extends SubsystemBase {
                 SmartDashboard.putNumber("2DQuestPoseX", questPose.toPose2d().getX());
                 SmartDashboard.putNumber("2DQuestPoseY", questPose.toPose2d().getY());
 
-                m_field.setRobotPose(questPose.toPose2d());
+                // m_field.setRobotPose(questPose.toPose2d());
 
             }
         }
@@ -123,6 +123,16 @@ public class Vision extends SubsystemBase {
             return new Transform2d(targetXform3d.getX(), targetXform3d.getY(), targetXform3d.getRotation().toRotation2d());
         }
         return Transform2d.kZero;
+    }
+
+    public double photonGetFuelPitch() {
+        if (m_photonResult == null){
+            return 0.0;
+        }
+        if (m_photonResult.hasTargets()){
+            return m_photonResult.getBestTarget().pitch;
+        }
+        return 0.0;
     }
 
     // public boolean photonIsTrackingFuel() {

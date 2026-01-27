@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Vision;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveCommands;
@@ -41,6 +42,8 @@ public class RobotContainer {
             0.02, // Trust down to 2cm in Y direction
             0.035 // Trust down to 2 degrees rotational
         );
+
+    Field2d m_field = new Field2d();
 
     private Command driveToPoseCommand;
 
@@ -91,6 +94,7 @@ public class RobotContainer {
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
+        SmartDashboard.putData("RobotPose", m_field);
         configureBindings();
     }
 
@@ -169,6 +173,10 @@ public class RobotContainer {
             drivetrain.addVisionMeasurement(vision.getRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
 
+        m_field.setRobotPose(drivetrain.getPose());
+        // m_field.getObject("Fuel").setPose(drivetrain.getFieldX() + getDistanceXToFuel(vision.photonGetFuelPitch()), drivetrain.getFieldY() + getDistanceYToFuel(vision.getFuelAngle()), Rotation2d.kZero);
+        SmartDashboard.putData("RobotPose", m_field);
+
         double x = drivetrain.getState().Pose.getX();
         // isinBump = x > X_START_BUMP && x < X_STOP_BUMP;
         isinBump = false;
@@ -202,6 +210,9 @@ public class RobotContainer {
         SmartDashboard.putNumber("TargetY", tarY);
 
         SmartDashboard.putNumber("PhotonYaw", rotFuelTracking);
+
+        SmartDashboard.putNumber("ObjectX", getDistanceXToFuel(vision.photonGetFuelPitch()));
+        SmartDashboard.putNumber("ObjectY", getDistanceYToFuel(vision.getFuelAngle()));
     }
 
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(Pose3d.kZero));
@@ -216,4 +227,11 @@ public class RobotContainer {
         }
     });
     
+    public double getDistanceXToFuel(double angle){
+        return -0.28 / Math.tan(angle * Math.PI / 180.0); // 0.28 is height from the floor to the camera in meters
+    }
+
+    public double getDistanceYToFuel(double angle){
+        return Math.tan(angle * Math.PI / 180.0) * getDistanceXToFuel(vision.photonGetFuelPitch());
+    }
 }
