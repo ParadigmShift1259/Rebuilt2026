@@ -46,7 +46,7 @@ public class RobotContainer {
     Field2d m_field = new Field2d();
 
     private Command driveToPoseCommand;
-    private Pose2d shootAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
+    private Pose2d startAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
     private Pose2d feederOutpostSideStart = new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4));
     private Pose2d feederDepotSideStart = new Pose2d(13.01, 2.66, new Rotation2d( 3 * Math.PI / 4));
     private Pose2d autoStartPoint = Pose2d.kZero;
@@ -163,12 +163,16 @@ public class RobotContainer {
         joystick.a().onTrue(m_trackFuel);
         joystick.a().onFalse(m_trackFuel);
         joystick.b().onTrue(m_resetQuest);
-        joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
-            () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
-//        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getAutoStartPoint()));
-        joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> feederOutpostSideStart));
-        joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> feederDepotSideStart));
-        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> shootAndClimbStart));
+        // joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
+        //     () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
+
+        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+
+        // joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
         joystick.start().onTrue(m_slowmode);
 
@@ -190,31 +194,30 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
-    public Pose2d getAutoStartPoint(String poseName){
-        System.out.println("getAutoStartPoint() called");
-        String selectedAuto = SmartDashboard.getString("Auto Mode/selected", "noauto");
+    public Pose2d getDriveToPose() {
+        String selectedAuto = SmartDashboard.getString("Auto Mode/selected", "noAuto");
         SmartDashboard.putString("autoSelected", selectedAuto);
-        if (selectedAuto == "FeederOutpostAuto"){
-            System.out.println("feederOutpostSideStart");
+        System.out.println("getDriveToPose() selectedAuto = " + selectedAuto);
+        if (selectedAuto.equalsIgnoreCase("FeederOutpostAuto")) {
             SmartDashboard.putNumber("autoFOSX", feederOutpostSideStart.getX());
             SmartDashboard.putNumber("autoFOSY", feederOutpostSideStart.getY());
-
+            System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + feederOutpostSideStart.getX() + " Y " +feederOutpostSideStart.getY());
             return feederOutpostSideStart;
         }
-        else if (selectedAuto == "FeederDepotAuto"){
-            System.out.println("feederDepotSideStart");
+        else if (selectedAuto.equalsIgnoreCase("FeederDepotAuto")) {
             SmartDashboard.putNumber("autoFDSX", feederDepotSideStart.getX());
             SmartDashboard.putNumber("autoFDSY", feederDepotSideStart.getY());
+            System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + feederDepotSideStart.getX() + " Y " +feederDepotSideStart.getY());
             return feederDepotSideStart;
         }
-        else if (selectedAuto == "ShootAndClimbAuto"){
-            System.out.println("shootAndClimbStart");
-            SmartDashboard.putNumber("autoSACX", shootAndClimbStart.getX());
-            SmartDashboard.putNumber("autoSACY", shootAndClimbStart.getY());
-            return shootAndClimbStart;
+        else if (selectedAuto.equalsIgnoreCase("StartAndClimbAuto")) {
+            SmartDashboard.putNumber("autoSACX", startAndClimbStart.getX());
+            SmartDashboard.putNumber("autoSACY", startAndClimbStart.getY());
+            System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + startAndClimbStart.getX() + " Y " +startAndClimbStart.getY());
+            return startAndClimbStart;
         }
 
-        System.out.println("getAutoStartPoint() returning Pose2d.kZero");
+        System.out.println("getDriveToPose() returning Pose2d.kZero selectedAuto = " + selectedAuto);
 
         return Pose2d.kZero;
     }

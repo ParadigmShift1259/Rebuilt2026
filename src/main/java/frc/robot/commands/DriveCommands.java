@@ -25,16 +25,13 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 public class DriveCommands {
   
     public static Command driveToPoseCommand(Drive drive, Supplier<Pose2d> targetPoseSupplier) {
-      Pose2d targetPose2 = targetPoseSupplier.get();
-      SmartDashboard.putNumber("autoX", targetPose2.getX());
-      SmartDashboard.putNumber("autoY", targetPose2.getY());
-      return Commands.none();
-/*
+      final double TRANSLATION_KP = 2.25;
+      final double TRANSLATION_KD = 0.0;
+
       final double ANGLE_KP = 5.0;
       final double ANGLE_KD = 0.4;
 
       final double ANGLE_MAX_VELOCITY = 8.0;
-
       final double ANGLE_MAX_ACCELERATION = 20.0;
 
       final SwerveRequest.FieldCentricFacingAngle m_request = new SwerveRequest.FieldCentricFacingAngle()
@@ -52,13 +49,13 @@ public class DriveCommands {
               new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
       angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-      Pose2d targetPose = targetPoseSupplier.get();
-      System.out.println("driveToPoseCommand x " + targetPose.getX() + " y " + targetPose.getY());
-      if (targetPose != Pose2d.kZero){
-          return Commands.none();
-      }
       return Commands.run(
               () -> {
+                Pose2d targetPose = targetPoseSupplier.get();
+                if (targetPose == Pose2d.kZero){
+                    return;
+                }
+
                 Pose2d currentPose = drive.getState().Pose;
                 // Calculate angular speed
                 double omega =
@@ -88,19 +85,23 @@ public class DriveCommands {
               drive)
           .until(
               () -> {
-                      //Pose2d targetPose = targetPoseSupplier.get();
+                      Pose2d targetPose = targetPoseSupplier.get();
+                      if (targetPose == Pose2d.kZero){
+                          return true;
+                      }
                       return targetPose.getTranslation().getDistance(drive.getState().Pose.getTranslation()) < 0.05;
                     })
 
           // Reset PID controller when command starts
           .beforeStarting(
               () -> {
-                //Pose2d targetPose = targetPoseSupplier.get();
-                angleController.reset(drive.getState().Pose.getRotation().getRadians());
-                xController.setSetpoint(targetPose.getX());
-                yController.setSetpoint(targetPose.getY());
+                Pose2d targetPose = targetPoseSupplier.get();
+                if (targetPose != Pose2d.kZero){
+                  angleController.reset(drive.getState().Pose.getRotation().getRadians());
+                  xController.setSetpoint(targetPose.getX());
+                  yController.setSetpoint(targetPose.getY());
+                }
               });
-              */
   }
 
   //public void setPose(Pose2d pose) {
