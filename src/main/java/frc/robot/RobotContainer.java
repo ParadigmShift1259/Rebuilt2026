@@ -46,6 +46,10 @@ public class RobotContainer {
     Field2d m_field = new Field2d();
 
     private Command driveToPoseCommand;
+    private Pose2d shootAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
+    private Pose2d feederOutpostSideStart = new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4));
+    private Pose2d feederDepotSideStart = new Pose2d(13.01, 2.66, new Rotation2d( 3 * Math.PI / 4));
+    private Pose2d autoStartPoint = Pose2d.kZero;
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -95,7 +99,7 @@ public class RobotContainer {
     public final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
+        autoChooser = AutoBuilder.buildAutoChooser("StartAndClimbAuto");
         SmartDashboard.putData("Auto Mode", autoChooser);
         SmartDashboard.putData("RobotPose", m_field);
         configureBindings();
@@ -152,12 +156,19 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
+        configurePrimaryBindings();
+    }
+
+    private void configurePrimaryBindings() {
         joystick.a().onTrue(m_trackFuel);
         joystick.a().onFalse(m_trackFuel);
         joystick.b().onTrue(m_resetQuest);
         joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
             () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
-        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4))));
+//        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getAutoStartPoint()));
+        joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> feederOutpostSideStart));
+        joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> feederDepotSideStart));
+        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> shootAndClimbStart));
 
         joystick.start().onTrue(m_slowmode);
 
@@ -177,6 +188,35 @@ public class RobotContainer {
         joystick.rightTrigger().onFalse(m_jogStop);
 
         drivetrain.registerTelemetry(logger::telemeterize);
+    }
+
+    public Pose2d getAutoStartPoint(String poseName){
+        System.out.println("getAutoStartPoint() called");
+        String selectedAuto = SmartDashboard.getString("Auto Mode/selected", "noauto");
+        SmartDashboard.putString("autoSelected", selectedAuto);
+        if (selectedAuto == "FeederOutpostAuto"){
+            System.out.println("feederOutpostSideStart");
+            SmartDashboard.putNumber("autoFOSX", feederOutpostSideStart.getX());
+            SmartDashboard.putNumber("autoFOSY", feederOutpostSideStart.getY());
+
+            return feederOutpostSideStart;
+        }
+        else if (selectedAuto == "FeederDepotAuto"){
+            System.out.println("feederDepotSideStart");
+            SmartDashboard.putNumber("autoFDSX", feederDepotSideStart.getX());
+            SmartDashboard.putNumber("autoFDSY", feederDepotSideStart.getY());
+            return feederDepotSideStart;
+        }
+        else if (selectedAuto == "ShootAndClimbAuto"){
+            System.out.println("shootAndClimbStart");
+            SmartDashboard.putNumber("autoSACX", shootAndClimbStart.getX());
+            SmartDashboard.putNumber("autoSACY", shootAndClimbStart.getY());
+            return shootAndClimbStart;
+        }
+
+        System.out.println("getAutoStartPoint() returning Pose2d.kZero");
+
+        return Pose2d.kZero;
     }
 
     public Command getAutonomousCommand() {

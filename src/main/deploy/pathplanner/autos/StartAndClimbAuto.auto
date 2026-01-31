@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "StartTest.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "CircleTest.0"
+            "pathName": "ShootAndClimb.0"
           }
         }
       ]

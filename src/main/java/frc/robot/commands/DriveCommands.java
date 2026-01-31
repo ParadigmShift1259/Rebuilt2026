@@ -13,6 +13,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Drive;
@@ -24,9 +25,11 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 public class DriveCommands {
   
     public static Command driveToPoseCommand(Drive drive, Supplier<Pose2d> targetPoseSupplier) {
-      final double TRANSLATION_KP = 2.25;
-      final double TRANSLATION_KD = 0.0;
-
+      Pose2d targetPose2 = targetPoseSupplier.get();
+      SmartDashboard.putNumber("autoX", targetPose2.getX());
+      SmartDashboard.putNumber("autoY", targetPose2.getY());
+      return Commands.none();
+/*
       final double ANGLE_KP = 5.0;
       final double ANGLE_KD = 0.4;
 
@@ -35,10 +38,9 @@ public class DriveCommands {
       final double ANGLE_MAX_ACCELERATION = 20.0;
 
       final SwerveRequest.FieldCentricFacingAngle m_request = new SwerveRequest.FieldCentricFacingAngle()
-      .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance)
-      .withDriveRequestType(DriveRequestType.Velocity)
-      .withHeadingPID(4, 0, 0); /* change these values for your robot */
-
+                                                                               .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance)
+                                                                               .withDriveRequestType(DriveRequestType.Velocity)
+                                                                               .withHeadingPID(4, 0, 0); // change these values for your robot
 
       PIDController xController = new PIDController(TRANSLATION_KP, 0, TRANSLATION_KD);
       PIDController yController = new PIDController(TRANSLATION_KP, 0, TRANSLATION_KD);
@@ -50,10 +52,13 @@ public class DriveCommands {
               new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
       angleController.enableContinuousInput(-Math.PI, Math.PI);
 
+      Pose2d targetPose = targetPoseSupplier.get();
+      System.out.println("driveToPoseCommand x " + targetPose.getX() + " y " + targetPose.getY());
+      if (targetPose != Pose2d.kZero){
+          return Commands.none();
+      }
       return Commands.run(
               () -> {
-                Pose2d targetPose = targetPoseSupplier.get();
-
                 Pose2d currentPose = drive.getState().Pose;
                 // Calculate angular speed
                 double omega =
@@ -75,30 +80,30 @@ public class DriveCommands {
                 }
 
                 ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, omega);
-                boolean isFlipped =
-                    DriverStation.getAlliance().isPresent()
-                        && DriverStation.getAlliance().get() == Alliance.Red;
-                  drive.setControl(m_request.withVelocityX(speeds.vxMetersPerSecond).withVelocityY(speeds.vyMetersPerSecond).withTargetDirection(targetPose.getRotation()));
-
+                // boolean isFlipped =
+                //     DriverStation.getAlliance().isPresent()
+                //         && DriverStation.getAlliance().get() == Alliance.Red;
+                drive.setControl(m_request.withVelocityX(speeds.vxMetersPerSecond).withVelocityY(speeds.vyMetersPerSecond).withTargetDirection(targetPose.getRotation()));
               },
               drive)
           .until(
               () -> {
-                      Pose2d targetPose = targetPoseSupplier.get();
+                      //Pose2d targetPose = targetPoseSupplier.get();
                       return targetPose.getTranslation().getDistance(drive.getState().Pose.getTranslation()) < 0.05;
                     })
 
           // Reset PID controller when command starts
           .beforeStarting(
               () -> {
-                Pose2d targetPose = targetPoseSupplier.get();
+                //Pose2d targetPose = targetPoseSupplier.get();
                 angleController.reset(drive.getState().Pose.getRotation().getRadians());
                 xController.setSetpoint(targetPose.getX());
                 yController.setSetpoint(targetPose.getY());
               });
+              */
   }
 
-  public void setPose(Pose2d pose) {
+  //public void setPose(Pose2d pose) {
 
-  }
+  //}
 }
