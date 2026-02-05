@@ -113,7 +113,7 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
                 if (isinBump){
-                    Rotation2d rot = vision.getQuestRobotPose().getRotation(); // DO NOT GET DRIVETRAIN STATE ROTATION! Quest messes with it. Get pigeon directly
+                    Rotation2d rot = drivetrain.getPigeon2().getRotation2d(); // DO NOT GET DRIVETRAIN STATE ROTATION! Quest messes with it. Get pigeon directly
                     SmartDashboard.putNumber("PigeonRotation", rot.getDegrees());
                     SmartDashboard.putNumber("PoseRotation", drivetrain.getState().Pose.getRotation().getDegrees());
                     double rotDouble = Math.round((rot.getDegrees() - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees
@@ -254,6 +254,9 @@ public class RobotContainer {
         if (vision.isTracking()){
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
+
+        SmartDashboard.putNumber("PigeonYaw", drivetrain.getPigeon2().getYaw().getValueAsDouble());
+        SmartDashboard.putNumber("PigeonHeading", drivetrain.getPigeon2().getRotation2d().getDegrees());
 
         m_field.setRobotPose(drivetrain.getPose());
         // m_field.getObject("Fuel").setPose(drivetrain.getFieldX() + getDistanceXToFuel(vision.photonGetFuelPitch()), drivetrain.getFieldY() + getDistanceYToFuel(vision.getFuelAngle()), Rotation2d.kZero);
