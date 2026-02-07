@@ -28,10 +28,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Vision;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveCommands;
+import frc.robot.ShiftHelpers;
 
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -42,6 +44,9 @@ public class RobotContainer {
             0.02, // Trust down to 2cm in Y direction
             0.035 // Trust down to 2 degrees rotational
         );
+
+    private boolean changeBump = true;
+    private Rotation2d rot = Rotation2d.kZero;
 
     Field2d m_field = new Field2d();
 
@@ -113,12 +118,13 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
                 if (isinBump){
-                    Rotation2d rot = drivetrain.getPigeon2().getRotation2d(); // DO NOT GET DRIVETRAIN STATE ROTATION! Quest messes with it. Get pigeon directly
-                    SmartDashboard.putNumber("PigeonRotation", rot.getDegrees());
-                    SmartDashboard.putNumber("PoseRotation", drivetrain.getState().Pose.getRotation().getDegrees());
+                    if (changeBump){
+                        rot = drivetrain.getState().Pose.getRotation(); // DO NOT GET DRIVETRAIN STATE ROTATION! Quest messes with it. Get pigeon directly
+                        changeBump = false;
+                    }
                     double rotDouble = Math.round((rot.getDegrees() - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees
                     // double rotDouble = Math.round((-rot.getDegrees()) / 45.0 + 45.0); // Rounds to the nearest 45 degrees
-                    Rotation2d targetRot = new Rotation2d(rotDouble / 180 * Math.PI);
+                    Rotation2d targetRot = new Rotation2d((rotDouble / 180 * Math.PI) + Math.PI);
                     // if (rot.getDegrees() > -180 && rot.getDegrees() < -90){
                     //     targetRot = new Rotation2d(Math.PI * 3.0 / 4.0);
                     // }
@@ -160,6 +166,7 @@ public class RobotContainer {
                                 .withRotationalRate(angle);
                 }
                 else{
+                    changeBump = true;
                     return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                                 .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                                 .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive counterclockwise with negative X (left)
@@ -255,6 +262,9 @@ public class RobotContainer {
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
 
+        SmartDashboard.putNumber("PigeonRotation", drivetrain.getPigeon2().getYaw().getValueAsDouble());
+        SmartDashboard.putNumber("PoseRotation", drivetrain.getState().Pose.getRotation().getDegrees());
+
         SmartDashboard.putNumber("PigeonYaw", drivetrain.getPigeon2().getYaw().getValueAsDouble());
         SmartDashboard.putNumber("PigeonHeading", drivetrain.getPigeon2().getRotation2d().getDegrees());
 
@@ -298,6 +308,10 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("ObjectX", getDistanceXToFuel(vision.photonGetFuelPitch()));
         SmartDashboard.putNumber("ObjectY", getDistanceYToFuel(vision.getFuelAngle()));
+
+        SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
+        SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
+        SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     }
 
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
