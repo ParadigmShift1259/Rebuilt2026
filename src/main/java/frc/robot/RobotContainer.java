@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Vision;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -75,6 +76,7 @@ public class RobotContainer {
 
     public final Drive drivetrain = TunerConstants.createDrivetrain();
     public final Vision vision = new Vision();
+    public final Intake intake = new Intake();
 
     private boolean isinBump = false;
     private boolean isinTransition = false;
@@ -178,8 +180,10 @@ public class RobotContainer {
     }
 
     private void configurePrimaryBindings() {
-        joystick.a().onTrue(m_trackFuel);
-        joystick.a().onFalse(m_trackFuel);
+        joystick.a().onTrue(m_runIntake);
+        joystick.a().onFalse(m_stopIntake);
+        // joystick.a().onTrue(m_trackFuel);
+        // joystick.a().onFalse(m_trackFuel);
         joystick.b().onTrue(m_resetQuest);
         // joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
         //     () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
@@ -299,6 +303,8 @@ public class RobotContainer {
         SmartDashboard.putNumber("ObjectX", getDistanceXToFuel(vision.photonGetFuelPitch()));
         SmartDashboard.putNumber("ObjectY", getDistanceYToFuel(vision.getFuelAngle()));
     }
+    InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
+    InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
 
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     InstantCommand m_trackFuel = new InstantCommand(() -> isTrackingFuel = !isTrackingFuel);
