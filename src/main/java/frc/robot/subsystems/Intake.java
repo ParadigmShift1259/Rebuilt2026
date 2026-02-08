@@ -19,6 +19,7 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,40 +33,67 @@ public class Intake extends SubsystemBase {
     //private final TalonFX m_rollerMotor = new TalonFX(4);
     private SparkMax m_rollerMotor1 = new SparkMax(4, SparkMax.MotorType.kBrushless);
     private SparkMax m_rollerMotor2 = new SparkMax(5, SparkMax.MotorType.kBrushless);
-
+    private RelativeEncoder m_rollMotEnc1 = m_rollerMotor1.getEncoder();
+    private RelativeEncoder m_rollMotEnc2 = m_rollerMotor2.getEncoder();
+    private double m_minRPM = 2000;
+    private double m_maxRPM = 0.0;
+    private boolean m_isRunning = false;
+    
     public Intake() {
-        SmartDashboard.putNumber("intakeVoltage", 6);
-
+        SmartDashboard.putNumber("intakeVoltage", 4.5);
+        
         SparkMaxConfig config = new SparkMaxConfig();
         config.idleMode(SparkMaxConfig.IdleMode.kBrake)
-            .inverted(false)
-            .closedLoopRampRate(0.0)
-            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
+        .inverted(false)
+        .closedLoopRampRate(0.0)
+        .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
         m_deployMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         m_deployEnc.setPosition(0.0);
-
+        
         config.idleMode(SparkMaxConfig.IdleMode.kCoast)
-            .inverted(false)
-            .closedLoopRampRate(0.0)
-            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
+        .inverted(false)
+        .closedLoopRampRate(0.0)
+        .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
         m_rollerMotor1.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         config.idleMode(SparkMaxConfig.IdleMode.kCoast)
-            .inverted(false)
-            .closedLoopRampRate(0.0)
-            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
+        .inverted(false)
+        .closedLoopRampRate(0.0)
+        .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
         m_rollerMotor2.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
+    
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("rollMot1RPM", m_rollMotEnc1.getVelocity());
+        SmartDashboard.putNumber("rollMot2RPM", m_rollMotEnc2.getVelocity());
+        SmartDashboard.putNumber("maxRPM", m_maxRPM);
+        SmartDashboard.putNumber("minRPM", m_minRPM);
+        SmartDashboard.putBoolean("isRunning", m_isRunning);
 
+        if (m_isRunning) { // doesn't work for min?
+            if (m_rollMotEnc2.getVelocity() > m_maxRPM) {
+                m_maxRPM = m_rollMotEnc2.getVelocity();
+            }
+            if (m_rollMotEnc2.getVelocity() < m_minRPM) {
+                m_minRPM = m_rollMotEnc2.getVelocity();
+            }
+        }
+    }
+    
     public void deploy() {
         m_deployClc.setSetpoint(0, ControlType.kPosition); // TODO figure out position
     }
-
+    
     public void retract() {
         m_deployClc.setSetpoint(0, ControlType.kPosition); // TODO figure out position
     }
-
+    
     public void runIntake() {
+        m_isRunning = true;
+        m_minRPM = 2000.0;
+        m_maxRPM = 0.0;
+
         double volt = SmartDashboard.getNumber("intakeVoltage", 6);
         m_rollerMotor1.setVoltage(-volt);
         m_rollerMotor2.setVoltage(volt);
@@ -73,6 +101,7 @@ public class Intake extends SubsystemBase {
     }
     
     public void stopIntake() {
+        m_isRunning = false;
         m_rollerMotor1.setVoltage(0);
         m_rollerMotor2.setVoltage(0);
         // m_rollerMotor.setControl(m_mmReq.withPosition(0).withSlot(0));

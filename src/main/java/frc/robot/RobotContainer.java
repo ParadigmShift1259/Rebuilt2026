@@ -255,6 +255,8 @@ public class RobotContainer {
     }
 
     public void periodic() {
+        SmartDashboard.putBoolean("slowMode", slowmode);
+
         if (vision.isTracking()){
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
