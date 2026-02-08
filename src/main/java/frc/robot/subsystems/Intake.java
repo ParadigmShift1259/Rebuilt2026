@@ -30,7 +30,8 @@ public class Intake extends SubsystemBase {
     private RelativeEncoder m_deployEnc = m_deployMotor.getEncoder();
     private SparkClosedLoopController m_deployClc = m_deployMotor.getClosedLoopController();
     //private final TalonFX m_rollerMotor = new TalonFX(4);
-    private SparkMax m_rollerMotor = new SparkMax(4, SparkMax.MotorType.kBrushless);
+    private SparkMax m_rollerMotor1 = new SparkMax(4, SparkMax.MotorType.kBrushless);
+    private SparkMax m_rollerMotor2 = new SparkMax(5, SparkMax.MotorType.kBrushless);
 
     public Intake() {
         SmartDashboard.putNumber("intakeVoltage", 6);
@@ -47,7 +48,13 @@ public class Intake extends SubsystemBase {
             .inverted(false)
             .closedLoopRampRate(0.0)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
-        m_rollerMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        m_rollerMotor1.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        
+        config.idleMode(SparkMaxConfig.IdleMode.kCoast)
+            .inverted(false)
+            .closedLoopRampRate(0.0)
+            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
+        m_rollerMotor2.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 
     public void deploy() {
@@ -60,12 +67,14 @@ public class Intake extends SubsystemBase {
 
     public void runIntake() {
         double volt = SmartDashboard.getNumber("intakeVoltage", 6);
-        m_rollerMotor.setVoltage(volt);
+        m_rollerMotor1.setVoltage(-volt);
+        m_rollerMotor2.setVoltage(volt);
         // m_rollerMotor.setPosition(Rotations.of(1)); // TODO figure out rot/sec
     }
     
     public void stopIntake() {
-        m_rollerMotor.setVoltage(0);
+        m_rollerMotor1.setVoltage(0);
+        m_rollerMotor2.setVoltage(0);
         // m_rollerMotor.setControl(m_mmReq.withPosition(0).withSlot(0));
         // m_rollerMotor.setPosition(Rotations.of(0));
     }
