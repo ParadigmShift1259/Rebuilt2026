@@ -177,10 +177,10 @@ public class RobotContainer {
 
     private void configurePrimaryBindings() {
         joystick.a().onTrue(m_runIntake);
-        joystick.a().onFalse(m_stopIntake);
+        joystick.b().onTrue(m_stopIntake);
         // joystick.a().onTrue(m_trackFuel);
         // joystick.a().onFalse(m_trackFuel);
-        joystick.b().onTrue(m_resetQuest);
+        // joystick.b().onTrue(m_resetQuest);
         // joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
         //     () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
 
