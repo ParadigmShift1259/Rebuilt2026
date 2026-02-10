@@ -30,7 +30,7 @@ public class Intake extends SubsystemBase {
     private SparkMax m_deployMotor = new SparkMax(21, SparkMax.MotorType.kBrushless);
     private RelativeEncoder m_deployEnc = m_deployMotor.getEncoder();
     private SparkClosedLoopController m_deployClc = m_deployMotor.getClosedLoopController();
-    private final TalonFX m_rollerMotor1 = new TalonFX(11);
+    private final TalonFX m_rollerMotor1 = new TalonFX(21);
     private final MotionMagicVoltage m_mmReq = new MotionMagicVoltage(0);
     //private SparkMax m_rollerMotor2 = new SparkMax(5, SparkMax.MotorType.kBrushless);
     //private RelativeEncoder m_rollMotEnc1 = m_rollerMotor.getEncoder();
@@ -59,14 +59,14 @@ public class Intake extends SubsystemBase {
           .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
         
         Slot0Configs slot0 = cfg.Slot0;
-       SmartDashboard.putNumber("rollMot1RPM", m_rollerMotor1.getVelocity(true).getValueAsDouble());
+       SmartDashboard.putNumber("rollMot1RPM", 60 * m_rollerMotor1.getVelocity(true).getValueAsDouble());
        //SmartDashboard.putNumber("rollMot2RPM", m_rollMotEnc2.getVelocity());
        SmartDashboard.putNumber("maxRPM", m_maxRPM);
        SmartDashboard.putNumber("minRPM", m_minRPM);
         
        SmartDashboard.putBoolean("isRunning", m_isRunning);
        if (m_isRunning) { // doesn't work for min?
-            double rpm = m_rollerMotor1.getVelocity(true).getValueAsDouble();
+            double rpm = 60 * m_rollerMotor1.getVelocity(true).getValueAsDouble();
             if (rpm > m_maxRPM) {
                 m_maxRPM = rpm;
             }
@@ -90,7 +90,7 @@ public class Intake extends SubsystemBase {
 
    @Override
     public void periodic() {
-        double rpm = m_rollerMotor1.getVelocity(true).getValueAsDouble();
+        double rpm = 60 * m_rollerMotor1.getVelocity(true).getValueAsDouble();
         SmartDashboard.putNumber("rollMot1RPM", rpm);
         //SmartDashboard.putNumber("rollMot2RPM", m_rollMotEnc2.getVelocity());
         SmartDashboard.putNumber("maxRPM", m_maxRPM);
