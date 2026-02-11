@@ -40,7 +40,7 @@ public class Intake extends SubsystemBase {
     private boolean m_isRunning = false;
     
     public Intake() {
-        SmartDashboard.putNumber("intakeVoltage", 4.5);
+        SmartDashboard.putNumber("intakeVoltage", -10);
         SparkMaxConfig config = new SparkMaxConfig();
         config.idleMode(SparkMaxConfig.IdleMode.kBrake)
             .inverted(false)
@@ -121,7 +121,7 @@ public class Intake extends SubsystemBase {
         m_minRPM = 20000.0;
         m_maxRPM = 0.0;
 
-        double volt = SmartDashboard.getNumber("intakeVoltage", 6);
+        double volt = SmartDashboard.getNumber("intakeVoltage", -10);
         m_rollerMotor1.setVoltage(-volt);
         //m_rollerMotor2.setVoltage(volt);
         // m_rollerMotor.setPosition(Rotations.of(1)); // TODO figure out rot/sec

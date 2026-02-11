@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
@@ -15,6 +16,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
@@ -28,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Transfer;
 import frc.robot.subsystems.Vision;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -82,6 +85,7 @@ public class RobotContainer {
     public final Drive drivetrain = TunerConstants.createDrivetrain();
     public final Vision vision = new Vision();
     public final Intake intake = new Intake();
+    // public final Transfer transfer = new Transfer();
 
     private boolean isinBump = false;
     private boolean isinTransition = false;
@@ -107,6 +111,9 @@ public class RobotContainer {
     public final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
+        NamedCommands.registerCommand("runIntake", m_runIntake);
+        NamedCommands.registerCommand("stopIntake", m_stopIntake);
+
         autoChooser = AutoBuilder.buildAutoChooser("StartAndClimbAuto");
         SmartDashboard.putData("Auto Mode", autoChooser);
         SmartDashboard.putData("RobotPose", m_field);
@@ -115,6 +122,7 @@ public class RobotContainer {
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", 0.0);
         SmartDashboard.putNumber("Match Time", 0.0);
+ 
     }
 
     private void configureBindings() {
@@ -180,7 +188,7 @@ public class RobotContainer {
         joystick.b().onTrue(m_stopIntake);
         // joystick.a().onTrue(m_trackFuel);
         // joystick.a().onFalse(m_trackFuel);
-        // joystick.b().onTrue(m_resetQuest);
+        joystick.x().onTrue(m_resetQuest);
         // joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
         //     () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
 
@@ -311,7 +319,8 @@ public class RobotContainer {
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
 
-    InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
+    // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
+    InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
     InstantCommand m_trackFuel = new InstantCommand(() -> isTrackingFuel = !isTrackingFuel);
     InstantCommand m_slowmode = new InstantCommand(() -> {
         slowmode = !slowmode;

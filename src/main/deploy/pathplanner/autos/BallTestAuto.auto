@@ -5,12 +5,6 @@
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "AlliToNeutOutpostSide.0"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "runIntake"
@@ -19,19 +13,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CollectFuelOutpostSide.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "NeutToAlliDepotSide.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ReturnToOutpostSide.0"
+            "pathName": "BallTestPath"
           }
         },
         {
@@ -43,7 +25,7 @@
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": true
 }

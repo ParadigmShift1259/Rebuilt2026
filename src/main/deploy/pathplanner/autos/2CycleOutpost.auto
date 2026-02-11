@@ -11,6 +11,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "runIntake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Cycle1CollectOutpostSide.0"
@@ -32,6 +38,12 @@
           "type": "path",
           "data": {
             "pathName": "Cycle2CollectOutpostSide.0"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopIntake"
           }
         },
         {
