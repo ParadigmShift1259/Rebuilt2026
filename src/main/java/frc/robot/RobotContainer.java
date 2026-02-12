@@ -281,12 +281,12 @@ public class RobotContainer {
         isinTransition = false;
         // isinTransition = (x > X_START_TRANSITION && x < X_START_BUMP) || (x > X_STOP_BUMP && x < X_STOP_TRANSITION);
 
-        if (vision.photonIsTrackingFuel()) {
-            rotFuelTracking = vision.photonGetFuelAngle();
-            targPose3d = vision.photonGetTargetPose();
-            tarX = targPose3d.getX();
-            tarY = targPose3d.getY();
-        }
+        // if (vision.photonIsTrackingFuel()) {
+        //     rotFuelTracking = vision.photonGetFuelAngle();
+        //     targPose3d = vision.photonGetTargetPose();
+        //     tarX = targPose3d.getX();
+        //     tarY = targPose3d.getY();
+        // }
         // else if (vision.isTrackingFuel()) {
         //     rotFuelTracking = vision.getFuelAngle();
         //     tarPose = vision.getTargetPose();
@@ -307,10 +307,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("TargetX", tarX);
         SmartDashboard.putNumber("TargetY", tarY);
 
-        SmartDashboard.putNumber("PhotonYaw", rotFuelTracking);
-
-        SmartDashboard.putNumber("ObjectX", getDistanceXToFuel(vision.photonGetFuelPitch()));
-        SmartDashboard.putNumber("ObjectY", getDistanceYToFuel(vision.getFuelAngle()));
+        //SmartDashboard.putNumber("YawToFuel", rotFuelTracking);
 
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
@@ -336,11 +333,11 @@ public class RobotContainer {
     InstantCommand m_jogRight = new InstantCommand(() -> jogState = JogState.rightJog);
     InstantCommand m_jogStop = new InstantCommand(() -> jogState = JogState.noJog);
 
-    public double getDistanceXToFuel(double angle){
-        return -0.28 / Math.tan(angle * Math.PI / 180.0); // 0.28 is height from the floor to the camera in meters
-    }
+    // public double getDistanceXToFuel(double angle){
+    //     return -0.28 / Math.tan(angle * Math.PI / 180.0); // 0.28 is height from the floor to the camera in meters
+    // }
 
-    public double getDistanceYToFuel(double angle){
-        return Math.tan(angle * Math.PI / 180.0) * getDistanceXToFuel(vision.photonGetFuelPitch());
-    }
+    // public double getDistanceYToFuel(double angle){
+    //     return Math.tan(angle * Math.PI / 180.0) * getDistanceXToFuel(vision.);
+    // }
 }
