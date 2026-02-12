@@ -86,6 +86,7 @@ public class RobotContainer {
     private boolean isinTransition = false;
     private boolean isTrackingFuel = false;
     private boolean slowmode;
+    private boolean isBlue = DriverStation.getAlliance().equals(DriverStation.Alliance.Blue);
     private final double X_START_BUMP = 1.0;
     private final double X_STOP_BUMP = 4.0;
     private final double TRANSITION_OFFSET = 0.25;
@@ -127,20 +128,20 @@ public class RobotContainer {
                         rot = drivetrain.getPose().getRotation(); 
                     }
                     double rotDouble = Math.round((rot.getDegrees() - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees
-                    Rotation2d targetRot = new Rotation2d((rotDouble / 180 * Math.PI) + Math.PI);
+                    Rotation2d targetRot = new Rotation2d((rotDouble / 180 * Math.PI) + (isBlue ? 0.0 : Math.PI));
                     SmartDashboard.putNumber("targetRot", targetRot.getDegrees());
                     return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
                                      .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
                                      .withTargetDirection(targetRot);
                 }
-                else if (isinTransition) {
-                    Rotation2d rot = drivetrain.getPose().getRotation();
-                    double rotDouble = Math.round((rot.getDegrees()) / 90.0) * 90.0; // Rounds to the nearest 90 degrees
-                    Rotation2d targetRot = new Rotation2d(rotDouble / 180 * Math.PI);
-                    return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed)
-                                     .withVelocityY(-joystick.getLeftX() * MaxSpeed)
-                                     .withTargetDirection(targetRot);
-                }
+                // else if (isinTransition) {
+                //     Rotation2d rot = drivetrain.getPose().getRotation();
+                //     double rotDouble = Math.round((rot.getDegrees()) / 90.0) * 90.0; // Rounds to the nearest 90 degrees
+                //     Rotation2d targetRot = new Rotation2d(rotDouble / 180 * Math.PI);
+                //     return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed)
+                //                      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+                //                      .withTargetDirection(targetRot);
+                // }
                 else if (isTrackingFuel) {
                     Rotation2d rot = drivetrain.getPose().getRotation();
                     Rotation2d targetRot = new Rotation2d((rot.getDegrees() - rotFuelTracking) / 180 * Math.PI);
