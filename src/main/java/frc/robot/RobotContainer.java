@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -29,6 +31,9 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Vision;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -45,8 +50,8 @@ public class RobotContainer {
             0.035 // Trust down to 2 degrees rotational
         );
 
-    private boolean changeBump = true;
-    private Rotation2d rot = Rotation2d.kZero;
+    private boolean isAligning = false;
+    private double rotDeg = 0.0;
 
     Field2d m_field = new Field2d();
     private Geofencing m_geofenceAlliBump = new Geofencing("AlliBump", 6.4912, 4.053, 1.589,5.17);
@@ -123,16 +128,14 @@ public class RobotContainer {
     
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
-                if (m_geofenceAlliBump.isInZone(drivetrain.getPose())){
-                    if (changeBump){
-                        rot = drivetrain.getPose().getRotation(); 
+                if (m_geofenceAlliBump.isInZone(drivetrain.getPose())) {
+                    if (!isAligning) {
+                        isAligning = true;
+                        rotDeg = drivetrain.getRotationDegrees(); // gets once per fence entry
                     }
-                    double rotDouble = Math.round((rot.getDegrees() - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees
-                    Rotation2d targetRot = new Rotation2d((rotDouble / 180 * Math.PI) + (isBlue ? 0.0 : Math.PI));
-                    SmartDashboard.putNumber("targetRot", targetRot.getDegrees());
                     return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
                                      .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
-                                     .withTargetDirection(targetRot);
+                                     .withTargetDirection(getBumpAlignAngle(rotDeg));
                 }
                 // else if (isinTransition) {
                 //     Rotation2d rot = drivetrain.getPose().getRotation();
@@ -157,7 +160,7 @@ public class RobotContainer {
                                 .withRotationalRate(angle);
                 }
                 else{
-                    changeBump = true;
+                    isAligning = false;
                     return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                                 .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                                 .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive counterclockwise with negative X (left)
@@ -239,7 +242,7 @@ public class RobotContainer {
             return outpostToDepot;
         }
 
-        System.out.println("getDriveToPose() returning Pose2d.kZero selectedAuto = " + selectedAuto);
+        // System.out.println("getDriveToPose() returning Pose2d.kZero selectedAuto = " + selectedAuto);
 
         return Pose2d.kZero;
     }
@@ -285,6 +288,11 @@ public class RobotContainer {
         SmartDashboard.putNumber("xPose", robotX);
         SmartDashboard.putNumber("yPose", robotY);
 
+        SmartDashboard.putBoolean("IsBlue", isBlue());
+        SmartDashboard.putBoolean("IsAligning", isAligning);
+
+        SmartDashboard.putString("SimAllianceID", DriverStationSim.getAllianceStationId().toString());
+
         SmartDashboard.putBoolean("IsInBump", m_geofenceAlliBump.isInZone(drivetrain.getPose()));
         SmartDashboard.putBoolean("IsInTransition", isinTransition);
         SmartDashboard.putBoolean("IsTrackingFuel", isTrackingFuel);
@@ -325,4 +333,29 @@ public class RobotContainer {
     public double getDistanceYToFuel(double angle){
         return Math.tan(angle * Math.PI / 180.0) * getDistanceXToFuel(vision.photonGetFuelPitch());
     }
+
+    private Rotation2d getBumpAlignAngle(double currentRot){
+        double alignDeg = Math.round((currentRot - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees
+        return new Rotation2d((alignDeg / 180 * Math.PI) + (isBlue() ? 0.0 : Math.PI)); // 180 based on alliance
+    }
+    
+    private boolean isBlue(){
+        if (RobotBase.isReal()) return isBlue; // TODO needs physical test
+        return (DriverStationSim.getAllianceStationId().toString().contains("Blue")); // isBlue doesn't work in sim and no direct way to get alliance, so need to check id (ex. Blue1)
+    }
+
+    // from wpilib docs (slightly altered)
+    // private String getAlliance() {
+    //     Optional<Alliance> ally = DriverStation.getAlliance();
+    //     if (ally.isPresent()) {
+    //         if (ally.get() == Alliance.Red) {
+    //             return "Red";
+    //         }
+    //         if (ally.get() == Alliance.Blue) {
+    //             return "Blue";
+    //         }
+    //     }
+    //     return "Neither";
+    // }
+
 }

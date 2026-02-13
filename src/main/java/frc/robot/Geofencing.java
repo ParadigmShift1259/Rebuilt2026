@@ -3,18 +3,18 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 
 public class Geofencing {
-    private String _zoneName;
-    private double _top;
-    private double _left;
-    private double _bottom;
-    private double _right;
+    private String m_zoneName;
+    private double m_top;
+    private double m_left;
+    private double m_bottom;
+    private double m_right;
 
     public Geofencing(String zoneName, double top, double left, double bottom, double right) {
-        _zoneName = zoneName;
-        _top = top;
-        _left = left;
-        _bottom = bottom;
-        _right = right;
+        m_zoneName = zoneName;
+        m_top = top;
+        m_left = left;
+        m_bottom = bottom;
+        m_right = right;
     }
 
     public boolean isInZone(Pose2d robotPose) {
@@ -23,6 +23,8 @@ public class Geofencing {
 
         // System.out.println("Checking Zone: " + _zoneName);
 
-        return x > _left && x < _right && y > _bottom && y < _top;
+        return x > m_left && x < m_right && y > m_bottom && y < m_top;
     }
+
+
 }
