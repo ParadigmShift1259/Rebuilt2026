@@ -28,23 +28,37 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
-    private SparkMax m_deployMotor = new SparkMax(ConstantsCANIDS.kIntakeDeployID, SparkMax.MotorType.kBrushless);
-    private RelativeEncoder m_deployEnc = m_deployMotor.getEncoder();
-    private SparkClosedLoopController m_deployClc = m_deployMotor.getClosedLoopController();
+    private SparkMax m_deployMotorLead = new SparkMax(ConstantsCANIDS.kIntakeDeployID1, SparkMax.MotorType.kBrushless);
+    private SparkMax m_deployMotorFollow = new SparkMax(ConstantsCANIDS.kIntakeDeployID2, SparkMax.MotorType.kBrushless);
+    private RelativeEncoder m_deployEnc = m_deployMotorLead.getEncoder();
+    private RelativeEncoder m_followEnc = m_deployMotorFollow.getEncoder();
+    private SparkClosedLoopController m_deployClc = m_deployMotorLead.getClosedLoopController();
+    private SparkClosedLoopController m_followClc = m_deployMotorFollow.getClosedLoopController();
     private final TalonFX m_rollerMotor = new TalonFX(ConstantsCANIDS.kIntakeRollerID);
     private double m_minRPM = 20000;
     private double m_maxRPM = 0.0;
     private boolean m_isRunning = false;
-    
+    public static final double m_home = 0.0;
+    public static final double m_frame = 3.5;
+    public static final double m_extend = 14.3;
+
     public Intake() {
         SmartDashboard.putNumber("intakeVoltage", -10);
         SparkMaxConfig config = new SparkMaxConfig();
-        config.idleMode(SparkMaxConfig.IdleMode.kBrake)
+        config.idleMode(SparkMaxConfig.IdleMode.kCoast)
+            .inverted(true)
+            .closedLoopRampRate(0.0)
+            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
+            .pid(0.04, 0.0, 0.0);
+        m_deployMotorLead.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        config.idleMode(SparkMaxConfig.IdleMode.kCoast)
             .inverted(false)
             .closedLoopRampRate(0.0)
-            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
-        m_deployMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
+            .pid(0.04, 0.0, 0.0);
+        m_deployMotorFollow.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         m_deployEnc.setPosition(0.0);
+        m_followEnc.setPosition(0.0);
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
@@ -86,6 +100,8 @@ public class Intake extends SubsystemBase {
 
    @Override
     public void periodic() {
+        SmartDashboard.putNumber("DeployLeadRotations", m_deployEnc.getPosition());
+        SmartDashboard.putNumber("DeployFollowRotations", m_followEnc.getPosition());
         double rpm = 60 * m_rollerMotor.getVelocity(true).getValueAsDouble();
         SmartDashboard.putNumber("rollMot1RPM", rpm);
         SmartDashboard.putNumber("maxRPM", m_maxRPM);
@@ -102,12 +118,14 @@ public class Intake extends SubsystemBase {
         }
     }
     
-    public void deploy() {
-        m_deployClc.setSetpoint(0, ControlType.kPosition); // TODO figure out position
+    public void deploy(double pos) {
+        m_deployClc.setSetpoint(pos, ControlType.kPosition);
+        m_followClc.setSetpoint(pos, ControlType.kPosition);
     }
 
     public void retract() {
-        m_deployClc.setSetpoint(0, ControlType.kPosition); // TODO figure out position
+        m_deployClc.setSetpoint(0, ControlType.kPosition);
+        m_followClc.setSetpoint(0, ControlType.kPosition);
     }
 
     public void runIntake() {

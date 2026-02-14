@@ -122,6 +122,7 @@ public class RobotContainer {
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", 0.0);
         SmartDashboard.putNumber("Match Time", 0.0);
+        SmartDashboard.putNumber("Deploy Turns", 0.0);
     }
 
     private void configureBindings() {
@@ -185,13 +186,16 @@ public class RobotContainer {
     private void configurePrimaryBindings() {
         joystick.a().onTrue(m_runIntake);
         joystick.b().onTrue(m_stopIntake);
+        joystick.povUp().onTrue(m_extendIntake);
+        joystick.povRight().onTrue(m_frameIntake);
+        joystick.povDown().onTrue(m_homeIntake);
         // joystick.a().onTrue(m_trackFuel);
         // joystick.a().onFalse(m_trackFuel);
-        joystick.x().onTrue(m_resetQuest);
+        // joystick.x().onTrue(m_resetQuest);
         // joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
         //     () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
 
-        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
@@ -312,6 +316,10 @@ public class RobotContainer {
     }
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
+//    InstantCommand m_deployIntake = new InstantCommand(()-> intake.deploy(SmartDashboard.getNumber("Deploy Turns", 0.0)));
+    InstantCommand m_homeIntake = new InstantCommand(()-> intake.deploy(Intake.m_home));
+    InstantCommand m_frameIntake = new InstantCommand(()-> intake.deploy(Intake.m_frame));
+    InstantCommand m_extendIntake = new InstantCommand(()-> intake.deploy(Intake.m_extend));
 
     // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
