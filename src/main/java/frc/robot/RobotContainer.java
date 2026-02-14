@@ -54,12 +54,15 @@ public class RobotContainer {
     private double rotDeg = 0.0;
 
     Field2d m_field = new Field2d();
+    private Geofencing m_geofenceNeutZoneIfBlue = new Geofencing("NeutZone", 18.04, 4.053, 0.0, 16.51);
+    private Geofencing m_geofenceNeutZoneIfRed = new Geofencing("NeutZone", 18.04, 0.0, 0.0, 12.417);
     private Geofencing m_geofenceNeutTop = new Geofencing("NeutTop", 18.04, 0.0, 6.9, 16.51);
     private Geofencing m_geofenceNeutBottom = new Geofencing("NeutBottom", 1.143, 0.0, 0.0, 16.51);
     private Geofencing m_geofenceRedBump = new Geofencing("RedBump", 6.4912, 11.3, 1.589, 12.417);
     private Geofencing m_geofenceBlueBump = new Geofencing("BlueBump", 6.4912, 4.053, 1.589,5.17);
-    private Geofencing m_geofenceAlliBump = m_geofenceBlueBump;
-    private Geofencing m_geofenceOppBump = m_geofenceRedBump;
+    private Geofencing m_geofenceAlliBump;
+    private Geofencing m_geofenceOppBump;
+    private Geofencing m_geofenceNeutZone;
 
     private Command driveToPoseCommand;
     private Pose2d startAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
@@ -110,6 +113,9 @@ public class RobotContainer {
     private double tarX = 0.0;
     private double tarY = 0.0;
 
+    enum ShootingState{noShoot, hubShoot, feedShoot};
+    private ShootingState shootingState = ShootingState.noShoot;
+
     enum JogState{noJog, leftJog, rightJog};
     private JogState jogState = JogState.noJog;
 
@@ -128,7 +134,7 @@ public class RobotContainer {
         boolean isBlue = isBlue();
         m_geofenceAlliBump = isBlue ? m_geofenceBlueBump : m_geofenceRedBump;
         m_geofenceOppBump  = isBlue ? m_geofenceRedBump : m_geofenceBlueBump;
-
+        m_geofenceNeutZone = isBlue ? m_geofenceNeutZoneIfBlue : m_geofenceNeutZoneIfRed;
     }
 
     private void configureBindings() {
@@ -270,6 +276,13 @@ public class RobotContainer {
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
 
+        if (m_geofenceNeutZone.isInZone(drivetrain.getPose())){
+            shootingState = ShootingState.feedShoot;
+        }
+        else {
+            shootingState= ShootingState.hubShoot;
+        }
+
         SmartDashboard.putNumber("PigeonRotation", drivetrain.getPigeon2().getYaw().getValueAsDouble());
         SmartDashboard.putNumber("PoseRotation", drivetrain.getPose().getRotation().getDegrees());
 
@@ -368,18 +381,10 @@ public class RobotContainer {
         double angle1 = 160.0;
         double angle2 = 20.0;
         if (isTop){
-            if (isBlue()) {
-                angle1 = -20.0;
-                angle2 = -160.0;
-            }
+            angle1 = -20.0;
+            angle2 = -160.0;
         }
-        else {
-            if (!isBlue()) {
-                angle1 = -20.0;
-                angle2 = -160.0;
-            }
-        }
+        
         return (rot < angle1 && rot > angle2);
-
     }
 }
