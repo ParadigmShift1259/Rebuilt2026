@@ -85,6 +85,7 @@ public class RobotContainer {
     public final Drive drivetrain = TunerConstants.createDrivetrain();
     public final Vision vision = new Vision();
     public final Intake intake = new Intake();
+    public final Transfer transfer = new Transfer();
     // public final Transfer transfer = new Transfer();
 
     private boolean isinBump = false;
@@ -183,16 +184,18 @@ public class RobotContainer {
         configurePrimaryBindings();
     }
 
-    private void configurePrimaryBindings() {
+    private void 
+    configurePrimaryBindings() {
         joystick.a().onTrue(m_runIntake);
         joystick.b().onTrue(m_stopIntake);
         // joystick.a().onTrue(m_trackFuel);
         // joystick.a().onFalse(m_trackFuel);
-        joystick.x().onTrue(m_resetQuest);
+        joystick.x().onTrue(m_startSpindexer);
+        joystick.y().onTrue(m_stopSpindexer);
         // joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
         //     () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
 
-        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
@@ -315,6 +318,9 @@ public class RobotContainer {
     }
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
+
+    InstantCommand m_startSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed());
+    InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
 
     // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
