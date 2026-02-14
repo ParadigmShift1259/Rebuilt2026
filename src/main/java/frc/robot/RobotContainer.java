@@ -32,6 +32,7 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Transfer;
 import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -85,7 +86,8 @@ public class RobotContainer {
     public final Drive drivetrain = TunerConstants.createDrivetrain();
     public final Vision vision = new Vision();
     public final Intake intake = new Intake();
-    // public final Transfer transfer = new Transfer();
+    public final Shooter shooter = new Shooter();
+    public final Transfer transfer = new Transfer();
 
     private boolean isinBump = false;
     private boolean isinTransition = false;
@@ -122,6 +124,9 @@ public class RobotContainer {
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", 0.0);
         SmartDashboard.putNumber("Match Time", 0.0);
+
+        SmartDashboard.putNumber("inputRPM", 0.0);
+        SmartDashboard.putNumber("ShooterSpeed", 0.0);
  
     }
 
@@ -186,13 +191,15 @@ public class RobotContainer {
     private void configurePrimaryBindings() {
         joystick.a().onTrue(m_runIntake);
         joystick.b().onTrue(m_stopIntake);
+        joystick.x().onTrue(m_runSpindexer);
+        joystick.y().onTrue(m_stopSpindexer);
         // joystick.a().onTrue(m_trackFuel);
         // joystick.a().onFalse(m_trackFuel);
-        joystick.x().onTrue(m_resetQuest);
+        // joystick.x().onTrue(m_resetQuest);
         // joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
         //     () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
 
-        joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
@@ -212,10 +219,12 @@ public class RobotContainer {
         // Reset the field-centric heading on left bumper press.
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        joystick.leftTrigger().onTrue(m_jogLeft);
-        joystick.leftTrigger().onFalse(m_jogStop);
-        joystick.rightTrigger().onTrue(m_jogRight);
-        joystick.rightTrigger().onFalse(m_jogStop);
+        // joystick.leftTrigger().onTrue(m_jogLeft);
+        // joystick.leftTrigger().onFalse(m_jogStop);
+        // joystick.rightTrigger().onTrue(m_jogRight);
+        // joystick.rightTrigger().onFalse(m_jogStop);
+        joystick.rightTrigger().onTrue(m_runShooter);
+        joystick.leftTrigger().onTrue(m_stopShooter);
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
@@ -313,8 +322,14 @@ public class RobotContainer {
         SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
         SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     }
-    InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
+    InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake()); //RUNS KICKER
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
+
+    InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed());
+    InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
+
+    InstantCommand m_runShooter = new InstantCommand(()-> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 0.0)));
+    InstantCommand m_stopShooter = new InstantCommand(()-> shooter.stopShooter());
 
     // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));

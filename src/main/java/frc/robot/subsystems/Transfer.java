@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -23,11 +24,12 @@ public class Transfer extends SubsystemBase {
     private SparkClosedLoopController m_feederMotCtlr = m_feederMot.getClosedLoopController();
 
     public Transfer(){
+        SmartDashboard.putNumber("spinSpeed", 0.0);
         SparkMaxConfig configMax = new SparkMaxConfig();
         configMax.idleMode(SparkMaxConfig.IdleMode.kCoast)
-            .inverted(false)
-            .closedLoopRampRate(0.0)
-            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
+            .inverted(false);
+            // .closedLoopRampRate(0.0)
+            // .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
         m_spinDex.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         SparkFlexConfig configFlex = new SparkFlexConfig();
@@ -39,7 +41,13 @@ public class Transfer extends SubsystemBase {
         m_feederMot.configure(configFlex, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 
-    public void setSpinDexSpeed(double speed){
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("SpindexerRPM", m_spinDex.getEncoder().getVelocity());
+    }
+
+    public void setSpinDexSpeed(){
+        double speed = SmartDashboard.getNumber("spinSpeed", 0.0);
         m_spinDex.set(speed);
     }
 

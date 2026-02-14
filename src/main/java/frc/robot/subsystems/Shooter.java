@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.Second;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -35,6 +36,7 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
     // private final SparkFlex m_flywheelMotorLead = new SparkFlex(ConstantsCANIDS.kFlywheelLeadID, MotorType.kBrushless);
@@ -62,11 +64,16 @@ public class Shooter extends SubsystemBase {
           .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
         
         Slot0Configs slot0 = cfg.Slot0;
-        slot0.kP = 60;
+        slot0.kS = 0.1;
+        slot0.kV = 0.12;
+        slot0.kP = 0.11;
         slot0.kI = 0;
-        slot0.kD = 0.5;
+        slot0.kD = 0;
 
-        cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
+                   .withPeakReverseVoltage(Volts.of(-8));
+
+        cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
         for (int i = 0; i < 5; ++i) {
@@ -77,7 +84,7 @@ public class Shooter extends SubsystemBase {
             System.out.println("Could not configure device. Error: " + status.toString());
         }
 
-        cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        // cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         for (int i = 0; i < 5; ++i) {
             status = m_flywheelMotorFollow.getConfigurator().apply(cfg);
@@ -86,7 +93,7 @@ public class Shooter extends SubsystemBase {
         if (!status.isOK()) {
             System.out.println("Could not configure device. Error: " + status.toString());
         }
-        m_flywheelMotorFollow.setControl(new Follower(m_flywheelMotorLead.getDeviceID(), MotorAlignmentValue.Aligned));
+        m_flywheelMotorFollow.setControl(new Follower(m_flywheelMotorLead.getDeviceID(), MotorAlignmentValue.Opposed));
 
         // SparkFlexConfig configFlex = new SparkFlexConfig();
         // configFlex.idleMode(SparkMaxConfig.IdleMode.kCoast)
@@ -113,6 +120,11 @@ public class Shooter extends SubsystemBase {
 
     }
 
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
+    }
+
     public double getAngularDisplacement(Pose2d currentPose, Pose2d targetPose, Rotation2d turretAngle){
         currentPose.transformBy(new Transform2d(0.0, 0.0, Rotation2d.kZero)); // offset of robot center to turret center
         double xDisplacement = targetPose.getX() - currentPose.getX();
@@ -127,8 +139,15 @@ public class Shooter extends SubsystemBase {
 
     public void setRPM(double rpm){
         // m_flywheelCtlr.setSetpoint(rpm, ControlType.kVelocity);
-        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm/60.0));
+        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm / 60.0));
+    }
 
+    public void setMotor(double rpm){
+        m_flywheelMotorLead.set(rpm);
+    }
+
+    public void stopShooter(){
+        m_flywheelMotorLead.stopMotor();
     }
 
     public void aimTurret(double angle){
