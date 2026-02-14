@@ -18,9 +18,12 @@ import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -34,9 +37,12 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 public class Shooter extends SubsystemBase {
-    private final SparkFlex m_flywheelMotorLead = new SparkFlex(ConstantsCANIDS.kFlywheelLeadID, MotorType.kBrushless);
-    private final SparkFlex m_flywheelMotorFollow = new SparkFlex(ConstantsCANIDS.kFlywheelFollowID, MotorType.kBrushless);
-    private SparkClosedLoopController m_flywheelCtlr = m_flywheelMotorLead.getClosedLoopController();
+    // private final SparkFlex m_flywheelMotorLead = new SparkFlex(ConstantsCANIDS.kFlywheelLeadID, MotorType.kBrushless);
+    // private final SparkFlex m_flywheelMotorFollow = new SparkFlex(ConstantsCANIDS.kFlywheelFollowID, MotorType.kBrushless);
+    // private SparkClosedLoopController m_flywheelCtlr = m_flywheelMotorLead.getClosedLoopController();
+    private final TalonFX m_flywheelMotorLead = new TalonFX(ConstantsCANIDS.kFlywheelLeadID);
+    private final TalonFX m_flywheelMotorFollow = new TalonFX(ConstantsCANIDS.kFlywheelFollowID);
+    private final VelocityVoltage m_vvReq = new VelocityVoltage(0).withSlot(0);
 
     private SparkMax m_turretMot = new SparkMax(ConstantsCANIDS.kTurretID, SparkMax.MotorType.kBrushless);
     private SparkClosedLoopController m_turretCtlr = m_turretMot.getClosedLoopController();
@@ -45,17 +51,54 @@ public class Shooter extends SubsystemBase {
     private SparkClosedLoopController m_hoodCtlr = m_hoodMot.getClosedLoopController();
 
     public Shooter(){
-        SparkFlexConfig configFlex = new SparkFlexConfig();
-        configFlex.idleMode(SparkMaxConfig.IdleMode.kCoast)
-            .inverted(false)
-            .closedLoopRampRate(0.0)
-            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
-                        .p(0.5);
-        m_flywheelMotorLead.configure(configFlex, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        configFlex
-            .follow(11)
-            .inverted(true);
-        m_flywheelMotorFollow.configure(configFlex, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    
+        TalonFXConfiguration cfg = new TalonFXConfiguration();
+        FeedbackConfigs fdb = cfg.Feedback;
+        fdb.SensorToMechanismRatio = 1; // TODO figure out gear ratio
+        
+        MotionMagicConfigs mm = cfg.MotionMagic;
+        mm.withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
+          .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(10))
+          .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
+        
+        Slot0Configs slot0 = cfg.Slot0;
+        slot0.kP = 60;
+        slot0.kI = 0;
+        slot0.kD = 0.5;
+
+        cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+
+        StatusCode status = StatusCode.StatusCodeNotInitialized;
+        for (int i = 0; i < 5; ++i) {
+            status = m_flywheelMotorLead.getConfigurator().apply(cfg);
+            if (status.isOK()) break;
+        }
+        if (!status.isOK()) {
+            System.out.println("Could not configure device. Error: " + status.toString());
+        }
+
+        cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+        for (int i = 0; i < 5; ++i) {
+            status = m_flywheelMotorFollow.getConfigurator().apply(cfg);
+            if (status.isOK()) break;
+        }
+        if (!status.isOK()) {
+            System.out.println("Could not configure device. Error: " + status.toString());
+        }
+        m_flywheelMotorFollow.setControl(new Follower(m_flywheelMotorLead.getDeviceID(), MotorAlignmentValue.Aligned));
+
+        // SparkFlexConfig configFlex = new SparkFlexConfig();
+        // configFlex.idleMode(SparkMaxConfig.IdleMode.kCoast)
+        //     .inverted(false)
+        //     .closedLoopRampRate(0.0)
+        //     .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
+        //                 .p(0.5);
+        // m_flywheelMotorLead.configure(configFlex, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        // configFlex
+        //     .follow(11)
+        //     .inverted(true);
+        // m_flywheelMotorFollow.configure(configFlex, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
         SparkMaxConfig configMax = new SparkMaxConfig();
         configMax.idleMode(SparkMaxConfig.IdleMode.kBrake)
@@ -83,7 +126,9 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setRPM(double rpm){
-        m_flywheelCtlr.setSetpoint(rpm, ControlType.kVelocity);
+        // m_flywheelCtlr.setSetpoint(rpm, ControlType.kVelocity);
+        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm/60.0));
+
     }
 
     public void aimTurret(double angle){
