@@ -54,8 +54,12 @@ public class RobotContainer {
     private double rotDeg = 0.0;
 
     Field2d m_field = new Field2d();
-    private Geofencing m_geofenceAlliBump = new Geofencing("AlliBump", 6.4912, 4.053, 1.589,5.17);
-    // private Geofencing m_geofenceAlliBump = new Geofencing("AlliBump", 5.9, 11.0, 5.1,13.0);
+    private Geofencing m_geofenceNeutTop = new Geofencing("NeutTop", 18.04, 0.0, 6.9, 16.51);
+    private Geofencing m_geofenceNeutBottom = new Geofencing("NeutBottom", 1.143, 0.0, 0.0, 16.51);
+    private Geofencing m_geofenceRedBump = new Geofencing("RedBump", 6.4912, 11.3, 1.589, 12.417);
+    private Geofencing m_geofenceBlueBump = new Geofencing("BlueBump", 6.4912, 4.053, 1.589,5.17);
+    private Geofencing m_geofenceAlliBump = m_geofenceBlueBump;
+    private Geofencing m_geofenceOppBump = m_geofenceRedBump;
 
     private Command driveToPoseCommand;
     private Pose2d startAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
@@ -120,6 +124,11 @@ public class RobotContainer {
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", 0.0);
         SmartDashboard.putNumber("Match Time", 0.0);
+
+        boolean isBlue = isBlue();
+        m_geofenceAlliBump = isBlue ? m_geofenceBlueBump : m_geofenceRedBump;
+        m_geofenceOppBump  = isBlue ? m_geofenceRedBump : m_geofenceBlueBump;
+
     }
 
     private void configureBindings() {
@@ -128,7 +137,7 @@ public class RobotContainer {
     
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
-                if (m_geofenceAlliBump.isInZone(drivetrain.getPose())) {
+                if (m_geofenceAlliBump.isInZone(drivetrain.getPose()) || m_geofenceOppBump.isInZone(drivetrain.getPose())) {
                     if (!isAligning) {
                         isAligning = true;
                         rotDeg = drivetrain.getRotationDegrees(); // gets once per fence entry
@@ -136,6 +145,11 @@ public class RobotContainer {
                     return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
                                      .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
                                      .withTargetDirection(getBumpAlignAngle(rotDeg));
+                }
+                else if (isInRotation()) {
+                    return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
+                                .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
+                                .withRotationalRate(-joystick.getRightX() * MaxAngularRate * 0.3); 
                 }
                 // else if (isinTransition) {
                 //     Rotation2d rot = drivetrain.getPose().getRotation();
@@ -344,18 +358,28 @@ public class RobotContainer {
         return (DriverStationSim.getAllianceStationId().toString().contains("Blue")); // isBlue doesn't work in sim and no direct way to get alliance, so need to check id (ex. Blue1)
     }
 
-    // from wpilib docs (slightly altered)
-    // private String getAlliance() {
-    //     Optional<Alliance> ally = DriverStation.getAlliance();
-    //     if (ally.isPresent()) {
-    //         if (ally.get() == Alliance.Red) {
-    //             return "Red";
-    //         }
-    //         if (ally.get() == Alliance.Blue) {
-    //             return "Blue";
-    //         }
-    //     }
-    //     return "Neither";
-    // }
+    private boolean isInRotation(){
+        double rot = drivetrain.getRotationDegrees();
+        boolean isTop = m_geofenceNeutTop.isInZone(drivetrain.getPose());
+        boolean isBot = m_geofenceNeutBottom.isInZone(drivetrain.getPose());
+        if (!isTop && !isBot){
+            return false;
+        }
+        double angle1 = 160.0;
+        double angle2 = 20.0;
+        if (isTop){
+            if (isBlue()) {
+                angle1 = -20.0;
+                angle2 = -160.0;
+            }
+        }
+        else {
+            if (!isBlue()) {
+                angle1 = -20.0;
+                angle2 = -160.0;
+            }
+        }
+        return (rot < angle1 && rot > angle2);
 
+    }
 }
