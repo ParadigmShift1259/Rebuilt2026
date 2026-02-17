@@ -4,7 +4,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.ConstantsCANIDS;
-
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
@@ -12,6 +11,9 @@ import static edu.wpi.first.units.Units.Second;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Servo;
+
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -36,13 +38,14 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import static edu.wpi.first.units.Units.*;
+
 public class Shooter extends SubsystemBase {
-    // private final SparkFlex m_flywheelMotorLead = new SparkFlex(ConstantsCANIDS.kFlywheelLeadID, MotorType.kBrushless);
-    // private final SparkFlex m_flywheelMotorFollow = new SparkFlex(ConstantsCANIDS.kFlywheelFollowID, MotorType.kBrushless);
-    // private SparkClosedLoopController m_flywheelCtlr = m_flywheelMotorLead.getClosedLoopController();
     private final TalonFX m_flywheelMotorLead = new TalonFX(ConstantsCANIDS.kFlywheelLeadID);
     private final TalonFX m_flywheelMotorFollow = new TalonFX(ConstantsCANIDS.kFlywheelFollowID);
     private final VelocityVoltage m_vvReq = new VelocityVoltage(0).withSlot(0);
+
+    private Servo m_servo = new Servo(0);
 
     private SparkMax m_turretMot = new SparkMax(ConstantsCANIDS.kTurretID, SparkMax.MotorType.kBrushless);
     private SparkClosedLoopController m_turretCtlr = m_turretMot.getClosedLoopController();
@@ -62,9 +65,16 @@ public class Shooter extends SubsystemBase {
           .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
         
         Slot0Configs slot0 = cfg.Slot0;
-        slot0.kP = 60;
+        slot0.kS = 0.1;
+        slot0.kV = 0.12;
+        slot0.kP = 0.11;
         slot0.kI = 0;
-        slot0.kD = 0.5;
+        slot0.kD = 0;
+
+        cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
+                   .withPeakReverseVoltage(Volts.of(-8));
+
+        cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
@@ -77,7 +87,7 @@ public class Shooter extends SubsystemBase {
             System.out.println("Could not configure device. Error: " + status.toString());
         }
 
-        cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        // cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         for (int i = 0; i < 5; ++i) {
             status = m_flywheelMotorFollow.getConfigurator().apply(cfg);
@@ -86,11 +96,9 @@ public class Shooter extends SubsystemBase {
         if (!status.isOK()) {
             System.out.println("Could not configure device. Error: " + status.toString());
         }
-        m_flywheelMotorFollow.setControl(new Follower(m_flywheelMotorLead.getDeviceID(), MotorAlignmentValue.Aligned));
 
-        // SparkFlexConfig configFlex = new SparkFlexConfig();
+        m_flywheelMotorFollow.setControl(new Follower(m_flywheelMotorLead.getDeviceID(), MotorAlignmentValue.Opposed));
         // configFlex.idleMode(SparkMaxConfig.IdleMode.kCoast)
-        //     .inverted(false)
         //     .closedLoopRampRate(0.0)
         //     .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
         //                 .p(0.5);
@@ -106,11 +114,16 @@ public class Shooter extends SubsystemBase {
             .closedLoopRampRate(0.0)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
                        .p(0.5);
-        m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        // m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
-        configMax.closedLoop.p(0.5);
-        m_hoodMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        // configMax.closedLoop.p(0.5);
+        // m_hoodMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
     }
 
     public double getAngularDisplacement(Pose2d currentPose, Pose2d targetPose, Rotation2d turretAngle){
@@ -127,15 +140,26 @@ public class Shooter extends SubsystemBase {
 
     public void setRPM(double rpm){
         // m_flywheelCtlr.setSetpoint(rpm, ControlType.kVelocity);
-        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm/60.0));
-
+        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm / 60.0));
     }
 
-    public void aimTurret(double angle){
-        m_turretCtlr.setSetpoint(getAimingRotations(angle), ControlType.kPosition);
+    public void setMotor(double rpm){
+        m_flywheelMotorLead.set(rpm);
     }
 
-    public void moveHood(double angle){
-        m_hoodCtlr.setSetpoint(angle, ControlType.kPosition);
+    public void stopShooter(){
+        m_flywheelMotorLead.stopMotor();
     }
+
+    public void setServo(double value){
+        m_servo.set(value);
+    }
+
+//     public void aimTurret(double angle){
+//         m_turretCtlr.setSetpoint(getAimingRotations(angle), ControlType.kPosition);
+//     }
+
+//     public void moveHood(double angle){
+//         m_hoodCtlr.setSetpoint(angle, ControlType.kPosition);
+//     }
 }
