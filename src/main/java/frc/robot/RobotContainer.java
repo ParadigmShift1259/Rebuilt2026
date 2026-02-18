@@ -36,6 +36,9 @@ import frc.robot.subsystems.Transfer;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -53,10 +56,19 @@ public class RobotContainer {
             0.035 // Trust down to 2 degrees rotational
         );
 
-    private boolean changeBump = true;
-    private Rotation2d rot = Rotation2d.kZero;
+    private boolean isAligning = false;
+    private double rotDeg = 0.0;
 
     Field2d m_field = new Field2d();
+    private Geofencing m_geofenceNeutZoneIfBlue = new Geofencing("NeutZone", 18.04, 4.053, 0.0, 16.51);
+    private Geofencing m_geofenceNeutZoneIfRed = new Geofencing("NeutZone", 18.04, 0.0, 0.0, 12.417);
+    private Geofencing m_geofenceNeutTop = new Geofencing("NeutTop", 18.04, 0.0, 6.9, 16.51);
+    private Geofencing m_geofenceNeutBottom = new Geofencing("NeutBottom", 1.143, 0.0, 0.0, 16.51);
+    private Geofencing m_geofenceRedBump = new Geofencing("RedBump", 6.4912, 11.3, 1.589, 12.417);
+    private Geofencing m_geofenceBlueBump = new Geofencing("BlueBump", 6.4912, 4.053, 1.589,5.17);
+    private Geofencing m_geofenceAlliBump;
+    private Geofencing m_geofenceOppBump;
+    private Geofencing m_geofenceNeutZone;
 
     private Pose2d startAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
     private Pose2d feederOutpostSideStart = new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4));
@@ -95,6 +107,7 @@ public class RobotContainer {
     private boolean isinTransition = false;
     private boolean isTrackingFuel = false;
     private boolean slowmode = false;
+    private boolean isBlue = DriverStation.getAlliance().equals(DriverStation.Alliance.Blue);
     private final double X_START_BUMP = 1.0;
     private final double X_STOP_BUMP = 4.0;
     private final double TRANSITION_OFFSET = 0.25;
@@ -108,6 +121,9 @@ public class RobotContainer {
     // private Transform2d targPose3d;
     private double tarX = 0.0;
     private double tarY = 0.0;
+
+    enum ShootingState{noShoot, hubShoot, feedShoot};
+    private ShootingState shootingState = ShootingState.noShoot;
 
     enum JogState{noJog, leftJog, rightJog};
     private JogState jogState = JogState.noJog;
@@ -132,7 +148,11 @@ public class RobotContainer {
         SmartDashboard.putNumber("ShooterSpeed", 0.0);
 
         SmartDashboard.putNumber("FeederSpeed", 0.0);
- 
+
+        boolean isBlue = isBlue();
+        m_geofenceAlliBump = isBlue ? m_geofenceBlueBump : m_geofenceRedBump;
+        m_geofenceOppBump  = isBlue ? m_geofenceRedBump : m_geofenceBlueBump;
+        m_geofenceNeutZone = isBlue ? m_geofenceNeutZoneIfBlue : m_geofenceNeutZoneIfRed;
     }
 
     private void configureBindings() {
@@ -141,27 +161,30 @@ public class RobotContainer {
     
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
-                if (isinBump){
-                    if (changeBump){
-                        rot = drivetrain.getState().Pose.getRotation(); 
+                if (m_geofenceAlliBump.isInZone(drivetrain.getPose()) || m_geofenceOppBump.isInZone(drivetrain.getPose())) {
+                    if (!isAligning) {
+                        isAligning = true;
+                        rotDeg = drivetrain.getRotationDegrees(); // gets once per fence entry
                     }
-                    double rotDouble = Math.round((rot.getDegrees() - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees
-                    Rotation2d targetRot = new Rotation2d((rotDouble / 180 * Math.PI) + Math.PI);
-                    SmartDashboard.putNumber("targetRot", targetRot.getDegrees());
                     return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
                                      .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
-                                     .withTargetDirection(targetRot);
+                                     .withTargetDirection(getBumpAlignAngle(rotDeg));
                 }
-                else if (isinTransition) {
-                    Rotation2d rot = drivetrain.getState().Pose.getRotation();
-                    double rotDouble = Math.round((rot.getDegrees()) / 90.0) * 90.0; // Rounds to the nearest 90 degrees
-                    Rotation2d targetRot = new Rotation2d(rotDouble / 180 * Math.PI);
-                    return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed)
-                                     .withVelocityY(-joystick.getLeftX() * MaxSpeed)
-                                     .withTargetDirection(targetRot);
+                else if (isInRotation()) {
+                    return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
+                                .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
+                                .withRotationalRate(-joystick.getRightX() * MaxAngularRate * 0.3); 
                 }
+                // else if (isinTransition) {
+                //     Rotation2d rot = drivetrain.getPose().getRotation();
+                //     double rotDouble = Math.round((rot.getDegrees()) / 90.0) * 90.0; // Rounds to the nearest 90 degrees
+                //     Rotation2d targetRot = new Rotation2d(rotDouble / 180 * Math.PI);
+                //     return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed)
+                //                      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+                //                      .withTargetDirection(targetRot);
+                // }
                 else if (isTrackingFuel) {
-                    Rotation2d rot = drivetrain.getState().Pose.getRotation();
+                    Rotation2d rot = drivetrain.getPose().getRotation();
                     Rotation2d targetRot = new Rotation2d((rot.getDegrees() - rotFuelTracking) / 180 * Math.PI);
                     return driveAngleRobot.withVelocityX(-joystick.getLeftY() * MaxSpeed)
                                      .withVelocityY(0.0)
@@ -175,7 +198,7 @@ public class RobotContainer {
                                 .withRotationalRate(angle);
                 }
                 else{
-                    changeBump = true;
+                    isAligning = false;
                     return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                                 .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                                 .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive counterclockwise with negative X (left)
@@ -282,8 +305,15 @@ public class RobotContainer {
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
 
+        if (m_geofenceNeutZone.isInZone(drivetrain.getPose())){
+            shootingState = ShootingState.feedShoot;
+        }
+        else {
+            shootingState= ShootingState.hubShoot;
+        }
+
         SmartDashboard.putNumber("PigeonRotation", drivetrain.getPigeon2().getYaw().getValueAsDouble());
-        SmartDashboard.putNumber("PoseRotation", drivetrain.getState().Pose.getRotation().getDegrees());
+        SmartDashboard.putNumber("PoseRotation", drivetrain.getPose().getRotation().getDegrees());
 
         SmartDashboard.putNumber("PigeonYaw", drivetrain.getPigeon2().getYaw().getValueAsDouble());
         SmartDashboard.putNumber("PigeonHeading", drivetrain.getPigeon2().getRotation2d().getDegrees());
@@ -292,9 +322,6 @@ public class RobotContainer {
         // m_field.getObject("Fuel").setPose(drivetrain.getFieldX() + getDistanceXToFuel(vision.photonGetFuelPitch()), drivetrain.getFieldY() + getDistanceYToFuel(vision.getFuelAngle()), Rotation2d.kZero);
         SmartDashboard.putData("RobotPose", m_field);
 
-        double x = drivetrain.getFieldX();
-        double y = drivetrain.getFieldY();
-        isinBump = x > 11.0 && x < 13.0 && y > 5.1 && y < 5.9;
         isinTransition = false;
         // isinTransition = (x > X_START_TRANSITION && x < X_START_BUMP) || (x > X_STOP_BUMP && x < X_STOP_TRANSITION);
 
@@ -317,7 +344,12 @@ public class RobotContainer {
         SmartDashboard.putNumber("xPose", robotX);
         SmartDashboard.putNumber("yPose", robotY);
 
-        SmartDashboard.putBoolean("IsInBump", isinBump);
+        SmartDashboard.putBoolean("IsBlue", isBlue());
+        SmartDashboard.putBoolean("IsAligning", isAligning);
+
+        SmartDashboard.putString("SimAllianceID", DriverStationSim.getAllianceStationId().toString());
+
+        SmartDashboard.putBoolean("IsInBump", m_geofenceAlliBump.isInZone(drivetrain.getPose()));
         SmartDashboard.putBoolean("IsInTransition", isinTransition);
         SmartDashboard.putBoolean("IsTrackingFuel", isTrackingFuel);
 
@@ -367,4 +399,31 @@ public class RobotContainer {
     // public double getDistanceYToFuel(double angle){
     //     return Math.tan(angle * Math.PI / 180.0) * getDistanceXToFuel(vision.);
     // }
+
+    private Rotation2d getBumpAlignAngle(double currentRot){
+        double alignDeg = Math.round((currentRot - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees
+        return new Rotation2d((alignDeg / 180 * Math.PI) + (isBlue() ? 0.0 : Math.PI)); // 180 based on alliance
+    }
+    
+    private boolean isBlue(){
+        if (RobotBase.isReal()) return isBlue; // TODO needs physical test
+        return (DriverStationSim.getAllianceStationId().toString().contains("Blue")); // isBlue doesn't work in sim and no direct way to get alliance, so need to check id (ex. Blue1)
+    }
+
+    private boolean isInRotation(){
+        double rot = drivetrain.getRotationDegrees();
+        boolean isTop = m_geofenceNeutTop.isInZone(drivetrain.getPose());
+        boolean isBot = m_geofenceNeutBottom.isInZone(drivetrain.getPose());
+        if (!isTop && !isBot){
+            return false;
+        }
+        double angle1 = 160.0;
+        double angle2 = 20.0;
+        if (isTop){
+            angle1 = -20.0;
+            angle2 = -160.0;
+        }
+        
+        return (rot < angle1 && rot > angle2);
+    }
 }
