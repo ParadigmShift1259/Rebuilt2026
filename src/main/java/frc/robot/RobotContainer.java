@@ -12,19 +12,15 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -36,7 +32,6 @@ import frc.robot.subsystems.Transfer;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -60,12 +55,12 @@ public class RobotContainer {
     private double rotDeg = 0.0;
 
     Field2d m_field = new Field2d();
-    private Geofencing m_geofenceNeutZoneIfBlue = new Geofencing("NeutZone", 18.04, 4.053, 0.0, 16.51);
-    private Geofencing m_geofenceNeutZoneIfRed = new Geofencing("NeutZone", 18.04, 0.0, 0.0, 12.417);
-    private Geofencing m_geofenceNeutTop = new Geofencing("NeutTop", 18.04, 0.0, 6.9, 16.51);
-    private Geofencing m_geofenceNeutBottom = new Geofencing("NeutBottom", 1.143, 0.0, 0.0, 16.51);
-    private Geofencing m_geofenceRedBump = new Geofencing("RedBump", 6.4912, 11.3, 1.589, 12.417);
-    private Geofencing m_geofenceBlueBump = new Geofencing("BlueBump", 6.4912, 4.053, 1.589,5.17);
+    private Geofencing m_geofenceNeutZoneIfBlue = new Geofencing(18.04, 4.053, 0.0, 16.51);
+    private Geofencing m_geofenceNeutZoneIfRed = new Geofencing(18.04, 0.0, 0.0, 12.417);
+    private Geofencing m_geofenceNeutTop = new Geofencing(18.04, 0.0, 6.9, 16.51);
+    private Geofencing m_geofenceNeutBottom = new Geofencing(1.143, 0.0, 0.0, 16.51);
+    private Geofencing m_geofenceRedBump = new Geofencing(6.4912, 11.3, 1.589, 12.417);
+    private Geofencing m_geofenceBlueBump = new Geofencing(6.4912, 4.053, 1.589,5.17);
     private Geofencing m_geofenceAlliBump;
     private Geofencing m_geofenceOppBump;
     private Geofencing m_geofenceNeutZone;
@@ -74,7 +69,7 @@ public class RobotContainer {
     private Pose2d feederOutpostSideStart = new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4));
     private Pose2d feederDepotSideStart = new Pose2d(13.01, 2.66, new Rotation2d( 3 * Math.PI / 4));
     private Pose2d outpostToDepot = new Pose2d(13.06, 4.03, Rotation2d.k180deg);
-    private Pose2d autoStartPoint = Pose2d.kZero;
+    // private Pose2d autoStartPoint = Pose2d.kZero;
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -103,16 +98,17 @@ public class RobotContainer {
     public final Shooter shooter = new Shooter();
     public final Transfer transfer = new Transfer();
 
-    private boolean isinBump = false;
     private boolean isinTransition = false;
     private boolean isTrackingFuel = false;
     private boolean slowmode = false;
     private boolean isBlue = DriverStation.getAlliance().equals(DriverStation.Alliance.Blue);
-    private final double X_START_BUMP = 1.0;
-    private final double X_STOP_BUMP = 4.0;
-    private final double TRANSITION_OFFSET = 0.25;
-    private final double X_START_TRANSITION = X_START_BUMP - TRANSITION_OFFSET;
-    private final double X_STOP_TRANSITION = X_STOP_BUMP + TRANSITION_OFFSET;
+
+    // private final double X_START_BUMP = 1.0;
+    // private final double X_STOP_BUMP = 4.0;
+    // private final double TRANSITION_OFFSET = 0.25;
+    // private final double X_START_TRANSITION = X_START_BUMP - TRANSITION_OFFSET;
+    // private final double X_STOP_TRANSITION = X_STOP_BUMP + TRANSITION_OFFSET;
+
     private double rotFuelTracking = 0.0;
     private double robotX = 0.0;
     private double robotY = 0.0;
@@ -262,34 +258,18 @@ public class RobotContainer {
 
     public Pose2d getDriveToPose() {
         String selectedAuto = SmartDashboard.getString("Auto Mode/selected", "noAuto");
-        SmartDashboard.putString("autoSelected", selectedAuto);
-        // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto);
         if (selectedAuto.equalsIgnoreCase("FeederOutpostAuto")) {
-            SmartDashboard.putNumber("autoFOSX", feederOutpostSideStart.getX());
-            SmartDashboard.putNumber("autoFOSY", feederOutpostSideStart.getY());
-            // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + feederOutpostSideStart.getX() + " Y " +feederOutpostSideStart.getY());
             return feederOutpostSideStart;
         }
         else if (selectedAuto.equalsIgnoreCase("FeederDepotAuto")) {
-            SmartDashboard.putNumber("autoFDSX", feederDepotSideStart.getX());
-            SmartDashboard.putNumber("autoFDSY", feederDepotSideStart.getY());
-            // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + feederDepotSideStart.getX() + " Y " +feederDepotSideStart.getY());
             return feederDepotSideStart;
         }
         else if (selectedAuto.equalsIgnoreCase("StartAndClimbAuto")) {
-            SmartDashboard.putNumber("autoSACX", startAndClimbStart.getX());
-            SmartDashboard.putNumber("autoSACY", startAndClimbStart.getY());
-            // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + startAndClimbStart.getX() + " Y " +startAndClimbStart.getY());
             return startAndClimbStart;
         }
         else if (selectedAuto.equalsIgnoreCase("OutpostToDepot")) {
-            SmartDashboard.putNumber("autoSACX", outpostToDepot.getX());
-            SmartDashboard.putNumber("autoSACY", outpostToDepot.getY());
-            // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + outpostToDepot.getX() + " Y " +outpostToDepot.getY());
             return outpostToDepot;
         }
-
-        // System.out.println("getDriveToPose() returning Pose2d.kZero selectedAuto = " + selectedAuto);
 
         return Pose2d.kZero;
     }
@@ -309,7 +289,7 @@ public class RobotContainer {
             shootingState = ShootingState.feedShoot;
         }
         else {
-            shootingState= ShootingState.hubShoot;
+            shootingState = ShootingState.hubShoot;
         }
 
         SmartDashboard.putNumber("PigeonRotation", drivetrain.getPigeon2().getYaw().getValueAsDouble());

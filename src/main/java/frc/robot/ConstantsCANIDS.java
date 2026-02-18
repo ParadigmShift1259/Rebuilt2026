@@ -13,5 +13,4 @@ public class ConstantsCANIDS {
     public static final int kFlywheelFollowID = 12;
     public static final int kTurretID = 13;
     public static final int kHoodID = 14;
-
 }

@@ -23,17 +23,12 @@ import com.revrobotics.PersistMode;
 public class Transfer extends SubsystemBase {
     private SparkMax m_spinDex = new SparkMax(ConstantsCANIDS.kSpindexerID, SparkMax.MotorType.kBrushless);
     private TalonFX m_kickerMotor = new TalonFX(ConstantsCANIDS.kFeederID);
-    // private SparkFlex m_feederMot = new SparkFlex(ConstantsCANIDS.kFeederID, SparkFlex.MotorType.kBrushless);
-    // private SparkClosedLoopController m_spinDexCtlr = m_spinDex.getClosedLoopController();
-    // private SparkClosedLoopController m_feederMotCtlr = m_feederMot.getClosedLoopController();
 
     public Transfer(){
         SmartDashboard.putNumber("spinSpeed", 0.0);
         SparkMaxConfig configMax = new SparkMaxConfig();
         configMax.idleMode(SparkMaxConfig.IdleMode.kCoast)
             .inverted(false);
-            // .closedLoopRampRate(0.0)
-            // .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0);
         m_spinDex.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         SparkFlexConfig configFlex = new SparkFlexConfig();
@@ -42,7 +37,6 @@ public class Transfer extends SubsystemBase {
             .closedLoopRampRate(0.0)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
                         .p(0.2);
-        // m_feederMot.configure(configFlex, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 
     @Override

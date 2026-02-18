@@ -10,7 +10,6 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -18,7 +17,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import java.util.Timer;
 
 @Logged
 public class Robot extends TimedRobot {
@@ -28,7 +26,7 @@ public class Robot extends TimedRobot {
     private boolean inPosition = false;
     private int count = 0;
 
-    private static final Current kSlipCurrent = Amps.of(120);
+    // private static final Current kSlipCurrent = Amps.of(120);
 
     LinearVelocity kMaxSpeed = MetersPerSecond.of(2.5);
 
@@ -40,7 +38,6 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
-        // m_robotContainer = new RobotContainer();
         DataLogManager.start(); // Optional to mirror the NetworkTables-logged data to a file on disk
         Epilogue.bind(this);
     }
@@ -49,7 +46,7 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
-       m_robotContainer.periodic();
+        m_robotContainer.periodic();
 
        SmartDashboard.putBoolean("InPosition", inPosition);
     }
