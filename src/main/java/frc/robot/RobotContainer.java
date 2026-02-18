@@ -11,6 +11,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -40,6 +42,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveCommands;
 import frc.robot.ShiftHelpers;
 
+@Logged
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -55,7 +58,6 @@ public class RobotContainer {
 
     Field2d m_field = new Field2d();
 
-    private Command driveToPoseCommand;
     private Pose2d startAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
     private Pose2d feederOutpostSideStart = new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4));
     private Pose2d feederDepotSideStart = new Pose2d(13.01, 2.66, new Rotation2d( 3 * Math.PI / 4));
@@ -92,7 +94,7 @@ public class RobotContainer {
     private boolean isinBump = false;
     private boolean isinTransition = false;
     private boolean isTrackingFuel = false;
-    private boolean slowmode;
+    private boolean slowmode = false;
     private final double X_START_BUMP = 1.0;
     private final double X_STOP_BUMP = 4.0;
     private final double TRANSITION_OFFSET = 0.25;
@@ -102,8 +104,8 @@ public class RobotContainer {
     private double robotX = 0.0;
     private double robotY = 0.0;
 
-    private double[] tarPose;
-    private Transform2d targPose3d;
+    // private double[] tarPose;
+    // private Transform2d targPose3d;
     private double tarX = 0.0;
     private double tarY = 0.0;
 
@@ -238,33 +240,33 @@ public class RobotContainer {
     public Pose2d getDriveToPose() {
         String selectedAuto = SmartDashboard.getString("Auto Mode/selected", "noAuto");
         SmartDashboard.putString("autoSelected", selectedAuto);
-        System.out.println("getDriveToPose() selectedAuto = " + selectedAuto);
+        // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto);
         if (selectedAuto.equalsIgnoreCase("FeederOutpostAuto")) {
             SmartDashboard.putNumber("autoFOSX", feederOutpostSideStart.getX());
             SmartDashboard.putNumber("autoFOSY", feederOutpostSideStart.getY());
-            System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + feederOutpostSideStart.getX() + " Y " +feederOutpostSideStart.getY());
+            // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + feederOutpostSideStart.getX() + " Y " +feederOutpostSideStart.getY());
             return feederOutpostSideStart;
         }
         else if (selectedAuto.equalsIgnoreCase("FeederDepotAuto")) {
             SmartDashboard.putNumber("autoFDSX", feederDepotSideStart.getX());
             SmartDashboard.putNumber("autoFDSY", feederDepotSideStart.getY());
-            System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + feederDepotSideStart.getX() + " Y " +feederDepotSideStart.getY());
+            // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + feederDepotSideStart.getX() + " Y " +feederDepotSideStart.getY());
             return feederDepotSideStart;
         }
         else if (selectedAuto.equalsIgnoreCase("StartAndClimbAuto")) {
             SmartDashboard.putNumber("autoSACX", startAndClimbStart.getX());
             SmartDashboard.putNumber("autoSACY", startAndClimbStart.getY());
-            System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + startAndClimbStart.getX() + " Y " +startAndClimbStart.getY());
+            // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + startAndClimbStart.getX() + " Y " +startAndClimbStart.getY());
             return startAndClimbStart;
         }
         else if (selectedAuto.equalsIgnoreCase("OutpostToDepot")) {
             SmartDashboard.putNumber("autoSACX", outpostToDepot.getX());
             SmartDashboard.putNumber("autoSACY", outpostToDepot.getY());
-            System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + outpostToDepot.getX() + " Y " +outpostToDepot.getY());
+            // System.out.println("getDriveToPose() selectedAuto = " + selectedAuto + " X " + outpostToDepot.getX() + " Y " +outpostToDepot.getY());
             return outpostToDepot;
         }
 
-        System.out.println("getDriveToPose() returning Pose2d.kZero selectedAuto = " + selectedAuto);
+        // System.out.println("getDriveToPose() returning Pose2d.kZero selectedAuto = " + selectedAuto);
 
         return Pose2d.kZero;
     }

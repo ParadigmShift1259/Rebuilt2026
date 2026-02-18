@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 
 import java.util.List;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -17,6 +18,7 @@ import gg.questnav.questnav.QuestNav;
 import gg.questnav.questnav.PoseFrame;
 import frc.robot.LimelightHelpers;
 
+@Logged
 public class Vision extends SubsystemBase {
     
     private QuestNav m_questNav = new QuestNav();
