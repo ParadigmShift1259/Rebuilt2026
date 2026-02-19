@@ -22,6 +22,9 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -213,13 +216,14 @@ public class RobotContainer {
     }
 
     private void configurePrimaryBindings() {
-        joystick.a().onTrue(m_runKicker);
-        joystick.b().onTrue(m_stopKicker);
+        joystick.a().onTrue(m_shootergroup);
+        joystick.b().onTrue(m_shootergroupStop);
         joystick.povUp().onTrue(m_extendIntake);
-        joystick.povRight().onTrue(m_frameIntake);
+        joystick.povRight().onTrue(m_intakegroupStop);
+        joystick.povLeft().onTrue(m_intakegroup);
         joystick.povDown().onTrue(m_homeIntake);
-        joystick.x().onTrue(m_runSpindexer);
-        joystick.y().onTrue(m_stopSpindexer);
+        //joystick.x().onTrue(m_runSpindexer);
+        //joystick.y().onTrue(m_stopSpindexer);
         // joystick.a().onTrue(m_trackFuel);
         // joystick.a().onFalse(m_trackFuel);
         // joystick.x().onTrue(m_resetQuest);
@@ -342,6 +346,7 @@ public class RobotContainer {
     }
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
+    InstantCommand m_stopIntake2 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_runKicker = new InstantCommand(()-> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", 0.0)));
     InstantCommand m_stopKicker = new InstantCommand(()-> transfer.stopFeeder());
 //    InstantCommand m_deployIntake = new InstantCommand(()-> intake.deploy(SmartDashboard.getNumber("Deploy Turns", 0.0)));
@@ -372,6 +377,16 @@ public class RobotContainer {
     InstantCommand m_jogRight = new InstantCommand(() -> jogState = JogState.rightJog);
     InstantCommand m_jogStop = new InstantCommand(() -> jogState = JogState.noJog);
 
+    WaitCommand m_waitOneSec = new WaitCommand( 1.0);
+    WaitCommand m_waitHalfSec = new WaitCommand(0.5);
+    WaitCommand m_waitTwoSec = new WaitCommand(2.0);
+
+    ParallelCommandGroup m_shootergroupStop = new ParallelCommandGroup(m_stopIntake, m_stopKicker, m_stopSpindexer);
+
+    SequentialCommandGroup m_shootergroup = new SequentialCommandGroup( m_runShooter, m_waitHalfSec, m_runKicker,m_waitOneSec, m_runSpindexer);
+    SequentialCommandGroup m_intakegroup = new SequentialCommandGroup( m_extendIntake, m_runIntake);
+    SequentialCommandGroup m_intakegroupStop = new SequentialCommandGroup( m_frameIntake, m_stopIntake2);
+    
     // public double getDistanceXToFuel(double angle){
     //     return -0.28 / Math.tan(angle * Math.PI / 180.0); // 0.28 is height from the floor to the camera in meters
     // }
