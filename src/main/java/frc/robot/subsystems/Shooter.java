@@ -10,8 +10,13 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -137,4 +142,26 @@ public class Shooter extends SubsystemBase {
 //     public void moveHood(double angle){
 //         m_hoodCtlr.setSetpoint(angle, ControlType.kPosition);
 //     }
+
+
+/* Testing sim stuff*/
+
+    // The plant holds a state-space model of our flywheel. This system has the following properties:
+    //
+    // States: [velocity], in radians per second.
+    // Inputs (what we can "put in"): [voltage], in volts.
+    // Outputs (what we can measure): [velocity], in radians per second.
+    private final LinearSystem<N1, N1, N1> m_flywheelPlant =
+        LinearSystemId.createFlywheelSystem(
+            DCMotor.getKrakenX60Foc(1), kFlywheelMomentOfInertia, kFlywheelGearing);
+
+    // constants from wpilib example code
+    private final DCMotor m_flywheelGearbox = DCMotor.getKrakenX60Foc(1); // need it twice if using system characterization
+    private static final double kFlywheelMomentOfInertia = 0.00032; // kg * m^2
+    private static final double kFlywheelGearing = 1.0;
+
+    private final FlywheelSim m_FlywheelSim =
+        new FlywheelSim(
+            m_flywheelPlant, m_flywheelGearbox
+        );
 }
