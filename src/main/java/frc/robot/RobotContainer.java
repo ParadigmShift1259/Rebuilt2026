@@ -358,6 +358,7 @@ public class RobotContainer {
     InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
 
     InstantCommand m_runShooter = new InstantCommand(()-> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 0.0)));
+    InstantCommand m_runShooterDistance = new InstantCommand(() -> shooter.setRPMDistance(0.0 /* Get a way to get distance to target TODO: */));
     InstantCommand m_stopShooter = new InstantCommand(()-> shooter.stopShooter());
 
     // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());

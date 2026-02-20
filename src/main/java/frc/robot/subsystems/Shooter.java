@@ -10,6 +10,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -17,6 +18,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -41,6 +43,8 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_flywheelMotorFollow = new TalonFX(ConstantsCANIDS.kFlywheelFollowID);
     private final VelocityVoltage m_vvReq = new VelocityVoltage(0).withSlot(0);
 
+    InterpolatingDoubleTreeMap table = new InterpolatingDoubleTreeMap();
+
     private Servo m_servo = new Servo(0);
 
     private SparkMax m_turretMot = new SparkMax(ConstantsCANIDS.kTurretID, SparkMax.MotorType.kBrushless);
@@ -50,6 +54,13 @@ public class Shooter extends SubsystemBase {
     private SparkClosedLoopController m_hoodCtlr = m_hoodMot.getClosedLoopController();
 
     public Shooter(){
+
+        // Add calibration points (distance in meters -> shooter RPM)
+        table.put(1.0, 2000.0);
+        table.put(2.0, 3000.0);
+        table.put(3.0, 4000.0);
+
+
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
         fdb.SensorToMechanismRatio = 1; // TODO figure out gear ratio
@@ -121,6 +132,10 @@ public class Shooter extends SubsystemBase {
 
     public void setRPM(double rpm){
         m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm / 60.0));
+    }
+
+    public void setRPMDistance(double distance){
+        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(table.get(distance)/ 60.0));
     }
 
     public void setMotor(double rpm){
