@@ -58,9 +58,14 @@ public class Shooter extends SubsystemBase {
 
     public Shooter(){
         // Add calibration points (distance in meters -> shooter RPM)
-        table.put(1.0, 2000.0);
-        table.put(2.0, 3000.0);
-        table.put(3.0, 4000.0);
+        table.put(2.6, 1850.0);
+        table.put(3.0, 1900.0);
+        table.put(3.5, 2000.0);
+        table.put(4.0, 2100.0);
+        table.put(4.5, 2200.0);
+        table.put(5.0, 2300.0);
+        table.put(5.5, 2400.0);
+        table.put(6.0, 2500.0);
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
@@ -116,7 +121,7 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
+        SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
     }
 
     public double getAngularDisplacement(Pose2d currentPose, Pose2d targetPose, Rotation2d turretAngle){
@@ -208,7 +213,7 @@ public class Shooter extends SubsystemBase {
         m_FlywheelSim.update(0.020);
         // if (count++ % 100 == 0)
         // {
-            SmartDashboard.putNumber("ShooterRPM", m_FlywheelSim.getAngularVelocityRadPerSec() * 60.0 / 2 * Math.PI);
+            // SmartDashboard.putNumber("ShooterRPM", m_FlywheelSim.getAngularVelocityRadPerSec() * 60.0 / 2 * Math.PI);
         // }
     }
 

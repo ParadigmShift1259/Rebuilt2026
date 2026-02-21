@@ -21,11 +21,14 @@ import com.revrobotics.PersistMode;
 
 @Logged
 public class Transfer extends SubsystemBase {
+
+    private final double defaultSpinSpeed = -0.6;
+
     private SparkMax m_spinDex = new SparkMax(ConstantsCANIDS.kSpindexerID, SparkMax.MotorType.kBrushless);
     private TalonFX m_kickerMotor = new TalonFX(ConstantsCANIDS.kFeederID);
 
     public Transfer(){
-        SmartDashboard.putNumber("spinSpeed", 0.0);
+        SmartDashboard.putNumber("spinSpeed", defaultSpinSpeed);
         SparkMaxConfig configMax = new SparkMaxConfig();
         configMax.idleMode(SparkMaxConfig.IdleMode.kCoast)
             .inverted(false);
@@ -45,7 +48,7 @@ public class Transfer extends SubsystemBase {
     }
 
     public void setSpinDexSpeed(){
-        double speed = SmartDashboard.getNumber("spinSpeed", 0.0);
+        double speed = SmartDashboard.getNumber("spinSpeed", defaultSpinSpeed);
         m_spinDex.set(speed);
     }
 

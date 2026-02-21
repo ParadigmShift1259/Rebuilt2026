@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -40,13 +41,18 @@ import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ShootCommand;
 import frc.robot.ShiftHelpers;
 
 @Logged
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
+    private final double defaultFeederSpeed = 0.3;
+
     Matrix<N3, N1> QUESTNAV_STD_DEVS =
         VecBuilder.fill(
             0.02, // Trust down to 2cm in X direction
@@ -94,6 +100,7 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController buttonBox = new CommandXboxController(1);
 
     public final Drive drivetrain = TunerConstants.createDrivetrain();
     public final Vision vision = new Vision();
@@ -103,8 +110,9 @@ public class RobotContainer {
 
     private boolean isinTransition = false;
     private boolean isTrackingFuel = false;
+    private boolean isTrackingHub = false;
     private boolean slowmode = false;
-    private boolean isBlue = DriverStation.getAlliance().equals(DriverStation.Alliance.Blue);
+    private boolean isBlue = false;;
 
     // private final double X_START_BUMP = 1.0;
     // private final double X_STOP_BUMP = 4.0;
@@ -130,6 +138,7 @@ public class RobotContainer {
     public final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
+        drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.kZero));
         NamedCommands.registerCommand("runIntake", m_runIntake);
         NamedCommands.registerCommand("stopIntake", m_stopIntake);
 
@@ -143,10 +152,10 @@ public class RobotContainer {
         SmartDashboard.putNumber("Match Time", 0.0);
         SmartDashboard.putNumber("Deploy Turns", 0.0);
 
-        SmartDashboard.putNumber("inputRPM", 0.0);
+        SmartDashboard.putNumber("inputRPM", 1000.0);
         SmartDashboard.putNumber("ShooterSpeed", 0.0);
 
-        SmartDashboard.putNumber("FeederSpeed", 0.0);
+        SmartDashboard.putNumber("FeederSpeed", defaultFeederSpeed);
 
         boolean isBlue = isBlue();
         m_geofenceAlliBump = isBlue ? m_geofenceBlueBump : m_geofenceRedBump;
@@ -169,11 +178,11 @@ public class RobotContainer {
                                      .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
                                      .withTargetDirection(getBumpAlignAngle(rotDeg));
                 }
-                else if (isInRotation()) {
-                    return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
-                                .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
-                                .withRotationalRate(-joystick.getRightX() * MaxAngularRate * 0.3); 
-                }
+                // else if (isInRotation()) {
+                //     return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
+                //                 .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
+                //                 .withRotationalRate(-joystick.getRightX() * MaxAngularRate * 0.3); 
+                // }
                 // else if (isinTransition) {
                 //     Rotation2d rot = drivetrain.getPose().getRotation();
                 //     double rotDouble = Math.round((rot.getDegrees()) / 90.0) * 90.0; // Rounds to the nearest 90 degrees
@@ -182,11 +191,17 @@ public class RobotContainer {
                 //                      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
                 //                      .withTargetDirection(targetRot);
                 // }
-                else if (isTrackingFuel) {
-                    Rotation2d rot = drivetrain.getPose().getRotation();
-                    Rotation2d targetRot = new Rotation2d((rot.getDegrees() - rotFuelTracking) / 180 * Math.PI);
+                // else if (isTrackingFuel) {
+                //     Rotation2d rot = drivetrain.getPose().getRotation();
+                //     Rotation2d targetRot = new Rotation2d((rot.getDegrees() - rotFuelTracking) / 180 * Math.PI);
+                //     return driveAngleRobot.withVelocityX(-joystick.getLeftY() * MaxSpeed)
+                //                      .withVelocityY(0.0)
+                //                      .withTargetDirection(targetRot);
+                // }
+                else if (isTrackingHub) {
+                    Rotation2d targetRot = new Rotation2d(Math.PI + Math.atan2(drivetrain.getFieldY() - 4.0, drivetrain.getFieldX() - 4.6));
                     return driveAngleRobot.withVelocityX(-joystick.getLeftY() * MaxSpeed)
-                                     .withVelocityY(0.0)
+                                     .withVelocityY(-joystick.getLeftX() * MaxSpeed)
                                      .withTargetDirection(targetRot);
                 }
                 else if (jogState != JogState.noJog) {
@@ -213,14 +228,18 @@ public class RobotContainer {
         );
 
         configurePrimaryBindings();
+        configureSecondaryBindings();
     }
 
     private void configurePrimaryBindings() {
         joystick.a().onTrue(m_shooterGroup);
         joystick.b().onTrue(m_shooterGroupStop);
+        joystick.x().onTrue(m_trackHub);
+        joystick.x().onFalse(m_trackHub);
         joystick.povUp().onTrue(m_extendIntake);
         joystick.povRight().onTrue(m_intakeGroupStop);
         joystick.povLeft().onTrue(m_intakeGroup);
+        // joystick.povLeft().onTrue(m_deployIntake);
         joystick.povDown().onTrue(m_homeIntake);
         //joystick.x().onTrue(m_runSpindexer);
         //joystick.y().onTrue(m_stopSpindexer);
@@ -260,6 +279,10 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
+    public void configureSecondaryBindings(){
+
+    }
+
     public Pose2d getDriveToPose() {
         String selectedAuto = SmartDashboard.getString("Auto Mode/selected", "noAuto");
         if (selectedAuto.equalsIgnoreCase("FeederOutpostAuto")) {
@@ -285,6 +308,8 @@ public class RobotContainer {
     public void periodic() {
         SmartDashboard.putBoolean("slowMode", slowmode);
 
+        SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
+
         if (vision.isTracking()){
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
@@ -295,6 +320,8 @@ public class RobotContainer {
         else {
             shootingState = ShootingState.hubShoot;
         }
+        
+        isBlue = isBlue();
 
         SmartDashboard.putNumber("PigeonRotation", drivetrain.getPigeon2().getYaw().getValueAsDouble());
         SmartDashboard.putNumber("PoseRotation", drivetrain.getPose().getRotation().getDegrees());
@@ -328,7 +355,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("xPose", robotX);
         SmartDashboard.putNumber("yPose", robotY);
 
-        SmartDashboard.putBoolean("IsBlue", isBlue());
+        SmartDashboard.putBoolean("IsBlue", isBlue);
         SmartDashboard.putBoolean("IsAligning", isAligning);
 
         SmartDashboard.putString("SimAllianceID", DriverStationSim.getAllianceStationId().toString());
@@ -347,8 +374,8 @@ public class RobotContainer {
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake2 = new InstantCommand(() -> intake.stopIntake());
-    InstantCommand m_runKicker = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", 0.0)));
-    InstantCommand m_runKicker2 = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", 0.0)));
+    InstantCommand m_runKicker = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
+    InstantCommand m_runKicker2 = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
     InstantCommand m_stopKicker = new InstantCommand(()-> transfer.stopFeeder());
     InstantCommand m_stopKicker2 = new InstantCommand(()-> transfer.stopFeeder());
 //    InstantCommand m_deployIntake = new InstantCommand(()-> intake.deploy(SmartDashboard.getNumber("Deploy Turns", 0.0)));
@@ -361,15 +388,17 @@ public class RobotContainer {
     InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
     InstantCommand m_stopSpindexer2 = new InstantCommand(() -> transfer.stopSpinDex());
 
-    InstantCommand m_runShooter = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 0.0)));
-    InstantCommand m_runShooter2 = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 0.0)));
+    InstantCommand m_runShooter = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 1000.0)));
+    InstantCommand m_runShooter2 = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 1000.0)));
     InstantCommand m_runShooterDistance = new InstantCommand(() -> shooter.setRPMDistance(0.0 /* Get a way to get distance to target TODO: */));
     InstantCommand m_stopShooter = new InstantCommand(()-> shooter.stopShooter());
     InstantCommand m_stopShooter2 = new InstantCommand(()-> shooter.stopShooter());
 
     // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
+    InstantCommand m_resetOdometry = new InstantCommand(() -> drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.kZero)));
     InstantCommand m_trackFuel = new InstantCommand(() -> isTrackingFuel = !isTrackingFuel);
+    InstantCommand m_trackHub = new InstantCommand(() -> isTrackingHub = !isTrackingHub);
     InstantCommand m_slowmode = new InstantCommand(() -> {
         slowmode = !slowmode;
         if (slowmode){
@@ -386,13 +415,16 @@ public class RobotContainer {
 
     WaitCommand m_waitOneSec = new WaitCommand( 1.0);
     WaitCommand m_waitHalfSec = new WaitCommand(0.5);
+    WaitCommand m_waitQuarterSec = new WaitCommand(0.25);
+    WaitCommand m_waitHalfSec2 = new WaitCommand(0.5);
+    WaitCommand m_waitHalfSec3 = new WaitCommand(0.5);
     WaitCommand m_waitTwoSec = new WaitCommand(2.0);
 
     ParallelCommandGroup m_shooterGroupStop = new ParallelCommandGroup(m_stopShooter2, m_stopKicker2, m_stopSpindexer2);
 
-    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_runShooter2, m_waitHalfSec, m_runKicker2, m_waitOneSec, m_runSpindexer2);
-    SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_runIntake);
-    SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_frameIntake, m_stopIntake2);
+    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(new ShootCommand(shooter, drivetrain), m_waitHalfSec2, m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
+    SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake);
+    SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_stopIntake2, m_waitHalfSec, m_frameIntake);
     
     // public double getDistanceXToFuel(double angle){
     //     return -0.28 / Math.tan(angle * Math.PI / 180.0); // 0.28 is height from the floor to the camera in meters
@@ -408,8 +440,29 @@ public class RobotContainer {
     }
     
     private boolean isBlue(){
-        if (RobotBase.isReal()) return isBlue; // TODO needs physical test
-        return (DriverStationSim.getAllianceStationId().toString().contains("Blue")); // isBlue doesn't work in sim and no direct way to get alliance, so need to check id (ex. Blue1)
+        var allianceOptional = DriverStation.getAlliance();
+
+        if (allianceOptional.isPresent()){
+            DriverStation.Alliance alliance = allianceOptional.get();
+
+            switch (alliance){
+                case Red:
+                    return false;
+                case Blue:
+                    return true;
+            }
+        }
+        else{
+            System.out.println("Alliance Unknown");
+        }
+
+        return false;
+        // if (DriverStation.getAlliance().get().equals(DriverStation.Alliance.Blue)){
+        //     return true;
+        // }
+        // return false;
+        // if (RobotBase.isReal()) return isBlue; // TODO needs physical test
+        // return (DriverStationSim.getAllianceStationId().toString().contains("Blue")); // isBlue doesn't work in sim and no direct way to get alliance, so need to check id (ex. Blue1)
     }
 
     private boolean isInRotation(){

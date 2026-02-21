@@ -55,7 +55,7 @@ public class Intake extends SubsystemBase {
             .inverted(true)
             .closedLoopRampRate(0.0)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
-            .pid(0.04, 0.0, 0.0);
+            .pid(0.1, 0.0, 0.0);
         m_deployMotorLead.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         config.idleMode(SparkMaxConfig.IdleMode.kCoast)
@@ -119,6 +119,12 @@ public class Intake extends SubsystemBase {
     }
     
     public void deploy(double pos) {
+        if (pos > m_extend){
+            pos = m_extend;
+        }
+        else if (pos < 0.0){
+            pos = m_home;
+        }
         m_deployClc.setSetpoint(pos, ControlType.kPosition);
         m_followClc.setSetpoint(pos, ControlType.kPosition);
     }
