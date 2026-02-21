@@ -44,6 +44,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotPeriodic() {
+        logMemoryUsage();
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
         m_robotContainer.periodic();
@@ -126,4 +127,26 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationPeriodic() {}
+
+    private void logMemoryUsage() {
+        try {
+            Runtime runtime = Runtime.getRuntime();
+
+            long totalMemory = runtime.totalMemory(); // bytes allocated to JVM
+            long freeMemory = runtime.freeMemory();   // bytes free in allocated heap
+            long usedMemory = totalMemory - freeMemory;
+            long maxMemory = runtime.maxMemory();     // max heap size
+
+            // Convert to MB for readability
+            double usedMB = usedMemory / (1024.0 * 1024.0);
+            double totalMB = totalMemory / (1024.0 * 1024.0);
+            double maxMB = maxMemory / (1024.0 * 1024.0);
+
+            SmartDashboard.putNumber("Memory Used (MB)", usedMB);
+            SmartDashboard.putNumber("Memory Total (MB)", totalMB);
+            SmartDashboard.putNumber("Memory Max (MB)", maxMB);
+        } catch (Exception e) {
+            SmartDashboard.putString("Memory Log Error", e.getMessage());
+        }
+    }
 }

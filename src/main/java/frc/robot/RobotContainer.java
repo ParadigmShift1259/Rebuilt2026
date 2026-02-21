@@ -216,11 +216,11 @@ public class RobotContainer {
     }
 
     private void configurePrimaryBindings() {
-        joystick.a().onTrue(m_shootergroup);
-        joystick.b().onTrue(m_shootergroupStop);
+        joystick.a().onTrue(m_shooterGroup);
+        joystick.b().onTrue(m_shooterGroupStop);
         joystick.povUp().onTrue(m_extendIntake);
-        joystick.povRight().onTrue(m_intakegroupStop);
-        joystick.povLeft().onTrue(m_intakegroup);
+        joystick.povRight().onTrue(m_intakeGroupStop);
+        joystick.povLeft().onTrue(m_intakeGroup);
         joystick.povDown().onTrue(m_homeIntake);
         //joystick.x().onTrue(m_runSpindexer);
         //joystick.y().onTrue(m_stopSpindexer);
@@ -347,19 +347,25 @@ public class RobotContainer {
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake2 = new InstantCommand(() -> intake.stopIntake());
-    InstantCommand m_runKicker = new InstantCommand(()-> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", 0.0)));
+    InstantCommand m_runKicker = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", 0.0)));
+    InstantCommand m_runKicker2 = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", 0.0)));
     InstantCommand m_stopKicker = new InstantCommand(()-> transfer.stopFeeder());
+    InstantCommand m_stopKicker2 = new InstantCommand(()-> transfer.stopFeeder());
 //    InstantCommand m_deployIntake = new InstantCommand(()-> intake.deploy(SmartDashboard.getNumber("Deploy Turns", 0.0)));
-    InstantCommand m_homeIntake = new InstantCommand(()-> intake.deploy(Intake.m_home));
-    InstantCommand m_frameIntake = new InstantCommand(()-> intake.deploy(Intake.m_frame));
-    InstantCommand m_extendIntake = new InstantCommand(()-> intake.deploy(Intake.m_extend));
+    InstantCommand m_homeIntake = new InstantCommand(() -> intake.deploy(Intake.m_home));
+    InstantCommand m_frameIntake = new InstantCommand(() -> intake.deploy(Intake.m_frame));
+    InstantCommand m_extendIntake = new InstantCommand(() -> intake.deploy(Intake.m_extend));
 
     InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed());
+    InstantCommand m_runSpindexer2 = new InstantCommand(() -> transfer.setSpinDexSpeed());
     InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
+    InstantCommand m_stopSpindexer2 = new InstantCommand(() -> transfer.stopSpinDex());
 
-    InstantCommand m_runShooter = new InstantCommand(()-> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 0.0)));
+    InstantCommand m_runShooter = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 0.0)));
+    InstantCommand m_runShooter2 = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 0.0)));
     InstantCommand m_runShooterDistance = new InstantCommand(() -> shooter.setRPMDistance(0.0 /* Get a way to get distance to target TODO: */));
     InstantCommand m_stopShooter = new InstantCommand(()-> shooter.stopShooter());
+    InstantCommand m_stopShooter2 = new InstantCommand(()-> shooter.stopShooter());
 
     // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
@@ -382,11 +388,11 @@ public class RobotContainer {
     WaitCommand m_waitHalfSec = new WaitCommand(0.5);
     WaitCommand m_waitTwoSec = new WaitCommand(2.0);
 
-    ParallelCommandGroup m_shootergroupStop = new ParallelCommandGroup(m_stopIntake, m_stopKicker, m_stopSpindexer);
+    ParallelCommandGroup m_shooterGroupStop = new ParallelCommandGroup(m_stopShooter2, m_stopKicker2, m_stopSpindexer2);
 
-    SequentialCommandGroup m_shootergroup = new SequentialCommandGroup( m_runShooter, m_waitHalfSec, m_runKicker,m_waitOneSec, m_runSpindexer);
-    SequentialCommandGroup m_intakegroup = new SequentialCommandGroup( m_extendIntake, m_runIntake);
-    SequentialCommandGroup m_intakegroupStop = new SequentialCommandGroup( m_frameIntake, m_stopIntake2);
+    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_runShooter2, m_waitHalfSec, m_runKicker2, m_waitOneSec, m_runSpindexer2);
+    SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_runIntake);
+    SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_frameIntake, m_stopIntake2);
     
     // public double getDistanceXToFuel(double angle){
     //     return -0.28 / Math.tan(angle * Math.PI / 180.0); // 0.28 is height from the floor to the camera in meters

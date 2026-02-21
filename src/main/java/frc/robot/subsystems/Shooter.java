@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.RobotBase;
 
 import frc.robot.ConstantsCANIDS;
 
@@ -16,7 +17,9 @@ import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
@@ -54,12 +57,10 @@ public class Shooter extends SubsystemBase {
     private SparkClosedLoopController m_hoodCtlr = m_hoodMot.getClosedLoopController();
 
     public Shooter(){
-
         // Add calibration points (distance in meters -> shooter RPM)
         table.put(1.0, 2000.0);
         table.put(2.0, 3000.0);
         table.put(3.0, 4000.0);
-
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
@@ -115,7 +116,7 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
+        // SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
     }
 
     public double getAngularDisplacement(Pose2d currentPose, Pose2d targetPose, Rotation2d turretAngle){
@@ -131,7 +132,13 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setRPM(double rpm){
-        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm / 60.0));
+        if (RobotBase.isReal()) {
+            m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm / 60.0));
+        }
+        else {
+            m_simAngVel = rpm;
+            m_FlywheelSim.setAngularVelocity(rpm * 2.0 * Math.PI / 60.0);
+        }
     }
 
     public void setRPMDistance(double distance){
@@ -143,7 +150,13 @@ public class Shooter extends SubsystemBase {
     }
 
     public void stopShooter(){
-        m_flywheelMotorLead.stopMotor();
+        if (RobotBase.isReal()){
+            m_flywheelMotorLead.stopMotor();
+        }
+        else {
+            m_simAngVel = 0.0;
+            m_FlywheelSim.setAngularVelocity(0.0);
+        }
     }
 
     public void setServo(double value){
@@ -159,24 +172,44 @@ public class Shooter extends SubsystemBase {
 //     }
 
 
-/* Testing sim stuff*/
+/* Testing sim stuff */
 
     // The plant holds a state-space model of our flywheel. This system has the following properties:
     //
     // States: [velocity], in radians per second.
     // Inputs (what we can "put in"): [voltage], in volts.
     // Outputs (what we can measure): [velocity], in radians per second.
+
+    private final DCMotor m_flywheelGearbox = DCMotor.getKrakenX60Foc(1);
     private final LinearSystem<N1, N1, N1> m_flywheelPlant =
         LinearSystemId.createFlywheelSystem(
-            DCMotor.getKrakenX60Foc(1), kFlywheelMomentOfInertia, kFlywheelGearing);
+            m_flywheelGearbox, kFlywheelMomentOfInertia, kFlywheelGearing);
 
-    // constants from wpilib example code
-    private final DCMotor m_flywheelGearbox = DCMotor.getKrakenX60Foc(1); // need it twice if using system characterization
     private static final double kFlywheelMomentOfInertia = 0.00032; // kg * m^2
     private static final double kFlywheelGearing = 1.0;
+
+    private final int kEncoderAChannel = 0;
+    private final int kEncoderBChannel = 1;
 
     private final FlywheelSim m_FlywheelSim =
         new FlywheelSim(
             m_flywheelPlant, m_flywheelGearbox
         );
+
+    private double m_simAngVel = 0.0; 
+    static int count = 0;
+    
+    @Override
+    public void simulationPeriodic() {
+        
+        if (!RobotBase.isReal()){
+            m_FlywheelSim.setAngularVelocity(m_simAngVel * 2.0 * Math.PI / 60.0);
+        }
+        m_FlywheelSim.update(0.020);
+        // if (count++ % 100 == 0)
+        // {
+            SmartDashboard.putNumber("ShooterRPM", m_FlywheelSim.getAngularVelocityRadPerSec() * 60.0 / 2 * Math.PI);
+        // }
+    }
+
 }
