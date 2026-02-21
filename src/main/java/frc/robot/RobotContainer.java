@@ -52,12 +52,24 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     private final double defaultFeederSpeed = 0.3;
+    private final double hubXBlue = 4.6;
+    private final double hubXRed = 11.91;
+    private double hubX = 0.0;
 
     Matrix<N3, N1> QUESTNAV_STD_DEVS =
         VecBuilder.fill(
             0.02, // Trust down to 2cm in X direction
             0.02, // Trust down to 2cm in Y direction
-            0.035 // Trust down to 2 degrees rotational
+            // 0.035 // Trust down to 2 degrees rotational
+            999999.0
+        );
+
+    Matrix<N3, N1> LIMELIGHT_STD_DEVS =
+        VecBuilder.fill(
+            0.02, // Trust down to 2cm in X direction
+            0.02, // Trust down to 2cm in Y direction
+            // 0.035 // Trust down to 2 degrees rotational
+            999999.0
         );
 
     private boolean isAligning = false;
@@ -68,8 +80,8 @@ public class RobotContainer {
     private Geofencing m_geofenceNeutZoneIfRed = new Geofencing(18.04, 0.0, 0.0, 12.417);
     private Geofencing m_geofenceNeutTop = new Geofencing(18.04, 0.0, 6.9, 16.51);
     private Geofencing m_geofenceNeutBottom = new Geofencing(1.143, 0.0, 0.0, 16.51);
-    private Geofencing m_geofenceRedBump = new Geofencing(6.4912, 11.3, 1.589, 12.417);
-    private Geofencing m_geofenceBlueBump = new Geofencing(6.4912, 4.053, 1.589,5.17);
+    private Geofencing m_geofenceRedBump = new Geofencing(6.4912, 11.3 - 0.4, 1.589, 12.417 + 0.4);
+    private Geofencing m_geofenceBlueBump = new Geofencing(6.4912, 4.053 - 0.4, 1.589, 5.17 + 0.4);
     private Geofencing m_geofenceAlliBump;
     private Geofencing m_geofenceOppBump;
     private Geofencing m_geofenceNeutZone;
@@ -141,6 +153,8 @@ public class RobotContainer {
         drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.kZero));
         NamedCommands.registerCommand("runIntake", m_runIntake);
         NamedCommands.registerCommand("stopIntake", m_stopIntake);
+        NamedCommands.registerCommand("ShootCommand", m_shooterGroup);
+        NamedCommands.registerCommand("StopShooter", m_shooterGroupStop);
 
         autoChooser = AutoBuilder.buildAutoChooser("StartAndClimbAuto");
         SmartDashboard.putData("Auto Mode", autoChooser);
@@ -199,7 +213,7 @@ public class RobotContainer {
                 //                      .withTargetDirection(targetRot);
                 // }
                 else if (isTrackingHub) {
-                    Rotation2d targetRot = new Rotation2d(Math.PI + Math.atan2(drivetrain.getFieldY() - 4.0, drivetrain.getFieldX() - 4.6));
+                    Rotation2d targetRot = new Rotation2d(Math.PI + Math.atan2(drivetrain.getFieldY() - 4.0, drivetrain.getFieldX() - hubX));
                     return driveAngleRobot.withVelocityX(-joystick.getLeftY() * MaxSpeed)
                                      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
                                      .withTargetDirection(targetRot);
@@ -280,8 +294,12 @@ public class RobotContainer {
     }
 
     public void configureSecondaryBindings(){
-
+        buttonBox.leftBumper().onTrue(m_intakeGroup);
+        buttonBox.leftTrigger().onTrue(m_intakeGroupStop);
+        buttonBox.rightTrigger().onTrue(m_shooterGroup);
+        buttonBox.povLeft().onTrue(m_shooterGroupStop);
     }
+
 
     public Pose2d getDriveToPose() {
         String selectedAuto = SmartDashboard.getString("Auto Mode/selected", "noAuto");
@@ -314,6 +332,10 @@ public class RobotContainer {
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
 
+        if (vision.isLLTracking()){
+            drivetrain.addVisionMeasurement(vision.getBotPoseEstimate().pose, vision.getBotPoseEstimate().timestampSeconds, LIMELIGHT_STD_DEVS);
+        }
+
         if (m_geofenceNeutZone.isInZone(drivetrain.getPose())){
             shootingState = ShootingState.feedShoot;
         }
@@ -322,6 +344,13 @@ public class RobotContainer {
         }
         
         isBlue = isBlue();
+
+        if (isBlue){
+            hubX = hubXBlue;
+        }
+        else {
+            hubX = hubXRed;
+        }
 
         SmartDashboard.putNumber("PigeonRotation", drivetrain.getPigeon2().getYaw().getValueAsDouble());
         SmartDashboard.putNumber("PoseRotation", drivetrain.getPose().getRotation().getDegrees());
@@ -422,7 +451,7 @@ public class RobotContainer {
 
     ParallelCommandGroup m_shooterGroupStop = new ParallelCommandGroup(m_stopShooter2, m_stopKicker2, m_stopSpindexer2);
 
-    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(new ShootCommand(shooter, drivetrain), m_waitHalfSec2, m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
+    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(new ShootCommand(shooter, drivetrain, isBlue), m_waitHalfSec2, m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
     SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake);
     SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_stopIntake2, m_waitHalfSec, m_frameIntake);
     

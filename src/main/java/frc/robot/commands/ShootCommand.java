@@ -18,6 +18,7 @@ public class ShootCommand extends Command {
 
   private final Shooter m_shooter;
   private final Drive m_drive;
+  private final boolean m_isBlue;
 
   private double distance = 0.0;
 
@@ -26,11 +27,12 @@ public class ShootCommand extends Command {
    *
    * @param subsystem The subsystem used by this command.
    */
-  public ShootCommand(Shooter shooter, Drive drive) {
+  public ShootCommand(Shooter shooter, Drive drive, boolean isBlue) {
     // m_poseX = poseX;
     // m_poseY = poseY;
     m_shooter = shooter;
     m_drive = drive;
+    m_isBlue = isBlue;
     // m_shooter = shooter;
     // m_transfer = transfer;
     // m_drive = drive;
@@ -49,9 +51,14 @@ public class ShootCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    distance = Math.sqrt(Math.pow((m_drive.getFieldX() - 4.6), 2) + Math.pow((m_drive.getFieldY() - 4.0), 2));
-    SmartDashboard.putNumber("ShooterDistance", distance);
-
+    if (m_isBlue){
+      distance = Math.sqrt(Math.pow((m_drive.getFieldX() - 4.6), 2) + Math.pow((m_drive.getFieldY() - 4.0), 2));
+      SmartDashboard.putNumber("ShooterDistance", distance);
+    }
+    else{
+      distance = Math.sqrt(Math.pow((m_drive.getFieldX() - 11.91), 2) + Math.pow((m_drive.getFieldY() - 4.0), 2));
+      SmartDashboard.putNumber("ShooterDistance", distance);
+    }
     m_shooter.setRPMDistance(distance);
   }
 

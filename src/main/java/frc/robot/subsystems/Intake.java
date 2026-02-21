@@ -47,8 +47,10 @@ public class Intake extends SubsystemBase {
     public static final double m_frame = 3.5;
     public static final double m_extend = 14.3;
 
+    public static final double m_defaultIntakeSpeed = -8.0;
+
     public Intake() {
-        SmartDashboard.putNumber("intakeVoltage", -10);
+        SmartDashboard.putNumber("intakeVoltage", m_defaultIntakeSpeed);
         SparkMaxConfig config = new SparkMaxConfig();
 
         config.idleMode(SparkMaxConfig.IdleMode.kCoast)
@@ -139,7 +141,7 @@ public class Intake extends SubsystemBase {
         m_minRPM = 20000.0;
         m_maxRPM = 0.0;
 
-        double volt = SmartDashboard.getNumber("intakeVoltage", -10);
+        double volt = SmartDashboard.getNumber("intakeVoltage", m_defaultIntakeSpeed);
         m_rollerMotor.setVoltage(-volt);
     }
     
