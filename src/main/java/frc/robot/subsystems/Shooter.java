@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -46,7 +47,8 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_flywheelMotorFollow = new TalonFX(ConstantsCANIDS.kFlywheelFollowID);
     private final VelocityVoltage m_vvReq = new VelocityVoltage(0).withSlot(0);
 
-    InterpolatingDoubleTreeMap table = new InterpolatingDoubleTreeMap();
+    InterpolatingDoubleTreeMap RPMtable = new InterpolatingDoubleTreeMap();
+    InterpolatingDoubleTreeMap TOFtable = new InterpolatingDoubleTreeMap();
 
     private Servo m_servo = new Servo(0);
 
@@ -58,14 +60,21 @@ public class Shooter extends SubsystemBase {
 
     public Shooter(){
         // Add calibration points (distance in meters -> shooter RPM)
-        table.put(2.6, 1850.0);
-        table.put(3.0, 1900.0);
-        table.put(3.5, 2000.0);
-        table.put(4.0, 2100.0);
-        table.put(4.5, 2200.0);
-        table.put(5.0, 2300.0);
-        table.put(5.5, 2400.0);
-        table.put(6.0, 2500.0);
+        RPMtable.put(2.6, 1850.0);
+        RPMtable.put(3.0, 1900.0);
+        RPMtable.put(3.5, 2000.0);
+        RPMtable.put(4.0, 2100.0);
+        RPMtable.put(4.5, 2200.0);
+        RPMtable.put(5.0, 2300.0);
+        RPMtable.put(5.5, 2400.0);
+        RPMtable.put(6.0, 2500.0);
+
+        TOFtable.put(5.68, 1.16);
+        TOFtable.put(4.55, 1.12);
+        TOFtable.put(3.15, 1.11);
+        TOFtable.put(1.88, 1.09);
+        TOFtable.put(1.38, 0.9);
+
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
@@ -147,7 +156,19 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setRPMDistance(double distance){
-        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(table.get(distance)/ 60.0));
+        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(distance)/ 60.0));
+    }
+
+    public void setRPMDistanceAndVelo(double distance, ChassisSpeeds speeds){
+        double m_distance = distance;
+        double offsetX = 0.0;
+        double offsetY = 0.0;
+        for (int i = 0; i < 20; i++){
+            offsetX = speeds.vxMetersPerSecond * TOFtable.get(distance);
+            offsetY = speeds.vyMetersPerSecond * TOFtable.get(distance);
+            distance = distance + Math.sqrt(Math.pow(offsetX, 2) + Math.pow(offsetX, 2));
+        }
+        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(distance)/ 60.0));
     }
 
     public void setMotor(double rpm){

@@ -149,4 +149,9 @@ public class Intake extends SubsystemBase {
         m_isRunning = false;
         m_rollerMotor.setVoltage(0);
     }
+
+    public void stopArms(){
+        m_deployMotorFollow.stopMotor();
+        m_deployMotorLead.stopMotor();
+    }
 }

@@ -7,8 +7,10 @@ package frc.robot.commands;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
 import frc.robot.subsystems.Drive;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Geofencing;
 
 /** An example command that uses an example subsystem. */
 public class ShootCommand extends Command {
@@ -18,10 +20,39 @@ public class ShootCommand extends Command {
 
   private final Shooter m_shooter;
   private final Drive m_drive;
-  private final boolean m_isBlue;
+  private boolean m_isBlue;
 
   private double distance = 0.0;
 
+  private Geofencing m_geofenceNeutZoneIfBlue = new Geofencing(18.04, 4.053, 0.0, 16.51);
+  private Geofencing m_geofenceNeutZoneIfRed = new Geofencing(18.04, 0.0, 0.0, 12.417);
+  private Geofencing m_geofenceNeutZone;
+
+    private boolean isBlue(){
+        var allianceOptional = DriverStation.getAlliance();
+
+        if (allianceOptional.isPresent()){
+            DriverStation.Alliance alliance = allianceOptional.get();
+
+            switch (alliance){
+                case Red:
+                    return false;
+                case Blue:
+                    return true;
+            }
+        }
+        else{
+            System.out.println("Alliance Unknown");
+        }
+
+        return false;
+        // if (DriverStation.getAlliance().get().equals(DriverStation.Alliance.Blue)){
+        //     return true;
+        // }
+        // return false;
+        // if (RobotBase.isReal()) return isBlue; // TODO needs physical test
+        // return (DriverStationSim.getAllianceStationId().toString().contains("Blue")); // isBlue doesn't work in sim and no direct way to get alliance, so need to check id (ex. Blue1)
+    }
   /**
    * Creates a new IntakeCommand.
    *
@@ -33,6 +64,7 @@ public class ShootCommand extends Command {
     m_shooter = shooter;
     m_drive = drive;
     m_isBlue = isBlue;
+
     // m_shooter = shooter;
     // m_transfer = transfer;
     // m_drive = drive;
@@ -46,11 +78,14 @@ public class ShootCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    m_isBlue = isBlue();
+    m_geofenceNeutZone = m_isBlue ? m_geofenceNeutZoneIfBlue : m_geofenceNeutZoneIfRed;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    SmartDashboard.putBoolean("NuetralZone?", m_geofenceNeutZone.isInZone(m_drive.getPose()));
     if (m_isBlue){
       distance = Math.sqrt(Math.pow((m_drive.getFieldX() - 4.6), 2) + Math.pow((m_drive.getFieldY() - 4.0), 2));
       SmartDashboard.putNumber("ShooterDistance", distance);
@@ -59,6 +94,10 @@ public class ShootCommand extends Command {
       distance = Math.sqrt(Math.pow((m_drive.getFieldX() - 11.91), 2) + Math.pow((m_drive.getFieldY() - 4.0), 2));
       SmartDashboard.putNumber("ShooterDistance", distance);
     }
+    if (m_geofenceNeutZone.isInZone(m_drive.getPose())){
+      distance += 2.0;
+    }
+    SmartDashboard.putNumber("ShooterDistance", distance);
     m_shooter.setRPMDistance(distance);
   }
 

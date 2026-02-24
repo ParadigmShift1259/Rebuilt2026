@@ -74,6 +74,7 @@ public class RobotContainer {
 
     private boolean isAligning = false;
     private double rotDeg = 0.0;
+    private double distance = 0.0;
 
     Field2d m_field = new Field2d();
     private Geofencing m_geofenceNeutZoneIfBlue = new Geofencing(18.04, 4.053, 0.0, 16.51);
@@ -124,7 +125,8 @@ public class RobotContainer {
     private boolean isTrackingFuel = false;
     private boolean isTrackingHub = false;
     private boolean slowmode = false;
-    private boolean isBlue = false;;
+    private boolean isBlue = false;
+    private boolean isShooting = false;
 
     // private final double X_START_BUMP = 1.0;
     // private final double X_STOP_BUMP = 4.0;
@@ -246,7 +248,7 @@ public class RobotContainer {
     }
 
     private void configurePrimaryBindings() {
-        joystick.a().onTrue(m_shooterGroup);
+        joystick.a().onTrue(m_shooterTrue);
         joystick.b().onTrue(m_shooterGroupStop);
         joystick.x().onTrue(m_trackHub);
         joystick.x().onFalse(m_trackHub);
@@ -325,6 +327,7 @@ public class RobotContainer {
 
     public void periodic() {
         SmartDashboard.putBoolean("slowMode", slowmode);
+        SmartDashboard.putBoolean("ReadyToShoot", isTrackingHub);
 
         SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
 
@@ -351,7 +354,22 @@ public class RobotContainer {
         else {
             hubX = hubXRed;
         }
-
+        if (isShooting){
+            SmartDashboard.putBoolean("NuetralZone?", m_geofenceNeutZone.isInZone(drivetrain.getPose()));
+            if (isBlue){
+            distance = Math.sqrt(Math.pow((drivetrain.getFieldX() - 4.6), 2) + Math.pow((drivetrain.getFieldY() - 4.0), 2));
+            SmartDashboard.putNumber("ShooterDistance", distance);
+            }
+            else{
+            distance = Math.sqrt(Math.pow((drivetrain.getFieldX() - 11.91), 2) + Math.pow((drivetrain.getFieldY() - 4.0), 2));
+            SmartDashboard.putNumber("ShooterDistance", distance);
+            }
+            if (m_geofenceNeutZone.isInZone(drivetrain.getPose())){
+            distance += 2.0;
+            }
+            SmartDashboard.putNumber("ShooterDistance", distance);
+            shooter.setRPMDistance(distance);
+        }
         SmartDashboard.putNumber("PigeonRotation", drivetrain.getPigeon2().getYaw().getValueAsDouble());
         SmartDashboard.putNumber("PoseRotation", drivetrain.getPose().getRotation().getDegrees());
 
@@ -401,6 +419,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     }
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
+    InstantCommand m_stopIntakeArms = new InstantCommand(()-> intake.stopArms());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake2 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_runKicker = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
@@ -422,6 +441,8 @@ public class RobotContainer {
     InstantCommand m_runShooterDistance = new InstantCommand(() -> shooter.setRPMDistance(0.0 /* Get a way to get distance to target TODO: */));
     InstantCommand m_stopShooter = new InstantCommand(()-> shooter.stopShooter());
     InstantCommand m_stopShooter2 = new InstantCommand(()-> shooter.stopShooter());
+    InstantCommand m_shooterTrue = new InstantCommand(() -> isShooting = true);
+    InstantCommand m_shooterFalse = new InstantCommand(() -> isShooting = false);
 
     // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
@@ -449,10 +470,9 @@ public class RobotContainer {
     WaitCommand m_waitHalfSec3 = new WaitCommand(0.5);
     WaitCommand m_waitTwoSec = new WaitCommand(2.0);
 
-    ParallelCommandGroup m_shooterGroupStop = new ParallelCommandGroup(m_stopShooter2, m_stopKicker2, m_stopSpindexer2);
-
+    SequentialCommandGroup m_shooterGroupStop = new SequentialCommandGroup(m_shooterFalse, m_stopShooter2, m_stopKicker2, m_stopSpindexer2);
     SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(new ShootCommand(shooter, drivetrain, isBlue), m_waitHalfSec2, m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
-    SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake);
+    SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
     SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_stopIntake2, m_waitHalfSec, m_frameIntake);
     
     // public double getDistanceXToFuel(double angle){
