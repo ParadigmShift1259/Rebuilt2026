@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.ConstantsCANIDS;
 import frc.robot.Geofencing;
 import frc.robot.RobotContainer;
+import frc.robot.generated.TunerConstants;
 import frc.robot.Constants;
 
 import static edu.wpi.first.units.Units.*;
@@ -43,15 +44,19 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import frc.robot.subsystems.Drive;
+
 
 @Logged
 public class Shooter extends SubsystemBase {
+    private Drive m_drive = TunerConstants.createDrivetrain();
+
     private final TalonFX m_flywheelMotorLead = new TalonFX(ConstantsCANIDS.kFlywheelLeadID);
     private final TalonFX m_flywheelMotorFollow = new TalonFX(ConstantsCANIDS.kFlywheelFollowID);
     private final VelocityVoltage m_vvReq = new VelocityVoltage(0).withSlot(0);
 
     InterpolatingDoubleTreeMap RPMtable = new InterpolatingDoubleTreeMap();
-    InterpolatingDoubleTreeMap TOFtable = new InterpolatingDoubleTreeMap();
+    public InterpolatingDoubleTreeMap TOFtable = new InterpolatingDoubleTreeMap();
 
     private Servo m_servo = new Servo(0);
 
@@ -64,7 +69,7 @@ public class Shooter extends SubsystemBase {
     private boolean isShooting = true; // shooter state
 
     double m_hubX = 0.0;
-    double m_distance = 0.0;
+    public double m_distance = 0.0;
     Pose2d m_robotPose = Pose2d.kZero;
     Geofencing m_geofenceNeutZone;
 
@@ -79,9 +84,9 @@ public class Shooter extends SubsystemBase {
         RPMtable.put(5.5, 2400.0);
         RPMtable.put(6.0, 2500.0);
 
-        TOFtable.put(5.68, 1.16);
-        TOFtable.put(4.55, 1.12);
-        TOFtable.put(3.15, 1.11);
+        TOFtable.put(5.68, 1.2);
+        TOFtable.put(4.55, 1.17);
+        TOFtable.put(3.15, 1.15);
         TOFtable.put(1.88, 1.09);
         TOFtable.put(1.38, 0.9);
 
@@ -168,10 +173,12 @@ public class Shooter extends SubsystemBase {
             }
             else {
                 setRPMDistance(); // Keep the flywheel always ramped
+                // setRPMDistanceAndVelo(ChassisSpeeds.fromRobotRelativeSpeeds(m_drive.getState().Speeds, m_drive.getState().Pose.getRotation()));
             }
         }
         else if (!isTesting) {
             setRPMDistance();
+            // setRPMDistanceAndVelo(ChassisSpeeds.fromRobotRelativeSpeeds(m_drive.getState().Speeds, m_drive.getState().Pose.getRotation()));
         }
     }
 
@@ -201,15 +208,17 @@ public class Shooter extends SubsystemBase {
         m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(m_distance)/ 60.0));
     }
 
-    public void setRPMDistanceAndVelo(double distance, ChassisSpeeds speeds){
+    public void setRPMDistanceAndVelo(ChassisSpeeds speeds){
         double offsetX = 0.0;
         double offsetY = 0.0;
+        double offsetDistance = m_distance;
         for (int i = 0; i < 20; i++){   // SEC Why does this loop 20 times??
-            offsetX = speeds.vxMetersPerSecond * TOFtable.get(distance);
-            offsetY = speeds.vyMetersPerSecond * TOFtable.get(distance);
-            distance = distance + Math.sqrt(Math.pow(offsetX, 2) + Math.pow(offsetY, 2));
+            offsetX = speeds.vxMetersPerSecond * TOFtable.get(offsetDistance);
+            offsetY = speeds.vyMetersPerSecond * TOFtable.get(offsetDistance);
+            offsetDistance = m_distance + Math.sqrt(Math.pow(offsetX, 2) + Math.pow(offsetY, 2));
         }
-        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(distance)/ 60.0));
+        SmartDashboard.putNumber("SOTF Distance", offsetDistance);
+        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(offsetDistance)/ 60.0));
     }
 
     public void setMotor(double rpm){

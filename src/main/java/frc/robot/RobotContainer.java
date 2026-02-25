@@ -56,6 +56,9 @@ public class RobotContainer {
     private final double hubXBlue = 4.6;
     private final double hubXRed = 11.91;
     private double hubX = 0.0;
+    private double hubY = 4.0;
+    private double offsetX = 0.0;
+    private double offsetY = 0.0;
 
     Matrix<N3, N1> QUESTNAV_STD_DEVS =
         VecBuilder.fill(
@@ -210,7 +213,7 @@ public class RobotContainer {
                 //                      .withTargetDirection(targetRot);
                 // }
                 else if (isTrackingHub) {
-                    Rotation2d targetRot = new Rotation2d(Math.PI + Math.atan2(drivetrain.getFieldY() - 4.0, drivetrain.getFieldX() - hubX));
+                    Rotation2d targetRot = new Rotation2d(Math.atan2(drivetrain.getFieldY() - hubY + offsetY, drivetrain.getFieldX() - hubX + offsetX) + (isBlue ? Math.PI : 0.0));
                     return driveAngleRobot.withVelocityX(-joystick.getLeftY() * MaxSpeed)
                                      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
                                      .withTargetDirection(targetRot);
@@ -247,7 +250,7 @@ public class RobotContainer {
         joystick.b().onTrue(m_shooterGroupStop);
         joystick.x().onTrue(m_trackHub);
         joystick.x().onFalse(m_trackHub);
-        joystick.povUp().onTrue(m_extendIntake);
+        joystick.povUp().onTrue(m_runIntake2);
         joystick.povRight().onTrue(m_intakeGroupStop);
         joystick.povLeft().onTrue(m_intakeGroup);
         // joystick.povLeft().onTrue(m_deployIntake);
@@ -349,6 +352,8 @@ public class RobotContainer {
         else {
             hubX = hubXRed;
         }
+            offsetX = drivetrain.getFieldRelativeSpeeds().vxMetersPerSecond * shooter.TOFtable.get(shooter.m_distance);
+            offsetY = drivetrain.getFieldRelativeSpeeds().vyMetersPerSecond * shooter.TOFtable.get(shooter.m_distance);
 
         // Moved the distance calc to shooter to keep the flywheeel ramped up
         shooter.setHubX(hubX);
@@ -406,6 +411,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     }
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
+    InstantCommand m_runIntake2 = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntakeArms = new InstantCommand(()-> intake.stopArms());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake2 = new InstantCommand(() -> intake.stopIntake());

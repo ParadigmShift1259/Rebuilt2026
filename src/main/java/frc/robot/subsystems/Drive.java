@@ -361,4 +361,7 @@ public class Drive extends TunerSwerveDrivetrain implements Subsystem {
         return getState().Pose.getY();
     }
 
+    public ChassisSpeeds getFieldRelativeSpeeds(){
+        return ChassisSpeeds.fromRobotRelativeSpeeds(getState().Speeds, getState().Pose.getRotation());
+    }
 }
