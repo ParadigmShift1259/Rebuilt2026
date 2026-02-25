@@ -6,11 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -29,12 +24,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Drive;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Transfer;
-import frc.robot.subsystems.Vision;
-import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
@@ -42,6 +31,18 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Transfer;
+import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.Shooter;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShootCommand;
 import frc.robot.ShiftHelpers;
@@ -77,12 +78,6 @@ public class RobotContainer {
     private double distance = 0.0;
 
     Field2d m_field = new Field2d();
-    private Geofencing m_geofenceNeutZoneIfBlue = new Geofencing(18.04, 4.053, 0.0, 16.51);
-    private Geofencing m_geofenceNeutZoneIfRed = new Geofencing(18.04, 0.0, 0.0, 12.417);
-    private Geofencing m_geofenceNeutTop = new Geofencing(18.04, 0.0, 6.9, 16.51);
-    private Geofencing m_geofenceNeutBottom = new Geofencing(1.143, 0.0, 0.0, 16.51);
-    private Geofencing m_geofenceRedBump = new Geofencing(6.4912, 11.3 - 0.4, 1.589, 12.417 + 0.4);
-    private Geofencing m_geofenceBlueBump = new Geofencing(6.4912, 4.053 - 0.4, 1.589, 5.17 + 0.4);
     private Geofencing m_geofenceAlliBump;
     private Geofencing m_geofenceOppBump;
     private Geofencing m_geofenceNeutZone;
@@ -126,7 +121,6 @@ public class RobotContainer {
     private boolean isTrackingHub = false;
     private boolean slowmode = false;
     private boolean isBlue = false;
-    private boolean isShooting = false;
 
     // private final double X_START_BUMP = 1.0;
     // private final double X_STOP_BUMP = 4.0;
@@ -170,13 +164,14 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("inputRPM", 1000.0);
         SmartDashboard.putNumber("ShooterSpeed", 0.0);
+        SmartDashboard.putBoolean("disableShooter", false);
 
         SmartDashboard.putNumber("FeederSpeed", defaultFeederSpeed);
 
         boolean isBlue = isBlue();
-        m_geofenceAlliBump = isBlue ? m_geofenceBlueBump : m_geofenceRedBump;
-        m_geofenceOppBump  = isBlue ? m_geofenceRedBump : m_geofenceBlueBump;
-        m_geofenceNeutZone = isBlue ? m_geofenceNeutZoneIfBlue : m_geofenceNeutZoneIfRed;
+        m_geofenceAlliBump = isBlue ? Constants.m_geofenceBlueBump : Constants.m_geofenceRedBump;
+        m_geofenceOppBump  = isBlue ? Constants.m_geofenceRedBump : Constants.m_geofenceBlueBump;
+        m_geofenceNeutZone = isBlue ? Constants.m_geofenceNeutZoneIfBlue : Constants.m_geofenceNeutZoneIfRed;
     }
 
     private void configureBindings() {
@@ -248,7 +243,7 @@ public class RobotContainer {
     }
 
     private void configurePrimaryBindings() {
-        joystick.a().onTrue(m_shooterTrue);
+        joystick.a().onTrue(m_shooterGroup);
         joystick.b().onTrue(m_shooterGroupStop);
         joystick.x().onTrue(m_trackHub);
         joystick.x().onFalse(m_trackHub);
@@ -289,8 +284,8 @@ public class RobotContainer {
         // joystick.leftTrigger().onFalse(m_jogStop);
         // joystick.rightTrigger().onTrue(m_jogRight);
         // joystick.rightTrigger().onFalse(m_jogStop);
-        joystick.rightTrigger().onTrue(m_runShooter);
-        joystick.leftTrigger().onTrue(m_stopShooter);
+        // joystick.rightTrigger().onTrue(m_runShooter);
+        // joystick.leftTrigger().onTrue(m_stopShooter);
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
@@ -354,23 +349,15 @@ public class RobotContainer {
         else {
             hubX = hubXRed;
         }
-        if (isShooting){
-            SmartDashboard.putBoolean("NuetralZone?", m_geofenceNeutZone.isInZone(drivetrain.getPose()));
-            if (isBlue){
-            distance = Math.sqrt(Math.pow((drivetrain.getFieldX() - 4.6), 2) + Math.pow((drivetrain.getFieldY() - 4.0), 2));
-            SmartDashboard.putNumber("ShooterDistance", distance);
-            }
-            else{
-            distance = Math.sqrt(Math.pow((drivetrain.getFieldX() - 11.91), 2) + Math.pow((drivetrain.getFieldY() - 4.0), 2));
-            SmartDashboard.putNumber("ShooterDistance", distance);
-            }
-            if (m_geofenceNeutZone.isInZone(drivetrain.getPose())){
-            distance += 2.0;
-            }
-            SmartDashboard.putNumber("ShooterDistance", distance);
-            shooter.setRPMDistance(distance);
-        }
-        SmartDashboard.putNumber("PigeonRotation", drivetrain.getPigeon2().getYaw().getValueAsDouble());
+
+        // Moved the distance calc to shooter to keep the flywheeel ramped up
+        shooter.setHubX(hubX);
+        shooter.setRobotPose(drivetrain.getPose());
+        shooter.setNeutralZone(m_geofenceNeutZone);
+
+        SmartDashboard.putBoolean("NuetralZone?", m_geofenceNeutZone.isInZone(drivetrain.getPose()));
+
+        // same as pigeon yaw SmartDashboard.putNumber("PigeonRotation", drivetrain.getPigeon2().getYaw().getValueAsDouble());
         SmartDashboard.putNumber("PoseRotation", drivetrain.getPose().getRotation().getDegrees());
 
         SmartDashboard.putNumber("PigeonYaw", drivetrain.getPigeon2().getYaw().getValueAsDouble());
@@ -436,13 +423,9 @@ public class RobotContainer {
     InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
     InstantCommand m_stopSpindexer2 = new InstantCommand(() -> transfer.stopSpinDex());
 
-    InstantCommand m_runShooter = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 1000.0)));
-    InstantCommand m_runShooter2 = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 1000.0)));
-    InstantCommand m_runShooterDistance = new InstantCommand(() -> shooter.setRPMDistance(0.0 /* Get a way to get distance to target TODO: */));
+    //InstantCommand m_runShooter = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 1000.0)));
+    // Shooter recalcs dist in periodic 2026 Feb 24 InstantCommand m_runShooterDistance = new InstantCommand(() -> shooter.setRPMDistance(0.0 /* Get a way to get distance to target TODO: */));
     InstantCommand m_stopShooter = new InstantCommand(()-> shooter.stopShooter());
-    InstantCommand m_stopShooter2 = new InstantCommand(()-> shooter.stopShooter());
-    InstantCommand m_shooterTrue = new InstantCommand(() -> isShooting = true);
-    InstantCommand m_shooterFalse = new InstantCommand(() -> isShooting = false);
 
     // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
@@ -470,8 +453,10 @@ public class RobotContainer {
     WaitCommand m_waitHalfSec3 = new WaitCommand(0.5);
     WaitCommand m_waitTwoSec = new WaitCommand(2.0);
 
-    SequentialCommandGroup m_shooterGroupStop = new SequentialCommandGroup(m_shooterFalse, m_stopShooter2, m_stopKicker2, m_stopSpindexer2);
-    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(new ShootCommand(shooter, drivetrain, isBlue), m_waitHalfSec2, m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
+    // Shooter is always has the flywheel ramped, so we can skip the delay and just start/stop the kicker
+    SequentialCommandGroup m_shooterGroupStop = new SequentialCommandGroup(m_stopKicker2, m_stopSpindexer2);
+    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
+
     SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
     SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_stopIntake2, m_waitHalfSec, m_frameIntake);
     
@@ -516,8 +501,8 @@ public class RobotContainer {
 
     private boolean isInRotation(){
         double rot = drivetrain.getRotationDegrees();
-        boolean isTop = m_geofenceNeutTop.isInZone(drivetrain.getPose());
-        boolean isBot = m_geofenceNeutBottom.isInZone(drivetrain.getPose());
+        boolean isTop = Constants.m_geofenceNeutTop.isInZone(drivetrain.getPose());
+        boolean isBot = Constants.m_geofenceNeutBottom.isInZone(drivetrain.getPose());
         if (!isTop && !isBot){
             return false;
         }

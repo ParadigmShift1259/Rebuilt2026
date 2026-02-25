@@ -4,6 +4,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.RobotBase;
 
 import frc.robot.ConstantsCANIDS;
+import frc.robot.Geofencing;
+import frc.robot.RobotContainer;
+import frc.robot.Constants;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -58,6 +61,13 @@ public class Shooter extends SubsystemBase {
     private SparkMax m_hoodMot = new SparkMax(ConstantsCANIDS.kHoodID, SparkMax.MotorType.kBrushless);
     private SparkClosedLoopController m_hoodCtlr = m_hoodMot.getClosedLoopController();
 
+    private boolean isShooting = true; // shooter state
+
+    double m_hubX = 0.0;
+    double m_distance = 0.0;
+    Pose2d m_robotPose = Pose2d.kZero;
+    Geofencing m_geofenceNeutZone;
+
     public Shooter(){
         // Add calibration points (distance in meters -> shooter RPM)
         RPMtable.put(2.6, 1850.0);
@@ -74,7 +84,6 @@ public class Shooter extends SubsystemBase {
         TOFtable.put(3.15, 1.11);
         TOFtable.put(1.88, 1.09);
         TOFtable.put(1.38, 0.9);
-
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
@@ -128,9 +137,42 @@ public class Shooter extends SubsystemBase {
         // m_hoodMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 
+    public void setHubX(double hubX) { m_hubX = hubX; }
+    public void setRobotPose(Pose2d pose) { m_robotPose = pose; }
+    public void setNeutralZone(Geofencing neutZone) { m_geofenceNeutZone = neutZone; }
+
     @Override
     public void periodic() {
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
+        m_distance = Math.sqrt(Math.pow((m_robotPose.getX() - m_hubX), 2) + Math.pow((m_robotPose.getY() - Constants.c_hubY), 2));
+        if (m_geofenceNeutZone != null && m_geofenceNeutZone.isInZone(m_robotPose)){
+            m_distance += 2.0;
+        }
+        SmartDashboard.putNumber("ShooterDistance", m_distance);
+        
+        boolean isTesting = SmartDashboard.getBoolean("disableShooter", false); // for reducing noise during testing
+        // SmartDashboard.putBoolean("shootDisableGet", isTesting); // debugging
+        
+        // old
+        // if (isTesting) {
+        //     stopShooter();
+        // }
+        // else {
+        //     setRPMDistance(); // Keep the flywheel always ramped
+        // }
+        
+        // looks like works, otherwise old code above
+        if (isShooting) {
+            if (isTesting) {
+                stopShooter();
+            }
+            else {
+                setRPMDistance(); // Keep the flywheel always ramped
+            }
+        }
+        else if (!isTesting) {
+            setRPMDistance();
+        }
     }
 
     public double getAngularDisplacement(Pose2d currentPose, Pose2d targetPose, Rotation2d turretAngle){
@@ -155,18 +197,17 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    public void setRPMDistance(double distance){
-        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(distance)/ 60.0));
+    public void setRPMDistance() {
+        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(m_distance)/ 60.0));
     }
 
     public void setRPMDistanceAndVelo(double distance, ChassisSpeeds speeds){
-        double m_distance = distance;
         double offsetX = 0.0;
         double offsetY = 0.0;
-        for (int i = 0; i < 20; i++){
+        for (int i = 0; i < 20; i++){   // SEC Why does this loop 20 times??
             offsetX = speeds.vxMetersPerSecond * TOFtable.get(distance);
             offsetY = speeds.vyMetersPerSecond * TOFtable.get(distance);
-            distance = distance + Math.sqrt(Math.pow(offsetX, 2) + Math.pow(offsetX, 2));
+            distance = distance + Math.sqrt(Math.pow(offsetX, 2) + Math.pow(offsetY, 2));
         }
         m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(distance)/ 60.0));
     }
