@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTable;
@@ -167,7 +168,7 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("inputRPM", 1000.0);
         SmartDashboard.putNumber("ShooterSpeed", 0.0);
-        SmartDashboard.putBoolean("disableShooter", false);
+        SmartDashboard.putBoolean("disableShooter", false); // default enables shooter
 
         SmartDashboard.putNumber("FeederSpeed", defaultFeederSpeed);
 
@@ -281,7 +282,8 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        joystick.leftBumper().onTrue(new SequentialCommandGroup(drivetrain.runOnce(drivetrain::seedFieldCentric)
+                                    , new InstantCommand(() -> drivetrain.getPigeon2().reset())));  
 
         // joystick.leftTrigger().onTrue(m_jogLeft);
         // joystick.leftTrigger().onFalse(m_jogStop);
@@ -334,7 +336,17 @@ public class RobotContainer {
         }
 
         if (vision.isLLTracking()){
-            drivetrain.addVisionMeasurement(vision.getBotPoseEstimate().pose, vision.getBotPoseEstimate().timestampSeconds, LIMELIGHT_STD_DEVS);
+            LimelightHelpers.PoseEstimate poseEst = vision.getBotPoseEstimate();
+            //LimelightHelpers.PoseEstimate poseEst = new LimelightHelpers.PoseEstimate();
+            //Pose2d visPose = vision.getBotPoseEstimate().pose;
+            //poseEst.pose = new Pose2d(visPose.getX(), visPose.getY(), visPose.getRotation().rotateBy(new Rotation2d(Math.PI)));
+            //poseEst.timestampSeconds = vision.getBotPoseEstimate().timestampSeconds;
+            //SmartDashboard.putNumber("RedBlueRot1", visPose.getRotation().getDegrees());
+            //if (!isBlue){
+            //    poseEst.pose.transformBy(new Transform2d(0.0, 0.0, new Rotation2d(Math.PI)));
+            //}
+            //SmartDashboard.putNumber("RedBlueRot2",poseEst.pose.getRotation().getDegrees());
+            drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
         }
 
         if (m_geofenceNeutZone.isInZone(drivetrain.getPose())){
@@ -368,7 +380,15 @@ public class RobotContainer {
         SmartDashboard.putNumber("PigeonYaw", drivetrain.getPigeon2().getYaw().getValueAsDouble());
         SmartDashboard.putNumber("PigeonHeading", drivetrain.getPigeon2().getRotation2d().getDegrees());
 
-        m_field.setRobotPose(drivetrain.getPose());
+        // Red rotation on the dashboard field is rotated 180 degrees    
+        if (isBlue) {
+            m_field.setRobotPose(drivetrain.getPose());
+        }
+        else {
+            Pose2d robotPose = new Pose2d(drivetrain.getFieldX(), drivetrain.getFieldY(), drivetrain.getPose().getRotation().rotateBy(new Rotation2d(Math.PI)));
+            m_field.setRobotPose(robotPose);
+        }
+
         // m_field.getObject("Fuel").setPose(drivetrain.getFieldX() + getDistanceXToFuel(vision.photonGetFuelPitch()), drivetrain.getFieldY() + getDistanceYToFuel(vision.getFuelAngle()), Rotation2d.kZero);
         SmartDashboard.putData("RobotPose", m_field);
 

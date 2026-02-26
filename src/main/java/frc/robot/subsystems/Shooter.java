@@ -49,7 +49,7 @@ import frc.robot.subsystems.Drive;
 
 @Logged
 public class Shooter extends SubsystemBase {
-    private Drive m_drive = TunerConstants.createDrivetrain();
+    // private Drive m_drive = TunerConstants.createDrivetrain();
 
     private final TalonFX m_flywheelMotorLead = new TalonFX(ConstantsCANIDS.kFlywheelLeadID);
     private final TalonFX m_flywheelMotorFollow = new TalonFX(ConstantsCANIDS.kFlywheelFollowID);
@@ -70,6 +70,7 @@ public class Shooter extends SubsystemBase {
 
     double m_hubX = 0.0;
     public double m_distance = 0.0;
+    private double m_turretAngle = 0.0;
     Pose2d m_robotPose = Pose2d.kZero;
     Geofencing m_geofenceNeutZone;
 
@@ -84,9 +85,9 @@ public class Shooter extends SubsystemBase {
         RPMtable.put(5.5, 2400.0);
         RPMtable.put(6.0, 2500.0);
 
-        TOFtable.put(5.68, 1.2);
-        TOFtable.put(4.55, 1.17);
-        TOFtable.put(3.15, 1.15);
+        TOFtable.put(5.68, 1.17);
+        TOFtable.put(4.55, 1.15);
+        TOFtable.put(3.15, 1.12);
         TOFtable.put(1.88, 1.09);
         TOFtable.put(1.38, 0.9);
 
@@ -149,36 +150,28 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
-        m_distance = Math.sqrt(Math.pow((m_robotPose.getX() - m_hubX), 2) + Math.pow((m_robotPose.getY() - Constants.c_hubY), 2));
+        SmartDashboard.putBoolean("isShooting", isShooting);
+
+        double yDist = m_robotPose.getY() - Constants.c_hubY;
+        double xDist = m_robotPose.getX() - m_hubX;
+
+        m_distance = Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
         if (m_geofenceNeutZone != null && m_geofenceNeutZone.isInZone(m_robotPose)){
             m_distance += 2.0;
         }
+        m_turretAngle = Math.atan2(yDist, xDist);
+
         SmartDashboard.putNumber("ShooterDistance", m_distance);
+        SmartDashboard.putNumber("TurretAngle", m_turretAngle * 180.0 / Math.PI);
         
         boolean isTesting = SmartDashboard.getBoolean("disableShooter", false); // for reducing noise during testing
         // SmartDashboard.putBoolean("shootDisableGet", isTesting); // debugging
-        
-        // old
-        // if (isTesting) {
-        //     stopShooter();
-        // }
-        // else {
-        //     setRPMDistance(); // Keep the flywheel always ramped
-        // }
-        
-        // looks like works, otherwise old code above
-        if (isShooting) {
-            if (isTesting) {
-                stopShooter();
-            }
-            else {
-                setRPMDistance(); // Keep the flywheel always ramped
-                // setRPMDistanceAndVelo(ChassisSpeeds.fromRobotRelativeSpeeds(m_drive.getState().Speeds, m_drive.getState().Pose.getRotation()));
-            }
-        }
-        else if (!isTesting) {
+        if (!isShooting && !isTesting) {
             setRPMDistance();
             // setRPMDistanceAndVelo(ChassisSpeeds.fromRobotRelativeSpeeds(m_drive.getState().Speeds, m_drive.getState().Pose.getRotation()));
+        }
+        else {
+            stopShooter();
         }
     }
 
@@ -205,6 +198,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setRPMDistance() {
+        if (!isShooting) { isShooting = true; }
         m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(m_distance)/ 60.0));
     }
 
@@ -226,6 +220,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void stopShooter(){
+        if (isShooting) { isShooting = false; }
         if (RobotBase.isReal()){
             m_flywheelMotorLead.stopMotor();
         }
