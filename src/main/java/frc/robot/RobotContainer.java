@@ -312,6 +312,7 @@ public class RobotContainer {
         // └───────┴───────┴───────┘───────┘          
         buttonBox.x().onTrue(m_homeIntake2);
         buttonBox.back().onTrue(m_resetPrevDist);
+        buttonBox.start().onTrue(m_resetQuest);
 
         buttonBox.leftBumper().onTrue(m_intakeGroup);
         buttonBox.leftTrigger().onTrue(m_intakeGroupStop);
@@ -350,18 +351,8 @@ public class RobotContainer {
         if (vision.isTracking()){
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
-
-        if (vision.isLLTracking()){
+        else if (vision.isLLTracking()){
             LimelightHelpers.PoseEstimate poseEst = vision.getBotPoseEstimate();
-            //LimelightHelpers.PoseEstimate poseEst = new LimelightHelpers.PoseEstimate();
-            //Pose2d visPose = vision.getBotPoseEstimate().pose;
-            //poseEst.pose = new Pose2d(visPose.getX(), visPose.getY(), visPose.getRotation().rotateBy(new Rotation2d(Math.PI)));
-            //poseEst.timestampSeconds = vision.getBotPoseEstimate().timestampSeconds;
-            //SmartDashboard.putNumber("RedBlueRot1", visPose.getRotation().getDegrees());
-            //if (!isBlue){
-            //    poseEst.pose.transformBy(new Transform2d(0.0, 0.0, new Rotation2d(Math.PI)));
-            //}
-            //SmartDashboard.putNumber("RedBlueRot2",poseEst.pose.getRotation().getDegrees());
             drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
         }
 
@@ -473,8 +464,8 @@ public class RobotContainer {
     // Shooter recalcs dist in periodic 2026 Feb 24 InstantCommand m_runShooterDistance = new InstantCommand(() -> shooter.setRPMDistance(0.0 /* Get a way to get distance to target TODO: */));
     InstantCommand m_stopShooter = new InstantCommand(()-> shooter.stopShooter());
 
-    // InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
-    InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
+    InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
+    //InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
     InstantCommand m_resetOdometry = new InstantCommand(() -> drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.kZero)));
     InstantCommand m_trackFuel = new InstantCommand(() -> isTrackingFuel = !isTrackingFuel);
     InstantCommand m_trackHub = new InstantCommand(() -> isTrackingHub = !isTrackingHub);
