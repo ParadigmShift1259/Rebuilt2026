@@ -295,13 +295,29 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
-    public void configureSecondaryBindings(){
+    public void configureSecondaryBindings() {
+        // Physical layout and XBox assignment
+        // ┌───────┌───────┬───────┐───────┐
+        // │Green1 │White2 │ Blue2 │Green1 │
+        // │  X    │  Back │ Start │  DU   │
+        // ├───────├───────┼───────┤───────┤
+        // │Yellow1│Green2 │ Red2  │ Blue3 │
+        // │  Y    │  LS   │  RS   │  DD   │
+        // ├───────├───────┼───────┤───────┤
+        // │ Blue1 │Black2 │Yellow2│ Red3  │
+        // │  RB   │  B    │  A    │  DR   │
+        // ├───────┼───────┼───────┤───────┤
+        // │Black1 │White1 │ Red1  │Yellow3│        
+        // │  LB   │   LT  │  RT   │  DL   │        
+        // └───────┴───────┴───────┘───────┘          
+        buttonBox.x().onTrue(m_homeIntake2);
+        buttonBox.back().onTrue(m_resetPrevDist);
+
         buttonBox.leftBumper().onTrue(m_intakeGroup);
         buttonBox.leftTrigger().onTrue(m_intakeGroupStop);
         buttonBox.rightTrigger().onTrue(m_shooterGroup);
         buttonBox.povLeft().onTrue(m_shooterGroupStop);
     }
-
 
     public Pose2d getDriveToPose() {
         String selectedAuto = SmartDashboard.getString("Auto Mode/selected", "noAuto");
@@ -433,6 +449,7 @@ public class RobotContainer {
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_runIntake2 = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntakeArms = new InstantCommand(()-> intake.stopArms());
+    InstantCommand m_stopIntakeArms2 = new InstantCommand(()-> intake.stopArms());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake2 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_runKicker = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
@@ -441,8 +458,11 @@ public class RobotContainer {
     InstantCommand m_stopKicker2 = new InstantCommand(()-> transfer.stopFeeder());
 //    InstantCommand m_deployIntake = new InstantCommand(()-> intake.deploy(SmartDashboard.getNumber("Deploy Turns", 0.0)));
     InstantCommand m_homeIntake = new InstantCommand(() -> intake.deploy(Intake.m_home));
+    InstantCommand m_homeIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_home));
     InstantCommand m_frameIntake = new InstantCommand(() -> intake.deploy(Intake.m_frame));
+    InstantCommand m_frameIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_frame));
     InstantCommand m_extendIntake = new InstantCommand(() -> intake.deploy(Intake.m_extend));
+    InstantCommand m_resetPrevDist = new InstantCommand(() -> shooter.resetPrevDist());
 
     InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed());
     InstantCommand m_runSpindexer2 = new InstantCommand(() -> transfer.setSpinDexSpeed());
@@ -481,7 +501,8 @@ public class RobotContainer {
 
     // Shooter is always has the flywheel ramped, so we can skip the delay and just start/stop the kicker
     SequentialCommandGroup m_shooterGroupStop = new SequentialCommandGroup(m_stopKicker2, m_stopSpindexer2);
-    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
+//    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
+    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_frameIntake2, m_runKicker2, m_waitQuarterSec, m_stopIntakeArms2, m_runSpindexer2);
 
     SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
     SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_stopIntake2, m_waitHalfSec, m_frameIntake);

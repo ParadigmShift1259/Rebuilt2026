@@ -55,7 +55,7 @@ public class Shooter extends SubsystemBase {
     private final TalonFX m_flywheelMotorFollow = new TalonFX(ConstantsCANIDS.kFlywheelFollowID);
     private final VelocityVoltage m_vvReq = new VelocityVoltage(0).withSlot(0);
 
-    InterpolatingDoubleTreeMap RPMtable = new InterpolatingDoubleTreeMap();
+    private InterpolatingDoubleTreeMap RPMtable = new InterpolatingDoubleTreeMap();
     public InterpolatingDoubleTreeMap TOFtable = new InterpolatingDoubleTreeMap();
 
     private Servo m_servo = new Servo(0);
@@ -68,11 +68,13 @@ public class Shooter extends SubsystemBase {
 
     private boolean isShooting = true; // shooter state
 
-    double m_hubX = 0.0;
+    private double m_hubX = 0.0;
     public double m_distance = 0.0;
+    public double m_prevDistance = 0.0;
     private double m_turretAngle = 0.0;
-    Pose2d m_robotPose = Pose2d.kZero;
-    Geofencing m_geofenceNeutZone;
+    private Pose2d m_robotPose = Pose2d.kZero;
+    private Geofencing m_geofenceNeutZone;
+    private boolean m_isBlue = false;
 
     public Shooter(){
         // Add calibration points (distance in meters -> shooter RPM)
@@ -146,6 +148,7 @@ public class Shooter extends SubsystemBase {
     public void setHubX(double hubX) { m_hubX = hubX; }
     public void setRobotPose(Pose2d pose) { m_robotPose = pose; }
     public void setNeutralZone(Geofencing neutZone) { m_geofenceNeutZone = neutZone; }
+    public void setIsBlue(boolean isBlue) { m_isBlue = isBlue; }
 
     @Override
     public void periodic() {
@@ -154,19 +157,30 @@ public class Shooter extends SubsystemBase {
 
         double yDist = m_robotPose.getY() - Constants.c_hubY;
         double xDist = m_robotPose.getX() - m_hubX;
-
+        double robotRot = m_robotPose.getRotation().getRadians();
+        if (m_isBlue) {
+            xDist *= -1.0;
+        }
+        else {
+            robotRot *= -1.0;
+        }
         m_distance = Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
         if (m_geofenceNeutZone != null && m_geofenceNeutZone.isInZone(m_robotPose)){
             m_distance += 2.0;
         }
         m_turretAngle = Math.atan2(yDist, xDist);
+        if (Math.abs(m_turretAngle) > Math.PI) {
+            m_turretAngle = (2.0 * Math.PI + m_turretAngle) % Math.PI;
+        }
+        m_turretAngle += robotRot;
 
         SmartDashboard.putNumber("ShooterDistance", m_distance);
         SmartDashboard.putNumber("TurretAngle", m_turretAngle * 180.0 / Math.PI);
         
         boolean isTesting = SmartDashboard.getBoolean("disableShooter", false); // for reducing noise during testing
         // SmartDashboard.putBoolean("shootDisableGet", isTesting); // debugging
-        if (!isShooting && !isTesting) {
+//        if (!isShooting && !isTesting) {
+        if (!isTesting) {
             setRPMDistance();
             // setRPMDistanceAndVelo(ChassisSpeeds.fromRobotRelativeSpeeds(m_drive.getState().Speeds, m_drive.getState().Pose.getRotation()));
         }
@@ -174,6 +188,7 @@ public class Shooter extends SubsystemBase {
             stopShooter();
         }
     }
+    public void resetPrevDist() { m_prevDistance = 0.0; }
 
     public double getAngularDisplacement(Pose2d currentPose, Pose2d targetPose, Rotation2d turretAngle){
         currentPose.transformBy(new Transform2d(0.0, 0.0, Rotation2d.kZero)); // offset of robot center to turret center
@@ -199,7 +214,10 @@ public class Shooter extends SubsystemBase {
 
     public void setRPMDistance() {
         if (!isShooting) { isShooting = true; }
-        m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(m_distance)/ 60.0));
+        if (Math.abs(m_distance - m_prevDistance) > 0.3) {
+            m_flywheelMotorLead.setControl(m_vvReq.withVelocity(RPMtable.get(m_distance)/ 60.0));
+            m_prevDistance = m_distance;
+        }
     }
 
     public void setRPMDistanceAndVelo(ChassisSpeeds speeds){
