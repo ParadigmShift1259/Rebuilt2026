@@ -121,7 +121,7 @@ public class RobotContainer {
     public final Transfer transfer = new Transfer();
 
     private boolean isinTransition = false;
-    private boolean isTrackingFuel = false;
+    // private boolean isTrackingFuel = false;
     private boolean isTrackingHub = false;
     private boolean slowmode = false;
     private boolean isBlue = false;
@@ -282,8 +282,9 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(new SequentialCommandGroup(drivetrain.runOnce(drivetrain::seedFieldCentric)
-                                    , new InstantCommand(() -> drivetrain.getPigeon2().reset())));  
+        // joystick.leftBumper().onTrue(new SequentialCommandGroup(drivetrain.runOnce(drivetrain::seedFieldCentric)
+        //                             , new InstantCommand(() -> drivetrain.getPigeon2().reset())));  
+        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));  
 
         // joystick.leftTrigger().onTrue(m_jogLeft);
         // joystick.leftTrigger().onFalse(m_jogStop);
@@ -353,7 +354,16 @@ public class RobotContainer {
         }
         else if (vision.isLLTracking()){
             LimelightHelpers.PoseEstimate poseEst = vision.getBotPoseEstimate();
-            drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
+            if (!isBlue) {
+                LimelightHelpers.PoseEstimate poseEstRed = vision.getRedPoseEstimate();
+                // SmartDashboard.putNumber("RedPoseRotationBefore", poseEst.pose.getRotation().getDegrees());
+                Pose2d poseRotated = new Pose2d(poseEst.pose.getX(), poseEst.pose.getY(), poseEstRed.pose.getRotation());
+                SmartDashboard.putNumber("RedPoseRotation", poseEstRed.pose.getRotation().getDegrees());
+                drivetrain.addVisionMeasurement(poseRotated, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
+            }
+            else {
+                drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
+            }
         }
 
         if (m_geofenceNeutZone.isInZone(drivetrain.getPose())){
@@ -428,7 +438,7 @@ public class RobotContainer {
 
         SmartDashboard.putBoolean("IsInBump", m_geofenceAlliBump.isInZone(drivetrain.getPose()));
         SmartDashboard.putBoolean("IsInTransition", isinTransition);
-        SmartDashboard.putBoolean("IsTrackingFuel", isTrackingFuel);
+        // SmartDashboard.putBoolean("IsTrackingFuel", isTrackingFuel);
 
         SmartDashboard.putNumber("TargetX", tarX);
         SmartDashboard.putNumber("TargetY", tarY);
@@ -467,7 +477,7 @@ public class RobotContainer {
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     //InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
     InstantCommand m_resetOdometry = new InstantCommand(() -> drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.kZero)));
-    InstantCommand m_trackFuel = new InstantCommand(() -> isTrackingFuel = !isTrackingFuel);
+    // InstantCommand m_trackFuel = new InstantCommand(() -> isTrackingFuel = !isTrackingFuel);
     InstantCommand m_trackHub = new InstantCommand(() -> isTrackingHub = !isTrackingHub);
     InstantCommand m_slowmode = new InstantCommand(() -> {
         slowmode = !slowmode;

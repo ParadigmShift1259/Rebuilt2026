@@ -10,6 +10,8 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -66,7 +68,7 @@ public class Robot extends TimedRobot {
         }
 
         if (m_robotContainer.vision.isLLTracking() && !m_questReset && count % 251 == 0){
-            m_robotContainer.vision.setQuestPose(m_robotContainer.vision.getLLRobotPose());
+            m_robotContainer.vision.setQuestPose(m_robotContainer.vision.getLLRobotPose().rotateBy(new Rotation3d(Rotation2d.k180deg)));
             m_questReset = true;
         }
 

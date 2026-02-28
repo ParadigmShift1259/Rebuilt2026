@@ -25,13 +25,14 @@ public class Vision extends SubsystemBase {
     private Pose2d m_robotPose = Pose2d.kZero;
     private static final String LIMELIGHT_NAME = "limelight-fuel";
 
-    private final Transform2d ROBOT_TO_QUEST = new Transform2d(0.19, 0.0, Rotation2d.kZero);
+    private final Transform2d ROBOT_TO_QUEST = new Transform2d(-0.42, -0.145, Rotation2d.kZero);
 
     public double getTimestamp() { return m_timestamp; }
     public Pose2d getQuestRobotPose() { return m_robotPose.transformBy(ROBOT_TO_QUEST.inverse()); }
     // Always return blue since that is the origin and we want the field coordinates
     public Pose3d getLLRobotPose() {return LimelightHelpers.getBotPose3d_wpiBlue(LIMELIGHT_NAME); }
     public LimelightHelpers.PoseEstimate getBotPoseEstimate() { return LimelightHelpers.getBotPoseEstimate_wpiBlue(LIMELIGHT_NAME); }
+    public LimelightHelpers.PoseEstimate getRedPoseEstimate() { return LimelightHelpers.getBotPoseEstimate_wpiRed(LIMELIGHT_NAME); }
     public boolean isTracking()  { return m_questNav.isTracking(); }
     public boolean isLLTracking() { return LimelightHelpers.getTA(LIMELIGHT_NAME) != 0; }
     
@@ -89,6 +90,6 @@ public class Vision extends SubsystemBase {
     }
 
     public void updateQuestPose(){
-        m_questNav.setPose(getLLRobotPose());
+        m_questNav.setPose(getLLRobotPose().rotateBy(new Rotation3d(Rotation2d.k180deg)));
     }
 }
