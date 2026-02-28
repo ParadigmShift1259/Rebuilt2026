@@ -65,14 +65,14 @@ public class RobotContainer {
         VecBuilder.fill(
             0.02, // Trust down to 2cm in X direction
             0.02, // Trust down to 2cm in Y direction
-            // 0.035 // Trust down to 2 degrees rotational
-            999999.0
+            0.035 // Trust down to 2 degrees rotational
+            // 999999.0
         );
 
     Matrix<N3, N1> LIMELIGHT_STD_DEVS =
         VecBuilder.fill(
-            0.02, // Trust down to 2cm in X direction
-            0.02, // Trust down to 2cm in Y direction
+            0.5, // Trust down to 2cm in X direction
+            0.5, // Trust down to 2cm in Y direction
             // 0.035 // Trust down to 2 degrees rotational
             999999.0
         );
@@ -319,6 +319,7 @@ public class RobotContainer {
         buttonBox.leftTrigger().onTrue(m_intakeGroupStop);
         buttonBox.rightTrigger().onTrue(m_shooterGroup);
         buttonBox.povLeft().onTrue(m_shooterGroupStop);
+        buttonBox.povUp().onTrue(m_resetTurret);
     }
 
     public Pose2d getDriveToPose() {
@@ -354,16 +355,17 @@ public class RobotContainer {
         }
         else if (vision.isLLTracking()){
             LimelightHelpers.PoseEstimate poseEst = vision.getBotPoseEstimate();
-            if (!isBlue) {
-                LimelightHelpers.PoseEstimate poseEstRed = vision.getRedPoseEstimate();
-                // SmartDashboard.putNumber("RedPoseRotationBefore", poseEst.pose.getRotation().getDegrees());
-                Pose2d poseRotated = new Pose2d(poseEst.pose.getX(), poseEst.pose.getY(), poseEstRed.pose.getRotation());
-                SmartDashboard.putNumber("RedPoseRotation", poseEstRed.pose.getRotation().getDegrees());
-                drivetrain.addVisionMeasurement(poseRotated, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
-            }
-            else {
-                drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
-            }
+            // if (!isBlue) {
+            //     LimelightHelpers.PoseEstimate poseEstRed = vision.getRedPoseEstimate();
+            //     // SmartDashboard.putNumber("RedPoseRotationBefore", poseEst.pose.getRotation().getDegrees());
+            //     Pose2d poseRotated = new Pose2d(poseEst.pose.getX(), poseEst.pose.getY(), poseEstRed.pose.getRotation());
+            //     SmartDashboard.putNumber("RedPoseRotation", poseEstRed.pose.getRotation().getDegrees());
+            //     drivetrain.addVisionMeasurement(poseRotated, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
+            // }
+            // else {
+            //     drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
+            // }
+            drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
         }
 
         if (m_geofenceNeutZone.isInZone(drivetrain.getPose())){
@@ -462,6 +464,7 @@ public class RobotContainer {
     InstantCommand m_homeIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_home));
     InstantCommand m_frameIntake = new InstantCommand(() -> intake.deploy(Intake.m_frame));
     InstantCommand m_frameIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_frame));
+    InstantCommand m_partialIntake = new InstantCommand(() -> intake.deploy(Intake.m_partial));
     InstantCommand m_extendIntake = new InstantCommand(() -> intake.deploy(Intake.m_extend));
     InstantCommand m_resetPrevDist = new InstantCommand(() -> shooter.resetPrevDist());
 
@@ -492,6 +495,8 @@ public class RobotContainer {
     InstantCommand m_jogLeft = new InstantCommand(() -> jogState = JogState.leftJog);
     InstantCommand m_jogRight = new InstantCommand(() -> jogState = JogState.rightJog);
     InstantCommand m_jogStop = new InstantCommand(() -> jogState = JogState.noJog);
+    
+    InstantCommand m_resetTurret = new InstantCommand(() -> shooter.resetTurret());
 
     WaitCommand m_waitOneSec = new WaitCommand( 1.0);
     WaitCommand m_waitHalfSec = new WaitCommand(0.5);
@@ -503,7 +508,7 @@ public class RobotContainer {
     // Shooter is always has the flywheel ramped, so we can skip the delay and just start/stop the kicker
     SequentialCommandGroup m_shooterGroupStop = new SequentialCommandGroup(m_stopKicker2, m_stopSpindexer2);
 //    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
-    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_frameIntake2, m_runKicker2, m_waitQuarterSec, m_stopIntakeArms2, m_runSpindexer2);
+    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(/* m_partialIntake, */ m_runKicker2, m_waitQuarterSec, m_stopIntakeArms2, m_runSpindexer2);
 
     SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
     SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_stopIntake2, m_waitHalfSec, m_frameIntake);

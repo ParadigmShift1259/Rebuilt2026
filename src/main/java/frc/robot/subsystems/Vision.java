@@ -25,7 +25,7 @@ public class Vision extends SubsystemBase {
     private Pose2d m_robotPose = Pose2d.kZero;
     private static final String LIMELIGHT_NAME = "limelight-fuel";
 
-    private final Transform2d ROBOT_TO_QUEST = new Transform2d(-0.42, -0.145, Rotation2d.kZero);
+    private final Transform2d ROBOT_TO_QUEST = new Transform2d(-0.38, 0.145, Rotation2d.kZero);
 
     public double getTimestamp() { return m_timestamp; }
     public Pose2d getQuestRobotPose() { return m_robotPose.transformBy(ROBOT_TO_QUEST.inverse()); }
@@ -90,6 +90,6 @@ public class Vision extends SubsystemBase {
     }
 
     public void updateQuestPose(){
-        m_questNav.setPose(getLLRobotPose().rotateBy(new Rotation3d(Rotation2d.k180deg)));
+        m_questNav.setPose(getLLRobotPose());
     }
 }
