@@ -65,7 +65,7 @@ public class RobotContainer {
         VecBuilder.fill(
             0.02, // Trust down to 2cm in X direction
             0.02, // Trust down to 2cm in Y direction
-            0.035 // Trust down to 2 degrees rotational
+            99999999.0 // Trust down to 2 degrees rotational
             // 999999.0
         );
 
@@ -389,6 +389,7 @@ public class RobotContainer {
         // Moved the distance calc to shooter to keep the flywheeel ramped up
         shooter.setHubX(hubX);
         shooter.setRobotPose(drivetrain.getPose());
+        shooter.setRobotSpeed(drivetrain.getFieldRelativeSpeeds());
         shooter.setNeutralZone(m_geofenceNeutZone);
 
         SmartDashboard.putBoolean("NuetralZone?", m_geofenceNeutZone.isInZone(drivetrain.getPose()));

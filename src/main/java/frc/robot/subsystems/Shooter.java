@@ -77,6 +77,8 @@ public class Shooter extends SubsystemBase {
     // private boolean isShooting = true; // shooter state
 
     private double m_hubX = 0.0;
+    private double yDist = 0.0;
+    private double xDist = 0.0;
     public double m_distance = 0.0;
     public double m_prevDistance = 0.0;
 
@@ -86,7 +88,7 @@ public class Shooter extends SubsystemBase {
     public double m_lastP = 0.0;
 
     private double m_turretAngle = 0.0;
-    private static double m_radToTurns = 17.3 / (Math.PI / 2);
+    private static double m_radToTurns = 12.7 / (Math.PI / 2);
 
     private Pose2d m_robotPose = Pose2d.kZero;
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
@@ -105,9 +107,9 @@ public class Shooter extends SubsystemBase {
         RPMtable.put(5.0, 2300.0);
         RPMtable.put(5.5, 2400.0);
         RPMtable.put(6.0, 2500.0);
-
-        TOFtable.put(5.68, 1.17);
-        TOFtable.put(4.55, 1.15);
+        //TOF = Time Of Flight
+        TOFtable.put(5.68, 1.15);
+        TOFtable.put(4.55, 1.13);
         TOFtable.put(3.15, 1.12);
         TOFtable.put(1.88, 1.09);
         TOFtable.put(1.38, 0.9);
@@ -156,7 +158,7 @@ public class Shooter extends SubsystemBase {
             .inverted(false)
             .closedLoopRampRate(0.0)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
-                       .p(0.08);
+                       .p(0.3);
         m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
 
@@ -182,8 +184,8 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
         // SmartDashboard.putBoolean("isShooting", isShooting);
 
-        double yDist = m_robotPose.getY() - Constants.c_hubY;
-        double xDist = m_robotPose.getX() - m_hubX;
+        yDist = m_robotPose.getY() - Constants.c_hubY;
+        xDist = m_robotPose.getX() - m_hubX;
         double robotRot = m_robotPose.getRotation().getRadians();
         if (m_isBlue) {
             xDist *= -1.0;
@@ -191,11 +193,11 @@ public class Shooter extends SubsystemBase {
         else {
             robotRot *= -1.0;
         }
-        m_distance = Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
+        m_distance = Math.sqrt(Math.pow(xDist - offsetX, 2) + Math.pow(yDist - offsetY, 2));
         if (m_geofenceNeutZone != null && m_geofenceNeutZone.isInZone(m_robotPose)){
             m_distance += 2.0;
         }
-        m_turretAngle = Math.atan2(yDist + 0.14 + offsetY, xDist + 0.18 + offsetY);
+        m_turretAngle = Math.atan2(yDist + 0.14 - offsetY, xDist + 0.18 - offsetX);
         if (Math.abs(m_turretAngle) > Math.PI) {
             m_turretAngle = (2.0 * Math.PI + m_turretAngle) % Math.PI;
         }
@@ -205,11 +207,11 @@ public class Shooter extends SubsystemBase {
         // double turns = SmartDashboard.getNumber("turretRad", 0.0) * m_radToTurns;
         double turns = (m_turretAngle) * m_radToTurns * -1.0;
         SmartDashboard.putNumber("turretTurnsCalc", turns);
-        if (turns > 17.3){
-            turns = 17.3;
+        if (turns > 12.7){
+            turns = 12.7;
         }
-        else if (turns < -17.3){
-            turns = -17.3;
+        else if (turns < -12.7){
+            turns = -12.7;
         }
         m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
 
@@ -220,8 +222,8 @@ public class Shooter extends SubsystemBase {
         // SmartDashboard.putBoolean("shootDisableGet", isTesting); // debugging
 //        if (!isShooting && !isTesting) {
         if (!isTesting) {
-            setRPMDistance();
-            // setRPMDistanceAndVelo(m_ChassisSpeeds);
+            // setRPMDistance();
+            setRPMDistanceAndVelo(m_ChassisSpeeds);
         }
         else {
             stopShooter();
@@ -256,7 +258,7 @@ public class Shooter extends SubsystemBase {
         if (Math.abs(m_distance - m_prevDistance) > 0.3) {
             if (m_turretAngle > 0.0) {
                 double offset = Math.PI / 2 - m_turretAngle;
-                double rpmBoost = offset * 90;
+                double rpmBoost = offset * 30;
                 m_flywheelMotorLead.setControl(m_vvReq.withVelocity((RPMtable.get(m_distance) + rpmBoost) / 60.0));
             }
             else {
@@ -271,13 +273,15 @@ public class Shooter extends SubsystemBase {
         for (int i = 0; i < 20; i++){   // SEC Why does this loop 20 times??
             offsetX = speeds.vxMetersPerSecond * TOFtable.get(offsetDistance);
             offsetY = speeds.vyMetersPerSecond * TOFtable.get(offsetDistance);
-            offsetDistance = m_distance + Math.sqrt(Math.pow(offsetX, 2) + Math.pow(offsetY, 2));
+            offsetDistance = Math.sqrt(Math.pow(xDist - offsetX, 2) + Math.pow(yDist - offsetY, 2));;
         }
         SmartDashboard.putNumber("SOTF Distance", offsetDistance);
+        SmartDashboard.putNumber("SOTFX", offsetX); //SOTF stand for shooting on the fly
+        SmartDashboard.putNumber("SOTFY", offsetY);
         if (Math.abs(m_distance - m_prevDistance) > 0.3) {
             if (m_turretAngle > 0.0) {
                 double offset = Math.PI / 2 - m_turretAngle;
-                double rpmBoost = offset * 90;
+                double rpmBoost = offset * 30;
                 m_flywheelMotorLead.setControl(m_vvReq.withVelocity((RPMtable.get(m_distance) + rpmBoost) / 60.0));
             }
             else {
