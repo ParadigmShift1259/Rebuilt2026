@@ -400,13 +400,8 @@ public class RobotContainer {
         SmartDashboard.putNumber("PigeonHeading", drivetrain.getPigeon2().getRotation2d().getDegrees());
 
         // Red rotation on the dashboard field is rotated 180 degrees    
-        if (isBlue) {
-            m_field.setRobotPose(drivetrain.getPose());
-        }
-        else {
-            Pose2d robotPose = new Pose2d(drivetrain.getFieldX(), drivetrain.getFieldY(), drivetrain.getPose().getRotation().rotateBy(new Rotation2d(Math.PI)));
-            m_field.setRobotPose(robotPose);
-        }
+         m_field.setRobotPose(drivetrain.getPose());
+    
 
         // m_field.getObject("Fuel").setPose(drivetrain.getFieldX() + getDistanceXToFuel(vision.photonGetFuelPitch()), drivetrain.getFieldY() + getDistanceYToFuel(vision.getFuelAngle()), Rotation2d.kZero);
         SmartDashboard.putData("RobotPose", m_field);

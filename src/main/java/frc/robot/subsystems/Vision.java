@@ -71,6 +71,7 @@ public class Vision extends SubsystemBase {
                 SmartDashboard.putNumber("2DQuestPoseY", questPose.toPose2d().getY());
             }
         }
+        SmartDashboard.putNumber("LLtag", LimelightHelpers.getFiducialID(LIMELIGHT_NAME));
     }
 
     public void setQuestPose(Pose3d pose) {

@@ -12,6 +12,7 @@ import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Current;
@@ -71,7 +72,9 @@ public class Robot extends TimedRobot {
         }
 
         if (m_robotContainer.vision.isLLTracking() && !m_questReset && count % 251 == 0){
-            m_robotContainer.vision.setQuestPose(m_robotContainer.vision.getLLRobotPose()); //TODO Fix 180 degree thing
+            Pose2d questPose2d = m_robotContainer.vision.getLLRobotPose().toPose2d();
+            Pose3d questPose = new Pose3d(questPose2d.getX(), questPose2d.getY(), 0.0, new Rotation3d(0.0, 0.0, Math.PI));
+            m_robotContainer.vision.setQuestPose(questPose);
             // System.out.println(DriverStation.getAlliance().get().toString());
             m_questReset = true;
         }
