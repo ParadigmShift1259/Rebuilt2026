@@ -75,7 +75,9 @@ public class Robot extends TimedRobot {
             Pose2d questPose2d = m_robotContainer.vision.getLLRobotPose().toPose2d();
             Pose3d questPose = new Pose3d(questPose2d.getX() + 0.38, questPose2d.getY() - 0.145, 0.0, new Rotation3d(0.0, 0.0, 0.0));
             m_robotContainer.vision.setQuestPose(questPose);
-            // System.out.println(DriverStation.getAlliance().get().toString());
+            System.out.println("Resetting Quest " + questPose.getRotation().getAngle());
+            System.out.println("                " + m_robotContainer.vision.getQuestRobotPose().getRotation().getDegrees());
+//            System.out.println(DriverStation.getAlliance().get().toString());
             m_questReset = true;
         }
 

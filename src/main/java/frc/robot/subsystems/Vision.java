@@ -91,6 +91,11 @@ public class Vision extends SubsystemBase {
     }
 
     public void updateQuestPose(){
-        m_questNav.setPose(getLLRobotPose());
+        if (isLLTracking()) {
+            m_questNav.setPose(getLLRobotPose()/* .rotateBy(new Rotation3d(0.0, 0.0, Math.PI)) */);
+        }
+        else {
+            System.out.println("LimeLight not tracking, skipping Quest reset");
+        }
     }
 }

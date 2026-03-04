@@ -65,16 +65,16 @@ public class RobotContainer {
         VecBuilder.fill(
             0.02, // Trust down to 2cm in X direction
             0.02, // Trust down to 2cm in Y direction
-            99999999.0 // Trust down to 2 degrees rotational
-            // 999999.0
-        );
-
-    Matrix<N3, N1> LIMELIGHT_STD_DEVS =
-        VecBuilder.fill(
+            0.035 // Trust down to 2 degrees rotational
+            // 9999999.0 // Trust down to 2 degrees rotational
+            );
+            
+            Matrix<N3, N1> LIMELIGHT_STD_DEVS =
+            VecBuilder.fill(
             0.5, // Trust down to 2cm in X direction
             0.5, // Trust down to 2cm in Y direction
             // 0.035 // Trust down to 2 degrees rotational
-            999999.0
+            9999999.0 // Trust down to 2 degrees rotational
         );
 
     private boolean isAligning = false;
@@ -320,6 +320,7 @@ public class RobotContainer {
         buttonBox.rightTrigger().onTrue(m_shooterGroup);
         buttonBox.povLeft().onTrue(m_shooterGroupStop);
         buttonBox.povUp().onTrue(m_resetTurret);
+        buttonBox.povDown().onTrue(m_toggleTurret);
     }
 
     public Pose2d getDriveToPose() {
@@ -355,6 +356,7 @@ public class RobotContainer {
         }
         else if (vision.isLLTracking()){
             LimelightHelpers.PoseEstimate poseEst = vision.getBotPoseEstimate();
+            SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
             // if (!isBlue) {
             //     LimelightHelpers.PoseEstimate poseEstRed = vision.getRedPoseEstimate();
             //     // SmartDashboard.putNumber("RedPoseRotationBefore", poseEst.pose.getRotation().getDegrees());
@@ -493,6 +495,7 @@ public class RobotContainer {
     InstantCommand m_jogStop = new InstantCommand(() -> jogState = JogState.noJog);
     
     InstantCommand m_resetTurret = new InstantCommand(() -> shooter.resetTurret());
+    InstantCommand m_toggleTurret = new InstantCommand(() -> shooter.m_moveTurret = !shooter.m_moveTurret);
 
     WaitCommand m_waitOneSec = new WaitCommand( 1.0);
     WaitCommand m_waitHalfSec = new WaitCommand(0.5);

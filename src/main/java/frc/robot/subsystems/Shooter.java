@@ -94,6 +94,7 @@ public class Shooter extends SubsystemBase {
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
     private Geofencing m_geofenceNeutZone;
     private boolean m_isBlue = false;
+    public boolean m_moveTurret = true;
 
     public Shooter(){
         SmartDashboard.putNumber("turretRad", 0.0);
@@ -158,7 +159,7 @@ public class Shooter extends SubsystemBase {
             .inverted(false)
             .closedLoopRampRate(0.0)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
-                       .p(0.3);
+                       .p(0.1);
         m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
 
@@ -193,6 +194,7 @@ public class Shooter extends SubsystemBase {
         else {
             robotRot *= -1.0;
         }
+        robotRot += Math.PI; // emulating the 180 off rotation for calculations
         m_distance = Math.sqrt(Math.pow(xDist - offsetX, 2) + Math.pow(yDist - offsetY, 2));
         if (m_geofenceNeutZone != null && m_geofenceNeutZone.isInZone(m_robotPose)){
             m_distance += 2.0;
@@ -213,7 +215,10 @@ public class Shooter extends SubsystemBase {
         else if (turns < -12.7){
             turns = -12.7;
         }
-        m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
+
+        if (m_moveTurret) {
+            m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
+        }
 
         SmartDashboard.putNumber("ShooterDistance", m_distance);
         SmartDashboard.putNumber("TurretDegCalc", m_turretAngle * 180.0 / Math.PI);
@@ -311,7 +316,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public void resetTurret() {
-        SmartDashboard.putNumber("turretRad", 0.0);
+        // SmartDashboard.putNumber("turretRad", 0.0);
+        m_turretCtlr.setSetpoint(0.0, ControlType.kPosition);
     }
 
 //     public void aimTurret(double angle){
