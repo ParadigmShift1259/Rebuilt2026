@@ -65,8 +65,8 @@ public class RobotContainer {
         VecBuilder.fill(
             0.02, // Trust down to 2cm in X direction
             0.02, // Trust down to 2cm in Y direction
-            0.035 // Trust down to 2 degrees rotational
-            // 9999999.0 // Trust down to 2 degrees rotational
+            // 0.035 // Trust down to 2 degrees rotational
+            9999999.0 // Trust down to 2 degrees rotational
             );
             
             Matrix<N3, N1> LIMELIGHT_STD_DEVS =
@@ -150,11 +150,13 @@ public class RobotContainer {
     public final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
-        drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.kZero));
-        NamedCommands.registerCommand("runIntake", m_runIntake);
+        // drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.k180deg));
+        NamedCommands.registerCommand("runIntake", m_runIntake2);
+        NamedCommands.registerCommand("toggleTurret", m_toggleTurret);
         NamedCommands.registerCommand("stopIntake", m_stopIntake);
         NamedCommands.registerCommand("ShootCommand", m_shooterGroup);
         NamedCommands.registerCommand("StopShooter", m_shooterGroupStop);
+
 
         autoChooser = AutoBuilder.buildAutoChooser("StartAndClimbAuto");
         SmartDashboard.putData("Auto Mode", autoChooser);
@@ -251,6 +253,7 @@ public class RobotContainer {
         joystick.b().onTrue(m_shooterGroupStop);
         joystick.x().onTrue(m_trackHub);
         joystick.x().onFalse(m_trackHub);
+        joystick.y().onTrue(m_toggleTurret);
         joystick.povUp().onTrue(m_runIntake2);
         joystick.povRight().onTrue(m_intakeGroupStop);
         joystick.povLeft().onTrue(m_intakeGroup);
@@ -390,7 +393,7 @@ public class RobotContainer {
 
         // Moved the distance calc to shooter to keep the flywheeel ramped up
         shooter.setHubX(hubX);
-        shooter.setRobotPose(drivetrain.getPose());
+        shooter.setRobotPose(new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation().rotateBy(Rotation2d.k180deg)));
         shooter.setRobotSpeed(drivetrain.getFieldRelativeSpeeds());
         shooter.setNeutralZone(m_geofenceNeutZone);
 

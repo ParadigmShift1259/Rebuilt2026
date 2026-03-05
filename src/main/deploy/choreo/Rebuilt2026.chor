@@ -78,7 +78,7 @@
  "codegen":{
   "root":"..\\C:\\Users\\Developer\\Documents\\Rebuilt2026\\src\\main\\deploy\\choreo",
   "genVars":false,
-  "genTrajData":true,
-  "useChoreoLib":true
+  "genTrajData":false,
+  "useChoreoLib":false
  }
 }
