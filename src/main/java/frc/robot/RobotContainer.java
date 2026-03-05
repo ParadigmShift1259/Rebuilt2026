@@ -73,8 +73,8 @@ public class RobotContainer {
             VecBuilder.fill(
             0.5, // Trust down to 2cm in X direction
             0.5, // Trust down to 2cm in Y direction
-            // 0.035 // Trust down to 2 degrees rotational
-            9999999.0 // Trust down to 2 degrees rotational
+            0.3 // Trust down to 2 degrees rotational
+            // 9999999.0 // Trust down to 2 degrees rotational
         );
 
     private boolean isAligning = false;
@@ -315,15 +315,24 @@ public class RobotContainer {
         // │  LB   │   LT  │  RT   │  DL   │        
         // └───────┴───────┴───────┘───────┘          
         buttonBox.x().onTrue(m_homeIntake2);
-        buttonBox.back().onTrue(m_resetPrevDist);
-        buttonBox.start().onTrue(m_resetQuest);
-
+        buttonBox.y().onTrue(m_toggleFlywheel);      
+        buttonBox.rightBumper().onTrue(m_toggleIntakeRoller);      
         buttonBox.leftBumper().onTrue(m_intakeGroup);
+
+        buttonBox.back().onTrue(m_resetPrevDist);
+        //buttonBox.leftStick().onTrue(m_);
+        //buttonBox.b().onTrue(m_);
         buttonBox.leftTrigger().onTrue(m_intakeGroupStop);
+
+        buttonBox.start().onTrue(m_resetQuest);
+        buttonBox.rightStick().onTrue(new InstantCommand(() -> drivetrain.getPigeon2().reset()));
+        //buttonBox.a().onTrue(m_);
         buttonBox.rightTrigger().onTrue(m_shooterGroup);
-        buttonBox.povLeft().onTrue(m_shooterGroupStop);
+
         buttonBox.povUp().onTrue(m_resetTurret);
         buttonBox.povDown().onTrue(m_toggleTurret);
+        //buttonBox.povRight().onTrue(m_);
+        buttonBox.povLeft().onTrue(m_shooterGroupStop);
     }
 
     public Pose2d getDriveToPose() {
@@ -357,7 +366,8 @@ public class RobotContainer {
         if (vision.isTracking()){
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
-        else if (vision.isLLTracking()){
+        
+        if (vision.isLLTracking()){
             LimelightHelpers.PoseEstimate poseEst = vision.getBotPoseEstimate();
             SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
             // if (!isBlue) {
@@ -405,9 +415,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("PigeonYaw", drivetrain.getPigeon2().getYaw().getValueAsDouble());
         SmartDashboard.putNumber("PigeonHeading", drivetrain.getPigeon2().getRotation2d().getDegrees());
 
-        // Red rotation on the dashboard field is rotated 180 degrees    
-         m_field.setRobotPose(drivetrain.getPose());
-    
+        updateDashboardFieldMap();
 
         // m_field.getObject("Fuel").setPose(drivetrain.getFieldX() + getDistanceXToFuel(vision.photonGetFuelPitch()), drivetrain.getFieldY() + getDistanceYToFuel(vision.getFuelAngle()), Rotation2d.kZero);
         SmartDashboard.putData("RobotPose", m_field);
@@ -450,6 +458,11 @@ public class RobotContainer {
         SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
         SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     }
+
+    public void updateDashboardFieldMap() {
+         m_field.setRobotPose(drivetrain.getPose());
+    }
+
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_runIntake2 = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntakeArms = new InstantCommand(()-> intake.stopArms());
@@ -499,6 +512,12 @@ public class RobotContainer {
     
     InstantCommand m_resetTurret = new InstantCommand(() -> shooter.resetTurret());
     InstantCommand m_toggleTurret = new InstantCommand(() -> shooter.m_moveTurret = !shooter.m_moveTurret);
+    InstantCommand m_toggleFlywheel = new InstantCommand(() -> { boolean isTesting = SmartDashboard.getBoolean("disableShooter", false);
+                                                                 SmartDashboard.putBoolean("disableShooter", !isTesting); 
+                                                               } );
+    InstantCommand m_toggleIntakeRoller = new InstantCommand(() -> { boolean isTesting = SmartDashboard.getBoolean("disableIntakeRoller", false);
+                                                                 SmartDashboard.putBoolean("disableIntakeRoller", !isTesting); 
+                                                               } );
 
     WaitCommand m_waitOneSec = new WaitCommand( 1.0);
     WaitCommand m_waitHalfSec = new WaitCommand(0.5);

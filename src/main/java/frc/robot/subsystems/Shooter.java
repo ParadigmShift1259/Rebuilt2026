@@ -69,8 +69,8 @@ public class Shooter extends SubsystemBase {
     private SparkClosedLoopController m_turretCtlr = m_turretMot.getClosedLoopController();
     private RelativeEncoder m_turretEnc = m_turretMot.getEncoder();
     
-    private SparkMax m_hoodMot = new SparkMax(ConstantsCANIDS.kHoodID, SparkMax.MotorType.kBrushless);
-    private SparkClosedLoopController m_hoodCtlr = m_hoodMot.getClosedLoopController();
+    //private SparkMax m_hoodMot = new SparkMax(ConstantsCANIDS.kHoodID, SparkMax.MotorType.kBrushless);
+    //private SparkClosedLoopController m_hoodCtlr = m_hoodMot.getClosedLoopController();
 
     SparkMaxConfig configMax = new SparkMaxConfig();
 
@@ -86,6 +86,7 @@ public class Shooter extends SubsystemBase {
     double offsetY = 0.0;
 
     public double m_lastP = 0.0;
+    public double m_lastD = 0.0;
 
     private double m_turretAngle = 0.0;
     private static double m_radToTurns = 12.7 / (Math.PI / 2);
@@ -129,7 +130,7 @@ public class Shooter extends SubsystemBase {
         slot0.kV = 0.12;
         slot0.kP = 0.11;
         slot0.kI = 0;
-        slot0.kD = 0;
+        slot0.kD = 0.0;
 
         cfg.Voltage.withPeakForwardVoltage(Volts.of(8))
                    .withPeakReverseVoltage(Volts.of(-8));
@@ -159,11 +160,12 @@ public class Shooter extends SubsystemBase {
             .inverted(false)
             .closedLoopRampRate(0.0)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
-                       .p(0.1);
+                       .p(0.1)
+                       .d(0.02);
         m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
-
-        SmartDashboard.putNumber("turretP", 0.45);
+        SmartDashboard.putNumber("turretP", 0.15);
+        SmartDashboard.putNumber("turretD", 0.1);
         // configMax.closedLoop.p(0.5);
         // m_hoodMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
@@ -176,10 +178,16 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // if (m_lastP != SmartDashboard.getNumber("turretP", 0.0)){
-        //     configMax.closedLoop.p(0.02);
-        //     m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        // }
+        if (m_lastP != SmartDashboard.getNumber("turretP", 0.1)){
+            m_lastP = SmartDashboard.getNumber("turretP", 0.1);
+            configMax.closedLoop.p(m_lastP);
+            m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        }
+        if (m_lastD != SmartDashboard.getNumber("turretD", 0.05)){
+            m_lastD = SmartDashboard.getNumber("turretD", 0.05);
+            configMax.closedLoop.d(m_lastD);
+            m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        }
         SmartDashboard.putNumber("turretEnc", m_turretEnc.getPosition());
 
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);

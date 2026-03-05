@@ -119,6 +119,13 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putNumber("maxRPM", m_maxRPM);
         SmartDashboard.putNumber("minRPM", m_minRPM);
 
+        boolean isTesting = SmartDashboard.getBoolean("disableIntakeRoller", false); // for reducing noise during testing
+        if (!isTesting) {
+            runIntake();
+        }
+        else {
+            stopIntake();
+        }
     }
     
     public void deploy(double pos) {

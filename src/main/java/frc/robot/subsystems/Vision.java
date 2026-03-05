@@ -28,6 +28,7 @@ public class Vision extends SubsystemBase {
     private final Transform2d ROBOT_TO_QUEST = new Transform2d(-0.38, 0.145, Rotation2d.k180deg);
 
     public double getTimestamp() { return m_timestamp; }
+    //public Pose2d getQuestRobotPose() { return m_robotPose.transformBy(ROBOT_TO_QUEST); }
     public Pose2d getQuestRobotPose() { return m_robotPose.transformBy(ROBOT_TO_QUEST.inverse()); }
     // Always return blue since that is the origin and we want the field coordinates
     public Pose3d getLLRobotPose() {return LimelightHelpers.getBotPose3d_wpiBlue(LIMELIGHT_NAME); }
@@ -45,6 +46,7 @@ public class Vision extends SubsystemBase {
         m_questNav.commandPeriodic();
 
         SmartDashboard.putBoolean("QuestTracking", m_questNav.isTracking());
+        SmartDashboard.putBoolean("LLTracking", isLLTracking());
 
         if (m_questNav.isTracking()) {
             // Get the latest pose data frames from the Quest
@@ -66,6 +68,7 @@ public class Vision extends SubsystemBase {
                 SmartDashboard.putNumber("QuestPoseX", questPose.getX());
                 SmartDashboard.putNumber("QuestPoseY", questPose.getY());
                 SmartDashboard.putNumber("QuestPoseZ", questPose.getZ());
+                SmartDashboard.putNumber("QuestPoseRot", questPose.getRotation().getAngle() * 180 / Math.PI);
 
                 SmartDashboard.putNumber("2DQuestPoseX", questPose.toPose2d().getX());
                 SmartDashboard.putNumber("2DQuestPoseY", questPose.toPose2d().getY());
