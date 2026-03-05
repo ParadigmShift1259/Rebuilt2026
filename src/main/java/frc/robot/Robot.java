@@ -77,7 +77,7 @@ public class Robot extends TimedRobot {
                                         , questPose2d.getY() - 0.145
                                         , 0.0
                                         //, new Rotation3d(0.0, 0.0, 0.0));
-                                       , new Rotation3d(0.0, 0.0, questPose2d.getRotation().getRadians()));
+                                       , new Rotation3d(0.0, 0.0, questPose2d.getRotation().getRadians() + Math.PI));
             m_robotContainer.vision.setQuestPose(questPose);
             System.out.println("Resetting Quest with radians " + questPose.getRotation().getAngle());
             System.out.println("Rereading quest pose in degrees " + m_robotContainer.vision.getQuestRobotPose().getRotation().getDegrees());
@@ -127,7 +127,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-        m_robotContainer.periodic();
+        // m_robotContainer.periodic();
     }
 
     @Override

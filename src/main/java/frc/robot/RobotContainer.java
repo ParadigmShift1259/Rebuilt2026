@@ -65,8 +65,8 @@ public class RobotContainer {
         VecBuilder.fill(
             0.02, // Trust down to 2cm in X direction
             0.02, // Trust down to 2cm in Y direction
-            // 0.035 // Trust down to 2 degrees rotational
-            9999999.0 // Trust down to 2 degrees rotational
+            0.035 // Trust down to 2 degrees rotational
+            // 9999999.0 // Trust down to 2 degrees rotational
             );
             
             Matrix<N3, N1> LIMELIGHT_STD_DEVS =
@@ -367,7 +367,7 @@ public class RobotContainer {
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
         
-        if (vision.isLLTracking()){
+        else if (vision.isLLTracking()){
             LimelightHelpers.PoseEstimate poseEst = vision.getBotPoseEstimate();
             SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
             // if (!isBlue) {

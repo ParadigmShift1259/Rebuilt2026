@@ -95,6 +95,7 @@ public class Shooter extends SubsystemBase {
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
     private Geofencing m_geofenceNeutZone;
     private boolean m_isBlue = false;
+    private boolean feed180 = false;
     public boolean m_moveTurret = false;
 
     public Shooter(){
@@ -192,9 +193,8 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
         // SmartDashboard.putBoolean("isShooting", isShooting);
-
         yDist = m_robotPose.getY() - Constants.c_hubY;
-        xDist = m_robotPose.getX() - m_hubX;
+        xDist = m_robotPose.getX() - m_hubX;            
         double robotRot = m_robotPose.getRotation().getRadians();
         if (m_isBlue) {
             xDist *= -1.0;
@@ -204,15 +204,14 @@ public class Shooter extends SubsystemBase {
         }
         // robotRot += Math.PI; // emulating the 180 off rotation for calculations
         m_distance = Math.sqrt(Math.pow(xDist + offsetX, 2) + Math.pow(yDist + offsetY, 2));
-        if (m_geofenceNeutZone != null && m_geofenceNeutZone.isInZone(m_robotPose)){
-            m_distance += 2.0;
-        }
+        // if (m_geofenceNeutZone != null && m_geofenceNeutZone.isInZone(m_robotPose)){
+        //     m_distance += 2.0;
+        // }
         m_turretAngle = Math.atan2(yDist + 0.14 + offsetY, xDist + 0.18 + offsetX);
         if (Math.abs(m_turretAngle) > Math.PI) {
             m_turretAngle = (2.0 * Math.PI + m_turretAngle) % Math.PI;
         }
         m_turretAngle += robotRot;
-        // m_turretAngle += Math.PI;
         SmartDashboard.putNumber("turretRadCalc", m_turretAngle);
         // m_turretAngle *= m_radToTurns;
         // double turns = SmartDashboard.getNumber("turretRad", 0.0) * m_radToTurns;

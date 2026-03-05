@@ -11,6 +11,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "runIntake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Cycle1CollectOutpostSide.0"
@@ -20,6 +26,36 @@
           "type": "path",
           "data": {
             "pathName": "Cycle1ReturnOutpostSide.0"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "toggleTurret"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootCommand"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "toggleTurret"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShooter"
           }
         },
         {
@@ -38,6 +74,30 @@
           "type": "path",
           "data": {
             "pathName": "NeutToAlliDepotSide.0"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "toggleTurret"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootCommand"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShooter"
           }
         }
       ]
