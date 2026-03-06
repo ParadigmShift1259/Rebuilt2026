@@ -123,6 +123,7 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
+        // TODO move isBlue here: docs.wpilib.org/en/stable/docs/software/basic-programming/alliancecolor.html
     }
 
     @Override

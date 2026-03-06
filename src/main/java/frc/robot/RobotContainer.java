@@ -151,7 +151,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         // drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.k180deg));
-        NamedCommands.registerCommand("runIntake", m_runIntake2);
+        NamedCommands.registerCommand("runIntake", m_intakeGroup);
         NamedCommands.registerCommand("toggleTurret", m_toggleTurret);
         NamedCommands.registerCommand("stopIntake", m_stopIntake);
         NamedCommands.registerCommand("ShootCommand", m_shooterGroup);
@@ -474,8 +474,8 @@ public class RobotContainer {
     InstantCommand m_stopKicker = new InstantCommand(()-> transfer.stopFeeder());
     InstantCommand m_stopKicker2 = new InstantCommand(()-> transfer.stopFeeder());
 //    InstantCommand m_deployIntake = new InstantCommand(()-> intake.deploy(SmartDashboard.getNumber("Deploy Turns", 0.0)));
-    InstantCommand m_homeIntake = new InstantCommand(() -> intake.deploy(Intake.m_home));
-    InstantCommand m_homeIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_home));
+    InstantCommand m_homeIntake = new InstantCommand(() -> { intake.stopIntake(); intake.deploy(Intake.m_home); });
+    InstantCommand m_homeIntake2 = new InstantCommand(() -> { intake.stopIntake(); intake.deploy(Intake.m_home); });
     InstantCommand m_frameIntake = new InstantCommand(() -> intake.deploy(Intake.m_frame));
     InstantCommand m_frameIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_frame));
     InstantCommand m_partialIntake = new InstantCommand(() -> intake.deploy(Intake.m_partial));
@@ -531,6 +531,7 @@ public class RobotContainer {
 //    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
     SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(/* m_partialIntake, */ m_runKicker2, m_waitQuarterSec, m_stopIntakeArms2, m_runSpindexer2);
 
+    //SequentialCommandGroup m_intakeGroup2 = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
     SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
     SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_stopIntake2, m_waitHalfSec, m_frameIntake);
     
