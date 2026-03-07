@@ -48,7 +48,7 @@ public class Intake extends SubsystemBase {
     public static final double m_partial = 8.0;
     public static final double m_extend = 14.3;
 
-    public static final double m_defaultIntakeSpeed = -8.0;
+    public static final double m_defaultIntakeSpeed = -7.0;
 
     public Intake() {
         SmartDashboard.putNumber("intakeVoltage", m_defaultIntakeSpeed);

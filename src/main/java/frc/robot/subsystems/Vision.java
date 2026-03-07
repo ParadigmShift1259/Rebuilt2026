@@ -17,13 +17,14 @@ import gg.questnav.questnav.QuestNav;
 import gg.questnav.questnav.PoseFrame;
 import frc.robot.LimelightHelpers;
 
+import frc.robot.Constants;
+
 @Logged
 public class Vision extends SubsystemBase {
     
     private QuestNav m_questNav = new QuestNav();
     private double m_timestamp = 0.0;
     private Pose2d m_robotPose = Pose2d.kZero;
-    private static final String LIMELIGHT_NAME = "limelight-fuel";
 
     private final Transform2d ROBOT_TO_QUEST = new Transform2d(-0.38, 0.145, Rotation2d.k180deg);
 
@@ -31,11 +32,13 @@ public class Vision extends SubsystemBase {
     //public Pose2d getQuestRobotPose() { return m_robotPose.transformBy(ROBOT_TO_QUEST); }
     public Pose2d getQuestRobotPose() { return m_robotPose.transformBy(ROBOT_TO_QUEST.inverse()); }
     // Always return blue since that is the origin and we want the field coordinates
-    public Pose3d getLLRobotPose() {return LimelightHelpers.getBotPose3d_wpiBlue(LIMELIGHT_NAME); }
-    public LimelightHelpers.PoseEstimate getBotPoseEstimate() { return LimelightHelpers.getBotPoseEstimate_wpiBlue(LIMELIGHT_NAME); }
-    public LimelightHelpers.PoseEstimate getRedPoseEstimate() { return LimelightHelpers.getBotPoseEstimate_wpiRed(LIMELIGHT_NAME); }
+    public Pose3d getLLRobotPose() {return LimelightHelpers.getBotPose3d_wpiBlue(Constants.LIMELIGHT_NAME); }
+    public LimelightHelpers.PoseEstimate getBotPoseEstimate() { return LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.LIMELIGHT_NAME); }
+    public Pose2d getBotPoseMegaTag2() { return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Constants.LIMELIGHT_NAME).pose; }
+    public LimelightHelpers.PoseEstimate getBotPoseEstimateMegaTag2() { return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Constants.LIMELIGHT_NAME); }
+    public LimelightHelpers.PoseEstimate getRedPoseEstimate() { return LimelightHelpers.getBotPoseEstimate_wpiRed(Constants.LIMELIGHT_NAME); }
     public boolean isTracking()  { return m_questNav.isTracking(); }
-    public boolean isLLTracking() { return LimelightHelpers.getTA(LIMELIGHT_NAME) != 0; }
+    public boolean isLLTracking() { return LimelightHelpers.getTA(Constants.LIMELIGHT_NAME) != 0; }
     
     public Vision() {
 
@@ -74,7 +77,7 @@ public class Vision extends SubsystemBase {
                 SmartDashboard.putNumber("2DQuestPoseY", questPose.toPose2d().getY());
             }
         }
-        SmartDashboard.putNumber("LLtag", LimelightHelpers.getFiducialID(LIMELIGHT_NAME));
+        SmartDashboard.putNumber("LLtag", LimelightHelpers.getFiducialID(Constants.LIMELIGHT_NAME));
     }
 
     public void setQuestPose(Pose3d pose) {
@@ -82,15 +85,15 @@ public class Vision extends SubsystemBase {
     }
 
     public double getFuelAngle() {
-        return LimelightHelpers.getTX(LIMELIGHT_NAME);
+        return LimelightHelpers.getTX(Constants.LIMELIGHT_NAME);
     }
 
     public boolean isTrackingFuel() {
-        return LimelightHelpers.getTV(LIMELIGHT_NAME);
+        return LimelightHelpers.getTV(Constants.LIMELIGHT_NAME);
     }
 
     public double[] getTargetPose() {
-        return LimelightHelpers.getTargetPose_RobotSpace(LIMELIGHT_NAME);
+        return LimelightHelpers.getTargetPose_RobotSpace(Constants.LIMELIGHT_NAME);
     }
 
     public void updateQuestPose(){

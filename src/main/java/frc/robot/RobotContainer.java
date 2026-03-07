@@ -80,6 +80,8 @@ public class RobotContainer {
     private boolean isAligning = false;
     private double rotDeg = 0.0;
     private double distance = 0.0;
+    private boolean megatag1Reset = false;
+    private int count = 0;
 
     Field2d m_field = new Field2d();
     private Geofencing m_geofenceAlliBump;
@@ -141,8 +143,6 @@ public class RobotContainer {
     private double tarX = 0.0;
     private double tarY = 0.0;
 
-    enum ShootingState{noShoot, hubShoot, feedShoot};
-    private ShootingState shootingState = ShootingState.noShoot;
 
     enum JogState{noJog, leftJog, rightJog};
     private JogState jogState = JogState.noJog;
@@ -172,9 +172,11 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("inputRPM", 1000.0);
         SmartDashboard.putNumber("ShooterSpeed", 0.0);
-        SmartDashboard.putBoolean("disableShooter", true); // default disables shooter
+        SmartDashboard.putBoolean("disableShooter", Constants.defaultFlywheel); // default disables shooter
 
         SmartDashboard.putNumber("FeederSpeed", defaultFeederSpeed);
+
+        SmartDashboard.putBoolean("MegaTag2", false);
 
         boolean isBlue = isBlue();
         m_geofenceAlliBump = isBlue ? Constants.m_geofenceBlueBump : Constants.m_geofenceRedBump;
@@ -360,6 +362,8 @@ public class RobotContainer {
     }
 
     public void periodic() {
+        boolean megatag2 = SmartDashboard.getBoolean("MegaTag2", false);
+
         SmartDashboard.putBoolean("slowMode", slowmode);
         SmartDashboard.putBoolean("ReadyToShoot", isTrackingHub);
 
@@ -370,26 +374,17 @@ public class RobotContainer {
         }
         
         else if (vision.isLLTracking()){
-            LimelightHelpers.PoseEstimate poseEst = vision.getBotPoseEstimate();
-            SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
-            // if (!isBlue) {
-            //     LimelightHelpers.PoseEstimate poseEstRed = vision.getRedPoseEstimate();
-            //     // SmartDashboard.putNumber("RedPoseRotationBefore", poseEst.pose.getRotation().getDegrees());
-            //     Pose2d poseRotated = new Pose2d(poseEst.pose.getX(), poseEst.pose.getY(), poseEstRed.pose.getRotation());
-            //     SmartDashboard.putNumber("RedPoseRotation", poseEstRed.pose.getRotation().getDegrees());
-            //     drivetrain.addVisionMeasurement(poseRotated, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
-            // }
-            // else {
-            //     drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
-            // }
-            drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
-        }
+            LimelightHelpers.PoseEstimate poseEst;
+            if (!megatag2)
+            {
+                poseEst = vision.getBotPoseEstimate();
+            }
+            else {
+                poseEst = vision.getBotPoseEstimateMegaTag2();
+            }
 
-        if (m_geofenceNeutZone.isInZone(drivetrain.getPose())){
-            shootingState = ShootingState.feedShoot;
-        }
-        else {
-            shootingState = ShootingState.hubShoot;
+            SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
+            drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
         }
         
         isBlue = isBlue();
@@ -400,10 +395,11 @@ public class RobotContainer {
         else {
             hubX = hubXRed;
         }
-            offsetX = drivetrain.getFieldRelativeSpeeds().vxMetersPerSecond * shooter.TOFtable.get(shooter.m_distance);
-            offsetY = drivetrain.getFieldRelativeSpeeds().vyMetersPerSecond * shooter.TOFtable.get(shooter.m_distance);
+        offsetX = drivetrain.getFieldRelativeSpeeds().vxMetersPerSecond * shooter.TOFtable.get(shooter.m_distance);
+        offsetY = drivetrain.getFieldRelativeSpeeds().vyMetersPerSecond * shooter.TOFtable.get(shooter.m_distance);
 
         // Moved the distance calc to shooter to keep the flywheeel ramped up
+        shooter.setIsBlue(isBlue);
         shooter.setHubX(hubX);
         shooter.setRobotPose(new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation().rotateBy(Rotation2d.k180deg)));
         shooter.setRobotSpeed(drivetrain.getFieldRelativeSpeeds());
@@ -493,7 +489,7 @@ public class RobotContainer {
     //InstantCommand m_runShooter = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 1000.0)));
     // Shooter recalcs dist in periodic 2026 Feb 24 InstantCommand m_runShooterDistance = new InstantCommand(() -> shooter.setRPMDistance(0.0 /* Get a way to get distance to target TODO: */));
     InstantCommand m_stopShooter = new InstantCommand(()-> shooter.stopShooter());
-    InstantCommand m_enableFlywheel = new InstantCommand(() -> SmartDashboard.putBoolean("disableShooter", false));
+    InstantCommand m_enableFlywheel = new InstantCommand(() -> SmartDashboard.putBoolean("disableShooter", Constants.defaultFlywheel));
 
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     //InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
@@ -518,7 +514,7 @@ public class RobotContainer {
     InstantCommand m_toggleTurret = new InstantCommand(() -> shooter.m_moveTurret = !shooter.m_moveTurret);
     InstantCommand m_toggleTurretOn = new InstantCommand(() -> shooter.m_moveTurret = true);
     InstantCommand m_toggleTurretOff = new InstantCommand(() -> shooter.m_moveTurret = false);
-    InstantCommand m_toggleFlywheel = new InstantCommand(() -> { boolean isTesting = SmartDashboard.getBoolean("disableShooter", false);
+    InstantCommand m_toggleFlywheel = new InstantCommand(() -> { boolean isTesting = SmartDashboard.getBoolean("disableShooter", Constants.defaultFlywheel);
                                                                  SmartDashboard.putBoolean("disableShooter", !isTesting); 
                                                                } );
     InstantCommand m_toggleIntakeRoller = new InstantCommand(() -> { boolean isTesting = SmartDashboard.getBoolean("disableIntakeRoller", false);
@@ -539,8 +535,8 @@ public class RobotContainer {
     SequentialCommandGroup m_shootSeq = new SequentialCommandGroup(/* m_partialIntake, */ m_runKicker, m_waitQuarterSec, m_stopIntakeArms2, m_runSpindexer2);
 
     SequentialCommandGroup m_intakeSeq = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
-    SequentialCommandGroup m_stopIntakeSeq = new SequentialCommandGroup(m_frameIntake, m_stopIntake2);
-    SequentialCommandGroup m_homeIntakeSeq = new SequentialCommandGroup(m_frameIntake3, m_waitHalfSec5, m_stopIntake3, m_homeIntake);
+    SequentialCommandGroup m_stopIntakeSeq = new SequentialCommandGroup(/* m_frameIntake, */ m_stopIntake2);
+    SequentialCommandGroup m_homeIntakeSeq = new SequentialCommandGroup(/* m_frameIntake3, */ m_waitHalfSec5, m_stopIntake3, m_homeIntake);
 
     private Rotation2d getBumpAlignAngle(double currentRot){
         double alignDeg = Math.round((currentRot - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees

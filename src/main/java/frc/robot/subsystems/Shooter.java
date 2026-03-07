@@ -75,6 +75,8 @@ public class Shooter extends SubsystemBase {
     SparkMaxConfig configMax = new SparkMaxConfig();
 
     // private boolean isShooting = true; // shooter state
+    enum ShootingState{noShoot, hubShoot, feedShoot};
+    private ShootingState shootingState = ShootingState.noShoot;
 
     private double m_hubX = 0.0;
     private double yDist = 0.0;
@@ -89,7 +91,8 @@ public class Shooter extends SubsystemBase {
     public double m_lastD = 0.0;
 
     private double m_turretAngle = 0.0;
-    private static double m_radToTurns = 12.7 / (Math.PI / 2);
+    // private static double m_radToTurns = 12.7 / (Math.PI / 2);
+    private static double m_radToTurns = 12.2 / (Math.PI / 2);
 
     private Pose2d m_robotPose = Pose2d.kZero;
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
@@ -99,6 +102,8 @@ public class Shooter extends SubsystemBase {
     public boolean m_moveTurret = false;
 
     public Shooter(){
+        SmartDashboard.putNumber("offsetRPM", Constants.rpmBoost);
+
         SmartDashboard.putNumber("turretRad", 0.0);
         m_turretEnc.setPosition(0.0);
         // Add calibration points (distance in meters -> shooter RPM)
@@ -179,6 +184,16 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (m_geofenceNeutZone == null){
+            return;
+        }
+        if (m_geofenceNeutZone.isInZone(m_robotPose)){
+            shootingState = ShootingState.feedShoot;
+        }
+        else {
+            shootingState = ShootingState.hubShoot;
+        }
+
         if (m_lastP != SmartDashboard.getNumber("turretP", 0.1)){
             m_lastP = SmartDashboard.getNumber("turretP", 0.1);
             configMax.closedLoop.p(m_lastP);
@@ -193,45 +208,37 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
         // SmartDashboard.putBoolean("isShooting", isShooting);
-        yDist = m_robotPose.getY() - Constants.c_hubY;
-        xDist = m_robotPose.getX() - m_hubX;            
-        double robotRot = m_robotPose.getRotation().getRadians();
-        if (m_isBlue) {
-            xDist *= -1.0;
-        }
-        else {
-            robotRot *= -1.0;
-        }
-        // robotRot += Math.PI; // emulating the 180 off rotation for calculations
-        m_distance = Math.sqrt(Math.pow(xDist + offsetX, 2) + Math.pow(yDist + offsetY, 2));
-        // if (m_geofenceNeutZone != null && m_geofenceNeutZone.isInZone(m_robotPose)){
-        //     m_distance += 2.0;
+        // if (shootingState == shootingState.hubShoot){
+            yDist = m_robotPose.getY() - Constants.c_hubY;
+            xDist = m_robotPose.getX() - m_hubX;   
         // }
-        m_turretAngle = Math.atan2(yDist + 0.14 + offsetY, xDist + 0.18 + offsetX);
-        if (Math.abs(m_turretAngle) > Math.PI) {
-            m_turretAngle = (2.0 * Math.PI + m_turretAngle) % Math.PI;
-        }
-        m_turretAngle += robotRot;
-        SmartDashboard.putNumber("turretRadCalc", m_turretAngle);
-        // m_turretAngle *= m_radToTurns;
-        // double turns = SmartDashboard.getNumber("turretRad", 0.0) * m_radToTurns;
-        double turns = ((m_turretAngle) * m_radToTurns * -1.0);
-        SmartDashboard.putNumber("turretTurnsCalc", turns);
-        if (turns > 12.7){
-            turns = 12.7;
-        }
-        else if (turns < -12.7){
-            turns = -12.7;
-        }
+        // else if (shootingState == shootingState.feedShoot){
+        //     if (m_isBlue){
+        //         xDist = m_robotPose.getX() - 2.3;
+        //         if (m_robotPose.getY() < 3.4){
+        //             yDist = m_robotPose.getY() - 2.0;
+        //         }
+        //         else if (m_robotPose.getY() > 4.6){
+        //             yDist = m_robotPose.getY() - 6.0;  
+        //         }
+        //     }
+        //     else {
+        //         xDist = m_robotPose.getX() - 13.5;
+        //         if (m_robotPose.getY() < 3.4){
+        //             yDist = m_robotPose.getY() - 2.0;
+        //         }
+        //         else if (m_robotPose.getY() > 4.6){
+        //             yDist = m_robotPose.getY() - 6.0;  
+        //         }
+        //     }
+        // }
 
-        if (m_moveTurret) {
-            m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
-        }
+        calculateTurretAngle(xDist, yDist);        
 
         SmartDashboard.putNumber("ShooterDistance", m_distance);
         SmartDashboard.putNumber("TurretDegCalc", m_turretAngle * 180.0 / Math.PI);
         
-        boolean isTesting = SmartDashboard.getBoolean("disableShooter", false); // for reducing noise during testing
+        boolean isTesting = SmartDashboard.getBoolean("disableShooter", Constants.defaultFlywheel); // for reducing noise during testing
         // SmartDashboard.putBoolean("shootDisableGet", isTesting); // debugging
 //        if (!isShooting && !isTesting) {
         if (!isTesting) {
@@ -283,6 +290,7 @@ public class Shooter extends SubsystemBase {
 
     public void setRPMDistanceAndVelo(ChassisSpeeds speeds){
         double offsetDistance = m_distance;
+        double offsetRPM = SmartDashboard.getNumber("offsetRPM", Constants.rpmBoost);
         for (int i = 0; i < 20; i++){   // SEC Why does this loop 20 times??
             offsetX = speeds.vxMetersPerSecond * TOFtable.get(offsetDistance);
             offsetY = speeds.vyMetersPerSecond * TOFtable.get(offsetDistance);
@@ -291,14 +299,15 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("SOTF Distance", offsetDistance);
         SmartDashboard.putNumber("SOTFX", offsetX); //SOTF stand for shooting on the fly
         SmartDashboard.putNumber("SOTFY", offsetY);
+
         if (Math.abs(m_distance - m_prevDistance) > 0.3) {
             if (m_turretAngle > 0.0) {
                 double offset = Math.PI / 2 - m_turretAngle;
-                double rpmBoost = offset * 30;
+                double rpmBoost = offset * 30 + offsetRPM;
                 m_flywheelMotorLead.setControl(m_vvReq.withVelocity((RPMtable.get(m_distance) + rpmBoost) / 60.0));
             }
             else {
-                m_flywheelMotorLead.setControl(m_vvReq.withVelocity((RPMtable.get(m_distance)) / 60.0));
+                m_flywheelMotorLead.setControl(m_vvReq.withVelocity((RPMtable.get(m_distance) + offsetRPM) / 60.0));
             }
             m_prevDistance = m_distance;
         }
@@ -326,6 +335,57 @@ public class Shooter extends SubsystemBase {
     public void resetTurret() {
         // SmartDashboard.putNumber("turretRad", 0.0);
         m_turretCtlr.setSetpoint(0.0, ControlType.kPosition);
+    }
+
+    public void calculateTurretAngle(double x, double y){
+        double robotRot = m_robotPose.getRotation().getRadians();
+        if (m_isBlue) {
+            //xDist *= -1.0;
+        }
+        else {
+            robotRot *= -1.0;
+        }
+        m_distance = Math.sqrt(Math.pow(xDist + offsetX, 2) + Math.pow(yDist + offsetY, 2));
+        m_turretAngle = Math.atan2(yDist + 0.14 + offsetY, xDist + 0.18 + offsetX);
+        if (m_isBlue) {
+             m_turretAngle = NegPiToPiRads(m_turretAngle);
+        }
+        m_turretAngle += robotRot;
+        SmartDashboard.putNumber("turretRadCalc", m_turretAngle);
+        double turns = ((m_turretAngle) * m_radToTurns * -1.0);
+
+        if (turns > 12.7){
+            turns = 12.7;
+        }
+        else if (turns < -12.7){
+            turns = -12.7;
+        }
+        SmartDashboard.putNumber("turretTurnsCalc", turns);
+        if (m_moveTurret) {
+            m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
+        }
+
+    }
+
+    // Convert any angle theta in radians to its equivalent on the interval [0, 2pi]
+    private double ZeroTo2PiRads(double theta)
+    {
+        theta %= 2.0 * Math.PI;
+        if (theta < 0)
+            theta += 2.0 * Math.PI;
+            
+        return theta;
+    }
+
+    // Convert any angle theta in radians to its equivalent on the interval [-pi, pi]
+    private double NegPiToPiRads(double theta)
+    {
+        if (theta > Math.PI)
+            theta -= -1.0 * (theta - 2.0 * Math.PI);
+        else if (theta < Math.PI)
+            theta -= -1.0;
+        
+        return theta;
     }
 
 //     public void aimTurret(double angle){
