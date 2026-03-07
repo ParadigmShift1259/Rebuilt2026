@@ -190,6 +190,7 @@ public class Shooter extends SubsystemBase {
         if (m_geofenceNeutZone.isInZone(m_robotPose)){
             shootingState = ShootingState.feedShoot;
         }
+
         else {
             shootingState = ShootingState.hubShoot;
         }
@@ -208,30 +209,31 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
         // SmartDashboard.putBoolean("isShooting", isShooting);
-        // if (shootingState == shootingState.hubShoot){
-            yDist = m_robotPose.getY() - Constants.c_hubY;
-            xDist = m_robotPose.getX() - m_hubX;   
-        // }
-        // else if (shootingState == shootingState.feedShoot){
-        //     if (m_isBlue){
-        //         xDist = m_robotPose.getX() - 2.3;
-        //         if (m_robotPose.getY() < 3.4){
-        //             yDist = m_robotPose.getY() - 2.0;
-        //         }
-        //         else if (m_robotPose.getY() > 4.6){
-        //             yDist = m_robotPose.getY() - 6.0;  
-        //         }
-        //     }
-        //     else {
-        //         xDist = m_robotPose.getX() - 13.5;
-        //         if (m_robotPose.getY() < 3.4){
-        //             yDist = m_robotPose.getY() - 2.0;
-        //         }
-        //         else if (m_robotPose.getY() > 4.6){
-        //             yDist = m_robotPose.getY() - 6.0;  
-        //         }
-        //     }
-        // }
+        double targX = Constants.c_hubY;
+        double targY = m_hubX;
+        if (shootingState == ShootingState.hubShoot){
+            // yDist = m_robotPose.getY() - Constants.c_hubY;
+            // xDist = m_robotPose.getX() - m_hubX;   
+        }
+        else if (shootingState == ShootingState.feedShoot){
+            if (m_robotPose.getY() < 3.4){
+                targY = 2.0;
+            }
+            else if (m_robotPose.getY() > 4.6){
+                targY = 6.0;  
+            }
+
+            if (m_isBlue){
+                targX = 2.3;
+            }
+            else {
+                targX = 13.5;
+            }
+        }
+        SmartDashboard.putNumber("targetX", targX);
+        SmartDashboard.putNumber("targetY", targY);
+        xDist = m_robotPose.getX() - targX;   
+        yDist = m_robotPose.getY() - targY;
 
         calculateTurretAngle(xDist, yDist);        
 
@@ -341,6 +343,9 @@ public class Shooter extends SubsystemBase {
     }
 
     public void calculateTurretAngle(double x, double y){
+        SmartDashboard.putNumber("robotToTargetX", x);
+        SmartDashboard.putNumber("robotToTargetY", y);
+
         double robotRot = m_robotPose.getRotation().getRadians();
         if (m_isBlue) {
             xDist *= -1.0;
@@ -351,11 +356,8 @@ public class Shooter extends SubsystemBase {
         }
         m_distance = Math.sqrt(Math.pow(xDist + offsetX, 2) + Math.pow(yDist + offsetY, 2));
         m_turretAngle = Math.atan2(yDist + 0.14 + offsetY, xDist + 0.18 + offsetX); // 0,14 and 0.18 are shooter offsets
-        // if (m_isBlue) {
-        //      m_turretAngle = NegPiToPiRads(m_turretAngle);
-        // }
         if (m_isBlue && m_turretAngle < -Math.PI){
-            m_turretAngle %= Math.PI *-1;
+            m_turretAngle %= Math.PI *-1.0;
         }
         m_turretAngle += robotRot;
         SmartDashboard.putNumber("turretRadCalc", m_turretAngle);
@@ -374,7 +376,6 @@ public class Shooter extends SubsystemBase {
         if (m_moveTurret) {
             m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
         }
-
     }
 
     // Convert any angle theta in radians to its equivalent on the interval [0, 2pi]

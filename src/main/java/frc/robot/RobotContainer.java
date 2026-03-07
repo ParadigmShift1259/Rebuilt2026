@@ -140,8 +140,8 @@ public class RobotContainer {
 
     // private double[] tarPose;
     // private Transform2d targPose3d;
-    private double tarX = 0.0;
-    private double tarY = 0.0;
+    // private double tarX = 0.0;
+    // private double tarY = 0.0;
 
 
     enum JogState{noJog, leftJog, rightJog};
@@ -449,8 +449,8 @@ public class RobotContainer {
         SmartDashboard.putBoolean("IsInTransition", isinTransition);
         // SmartDashboard.putBoolean("IsTrackingFuel", isTrackingFuel);
 
-        SmartDashboard.putNumber("TargetX", tarX);
-        SmartDashboard.putNumber("TargetY", tarY);
+        // SmartDashboard.putNumber("TargetX", tarX);
+        // SmartDashboard.putNumber("TargetY", tarY);
 
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
