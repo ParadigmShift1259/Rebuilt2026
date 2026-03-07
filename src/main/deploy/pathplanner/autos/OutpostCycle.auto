@@ -31,13 +31,25 @@
         {
           "type": "named",
           "data": {
-            "name": "toggleTurret"
+            "name": "toggleTurretOn"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "enableFlywheel"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "OutpostCycle.0"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShooter"
           }
         },
         {
@@ -50,12 +62,6 @@
           "type": "path",
           "data": {
             "pathName": "OutpostAim.0"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "toggleTurret"
           }
         },
         {

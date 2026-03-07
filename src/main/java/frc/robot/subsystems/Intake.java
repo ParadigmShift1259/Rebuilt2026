@@ -118,14 +118,6 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putBoolean("isRunning", m_isRunning);
         SmartDashboard.putNumber("maxRPM", m_maxRPM);
         SmartDashboard.putNumber("minRPM", m_minRPM);
-
-        boolean isTesting = SmartDashboard.getBoolean("disableIntakeRoller", false); // for reducing noise during testing
-        if (!isTesting) {
-            runIntake();
-        }
-        else {
-            stopIntake();
-        }
     }
     
     public void deploy(double pos) {
@@ -149,8 +141,14 @@ public class Intake extends SubsystemBase {
         m_minRPM = 20000.0;
         m_maxRPM = 0.0;
 
-        double volt = SmartDashboard.getNumber("intakeVoltage", m_defaultIntakeSpeed);
-        m_rollerMotor.setVoltage(-volt);
+        boolean isTesting = SmartDashboard.getBoolean("disableIntakeRoller", false); // for reducing noise during testing
+        if (!isTesting) {
+            double volt = SmartDashboard.getNumber("intakeVoltage", m_defaultIntakeSpeed);
+            m_rollerMotor.setVoltage(-volt);
+        }
+        else {
+            stopIntake();
+        }
     }
     
     public void stopIntake() {

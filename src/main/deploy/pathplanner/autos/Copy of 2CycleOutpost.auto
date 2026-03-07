@@ -25,7 +25,13 @@
         {
           "type": "named",
           "data": {
-            "name": "toggleTurret"
+            "name": "toggleTurretOn"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "enableFlywheel"
           }
         },
         {

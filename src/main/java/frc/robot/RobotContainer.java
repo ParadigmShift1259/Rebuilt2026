@@ -151,11 +151,13 @@ public class RobotContainer {
 
     public RobotContainer() {
         // drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.k180deg));
-        NamedCommands.registerCommand("runIntake", m_intakeGroup);
-        NamedCommands.registerCommand("toggleTurret", m_toggleTurret);
+        NamedCommands.registerCommand("runIntake", m_intakeSeq);
+        NamedCommands.registerCommand("toggleTurretOn", m_toggleTurretOn);
+        NamedCommands.registerCommand("toggleTurretOff", m_toggleTurretOff);
         NamedCommands.registerCommand("stopIntake", m_stopIntake);
-        NamedCommands.registerCommand("ShootCommand", m_shooterGroup);
-        NamedCommands.registerCommand("StopShooter", m_shooterGroupStop);
+        NamedCommands.registerCommand("ShootCommand", m_shootSeq);
+        NamedCommands.registerCommand("StopShooter", m_stopShootSeq);
+        NamedCommands.registerCommand("enableFlywheel", m_enableFlywheel);
 
 
         autoChooser = AutoBuilder.buildAutoChooser("StartAndClimbAuto");
@@ -170,7 +172,7 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("inputRPM", 1000.0);
         SmartDashboard.putNumber("ShooterSpeed", 0.0);
-        SmartDashboard.putBoolean("disableShooter", false); // default enables shooter
+        SmartDashboard.putBoolean("disableShooter", true); // default disables shooter
 
         SmartDashboard.putNumber("FeederSpeed", defaultFeederSpeed);
 
@@ -249,16 +251,16 @@ public class RobotContainer {
     }
 
     private void configurePrimaryBindings() {
-        joystick.a().onTrue(m_shooterGroup);
-        joystick.b().onTrue(m_shooterGroupStop);
+        joystick.a().onTrue(m_shootSeq);
+        joystick.b().onTrue(m_stopShootSeq);
         joystick.x().onTrue(m_trackHub);
         joystick.x().onFalse(m_trackHub);
         joystick.y().onTrue(m_toggleTurret);
         joystick.povUp().onTrue(m_runIntake2);
-        joystick.povRight().onTrue(m_intakeGroupStop);
-        joystick.povLeft().onTrue(m_intakeGroup);
+        joystick.povRight().onTrue(m_stopIntakeSeq);
+        joystick.povLeft().onTrue(m_intakeSeq);
         // joystick.povLeft().onTrue(m_deployIntake);
-        joystick.povDown().onTrue(m_homeIntake);
+        joystick.povDown().onTrue(m_homeIntakeSeq);
         //joystick.x().onTrue(m_runSpindexer);
         //joystick.y().onTrue(m_stopSpindexer);
         // joystick.a().onTrue(m_trackFuel);
@@ -314,25 +316,25 @@ public class RobotContainer {
         // │Black1 │White1 │ Red1  │Yellow3│        
         // │  LB   │   LT  │  RT   │  DL   │        
         // └───────┴───────┴───────┘───────┘          
-        buttonBox.x().onTrue(m_homeIntake2);
+        buttonBox.x().onTrue(m_homeIntakeSeq);
         buttonBox.y().onTrue(m_toggleFlywheel);      
         buttonBox.rightBumper().onTrue(m_toggleIntakeRoller);      
-        buttonBox.leftBumper().onTrue(m_intakeGroup);
+        buttonBox.leftBumper().onTrue(m_intakeSeq);
 
         buttonBox.back().onTrue(m_resetPrevDist);
         //buttonBox.leftStick().onTrue(m_);
         //buttonBox.b().onTrue(m_);
-        buttonBox.leftTrigger().onTrue(m_intakeGroupStop);
+        buttonBox.leftTrigger().onTrue(m_stopIntakeSeq);
 
         buttonBox.start().onTrue(m_resetQuest);
         buttonBox.rightStick().onTrue(new InstantCommand(() -> drivetrain.getPigeon2().reset()));
         //buttonBox.a().onTrue(m_);
-        buttonBox.rightTrigger().onTrue(m_shooterGroup);
+        buttonBox.rightTrigger().onTrue(m_shootSeq);
 
         buttonBox.povUp().onTrue(m_resetTurret);
         buttonBox.povDown().onTrue(m_toggleTurret);
         //buttonBox.povRight().onTrue(m_);
-        buttonBox.povLeft().onTrue(m_shooterGroupStop);
+        buttonBox.povLeft().onTrue(m_stopShootSeq);
     }
 
     public Pose2d getDriveToPose() {
@@ -469,15 +471,16 @@ public class RobotContainer {
     InstantCommand m_stopIntakeArms2 = new InstantCommand(()-> intake.stopArms());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake2 = new InstantCommand(() -> intake.stopIntake());
+    InstantCommand m_stopIntake3 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_runKicker = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
-    InstantCommand m_runKicker2 = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
+    // InstantCommand m_runKicker2 = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
     InstantCommand m_stopKicker = new InstantCommand(()-> transfer.stopFeeder());
-    InstantCommand m_stopKicker2 = new InstantCommand(()-> transfer.stopFeeder());
+    // InstantCommand m_stopKicker2 = new InstantCommand(()-> transfer.stopFeeder());
 //    InstantCommand m_deployIntake = new InstantCommand(()-> intake.deploy(SmartDashboard.getNumber("Deploy Turns", 0.0)));
-    InstantCommand m_homeIntake = new InstantCommand(() -> { intake.stopIntake(); intake.deploy(Intake.m_home); });
-    InstantCommand m_homeIntake2 = new InstantCommand(() -> { intake.stopIntake(); intake.deploy(Intake.m_home); });
+    InstantCommand m_homeIntake = new InstantCommand(() -> intake.deploy(Intake.m_home));
     InstantCommand m_frameIntake = new InstantCommand(() -> intake.deploy(Intake.m_frame));
     InstantCommand m_frameIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_frame));
+    InstantCommand m_frameIntake3 = new InstantCommand(() -> intake.deploy(Intake.m_frame));
     InstantCommand m_partialIntake = new InstantCommand(() -> intake.deploy(Intake.m_partial));
     InstantCommand m_extendIntake = new InstantCommand(() -> intake.deploy(Intake.m_extend));
     InstantCommand m_resetPrevDist = new InstantCommand(() -> shooter.resetPrevDist());
@@ -485,11 +488,12 @@ public class RobotContainer {
     InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed());
     InstantCommand m_runSpindexer2 = new InstantCommand(() -> transfer.setSpinDexSpeed());
     InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
-    InstantCommand m_stopSpindexer2 = new InstantCommand(() -> transfer.stopSpinDex());
+    // InstantCommand m_stopSpindexer2 = new InstantCommand(() -> transfer.stopSpinDex());
 
     //InstantCommand m_runShooter = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 1000.0)));
     // Shooter recalcs dist in periodic 2026 Feb 24 InstantCommand m_runShooterDistance = new InstantCommand(() -> shooter.setRPMDistance(0.0 /* Get a way to get distance to target TODO: */));
     InstantCommand m_stopShooter = new InstantCommand(()-> shooter.stopShooter());
+    InstantCommand m_enableFlywheel = new InstantCommand(() -> SmartDashboard.putBoolean("disableShooter", false));
 
     InstantCommand m_resetQuest = new InstantCommand(() -> vision.updateQuestPose());
     //InstantCommand m_resetQuest = new InstantCommand(() -> vision.setQuestPose(new Pose3d(feederOutpostSideStart.getX(), feederOutpostSideStart.getY(), 0.0, Rotation3d.kZero)));
@@ -512,6 +516,8 @@ public class RobotContainer {
     
     InstantCommand m_resetTurret = new InstantCommand(() -> shooter.resetTurret());
     InstantCommand m_toggleTurret = new InstantCommand(() -> shooter.m_moveTurret = !shooter.m_moveTurret);
+    InstantCommand m_toggleTurretOn = new InstantCommand(() -> shooter.m_moveTurret = true);
+    InstantCommand m_toggleTurretOff = new InstantCommand(() -> shooter.m_moveTurret = false);
     InstantCommand m_toggleFlywheel = new InstantCommand(() -> { boolean isTesting = SmartDashboard.getBoolean("disableShooter", false);
                                                                  SmartDashboard.putBoolean("disableShooter", !isTesting); 
                                                                } );
@@ -524,24 +530,17 @@ public class RobotContainer {
     WaitCommand m_waitQuarterSec = new WaitCommand(0.25);
     WaitCommand m_waitHalfSec2 = new WaitCommand(0.5);
     WaitCommand m_waitHalfSec3 = new WaitCommand(0.5);
+    WaitCommand m_waitHalfSec4 = new WaitCommand(0.5);
+    WaitCommand m_waitHalfSec5 = new WaitCommand(0.5);
     WaitCommand m_waitTwoSec = new WaitCommand(2.0);
 
     // Shooter is always has the flywheel ramped, so we can skip the delay and just start/stop the kicker
-    SequentialCommandGroup m_shooterGroupStop = new SequentialCommandGroup(m_stopKicker2, m_stopSpindexer2);
-//    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(m_runKicker2, m_waitQuarterSec, m_runSpindexer2);
-    SequentialCommandGroup m_shooterGroup = new SequentialCommandGroup(/* m_partialIntake, */ m_runKicker2, m_waitQuarterSec, m_stopIntakeArms2, m_runSpindexer2);
+    SequentialCommandGroup m_stopShootSeq = new SequentialCommandGroup(m_stopKicker, m_stopSpindexer);
+    SequentialCommandGroup m_shootSeq = new SequentialCommandGroup(/* m_partialIntake, */ m_runKicker, m_waitQuarterSec, m_stopIntakeArms2, m_runSpindexer2);
 
-    //SequentialCommandGroup m_intakeGroup2 = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
-    SequentialCommandGroup m_intakeGroup = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
-    SequentialCommandGroup m_intakeGroupStop = new SequentialCommandGroup(m_stopIntake2, m_waitHalfSec, m_frameIntake);
-    
-    // public double getDistanceXToFuel(double angle){
-    //     return -0.28 / Math.tan(angle * Math.PI / 180.0); // 0.28 is height from the floor to the camera in meters
-    // }
-
-    // public double getDistanceYToFuel(double angle){
-    //     return Math.tan(angle * Math.PI / 180.0) * getDistanceXToFuel(vision.);
-    // }
+    SequentialCommandGroup m_intakeSeq = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
+    SequentialCommandGroup m_stopIntakeSeq = new SequentialCommandGroup(m_frameIntake, m_stopIntake2);
+    SequentialCommandGroup m_homeIntakeSeq = new SequentialCommandGroup(m_frameIntake3, m_waitHalfSec5, m_stopIntake3, m_homeIntake);
 
     private Rotation2d getBumpAlignAngle(double currentRot){
         double alignDeg = Math.round((currentRot - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees
@@ -550,6 +549,7 @@ public class RobotContainer {
     
     private boolean isBlue(){
         var allianceOptional = DriverStation.getAlliance();
+
 
         if (allianceOptional.isPresent()){
             DriverStation.Alliance alliance = allianceOptional.get();
