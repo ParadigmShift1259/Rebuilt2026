@@ -296,6 +296,9 @@ public class Shooter extends SubsystemBase {
             offsetY = speeds.vyMetersPerSecond * TOFtable.get(offsetDistance);
             offsetDistance = Math.sqrt(Math.pow(xDist - offsetX, 2) + Math.pow(yDist - offsetY, 2));;
         }
+        if (m_isBlue){
+            offsetX = -offsetX;
+        }
         SmartDashboard.putNumber("SOTF Distance", offsetDistance);
         SmartDashboard.putNumber("SOTFX", offsetX); //SOTF stand for shooting on the fly
         SmartDashboard.putNumber("SOTFY", offsetY);
@@ -340,19 +343,26 @@ public class Shooter extends SubsystemBase {
     public void calculateTurretAngle(double x, double y){
         double robotRot = m_robotPose.getRotation().getRadians();
         if (m_isBlue) {
-            //xDist *= -1.0;
+            xDist *= -1.0;
+            robotRot = m_robotPose.getRotation().rotateBy(Rotation2d.k180deg).getRadians();
         }
         else {
             robotRot *= -1.0;
         }
         m_distance = Math.sqrt(Math.pow(xDist + offsetX, 2) + Math.pow(yDist + offsetY, 2));
-        m_turretAngle = Math.atan2(yDist + 0.14 + offsetY, xDist + 0.18 + offsetX);
-        if (m_isBlue) {
-             m_turretAngle = NegPiToPiRads(m_turretAngle);
+        m_turretAngle = Math.atan2(yDist + 0.14 + offsetY, xDist + 0.18 + offsetX); // 0,14 and 0.18 are shooter offsets
+        // if (m_isBlue) {
+        //      m_turretAngle = NegPiToPiRads(m_turretAngle);
+        // }
+        if (m_isBlue && m_turretAngle < -Math.PI){
+            m_turretAngle %= Math.PI *-1;
         }
         m_turretAngle += robotRot;
         SmartDashboard.putNumber("turretRadCalc", m_turretAngle);
         double turns = ((m_turretAngle) * m_radToTurns * -1.0);
+        if (m_isBlue){
+            turns = -turns;
+        }
 
         if (turns > 12.7){
             turns = 12.7;

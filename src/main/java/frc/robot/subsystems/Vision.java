@@ -27,6 +27,8 @@ public class Vision extends SubsystemBase {
     private Pose2d m_robotPose = Pose2d.kZero;
 
     private final Transform2d ROBOT_TO_QUEST = new Transform2d(-0.38, 0.145, Rotation2d.k180deg);
+    private final Transform3d ROBOT_TO_QUEST3d = new Transform3d(ROBOT_TO_QUEST);
+
 
     public double getTimestamp() { return m_timestamp; }
     //public Pose2d getQuestRobotPose() { return m_robotPose.transformBy(ROBOT_TO_QUEST); }
@@ -81,7 +83,7 @@ public class Vision extends SubsystemBase {
     }
 
     public void setQuestPose(Pose3d pose) {
-        m_questNav.setPose(pose);
+        m_questNav.setPose(pose.transformBy(ROBOT_TO_QUEST3d));
     }
 
     public double getFuelAngle() {
