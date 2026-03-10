@@ -166,8 +166,8 @@ public class Shooter extends SubsystemBase {
             .inverted(false)
             .closedLoopRampRate(0.0)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
-                       .p(0.1)
-                       .d(0.02);
+                       .p(0.15);
+                    //    .d(0.02);
         m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         SmartDashboard.putNumber("turretP", 0.15);
@@ -194,16 +194,16 @@ public class Shooter extends SubsystemBase {
             shootingState = ShootingState.hubShoot;
         }
 
-        if (m_lastP != SmartDashboard.getNumber("turretP", 0.1)){
-            m_lastP = SmartDashboard.getNumber("turretP", 0.1);
-            configMax.closedLoop.p(m_lastP);
-            m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        }
-        if (m_lastD != SmartDashboard.getNumber("turretD", 0.05)){
-            m_lastD = SmartDashboard.getNumber("turretD", 0.05);
-            configMax.closedLoop.d(m_lastD);
-            m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        }
+        // if (m_lastP != SmartDashboard.getNumber("turretP", 0.1)){
+        //     m_lastP = SmartDashboard.getNumber("turretP", 0.1);
+        //     configMax.closedLoop.p(m_lastP);
+        //     m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        // }
+        // if (m_lastD != SmartDashboard.getNumber("turretD", 0.05)){
+        //     m_lastD = SmartDashboard.getNumber("turretD", 0.05);
+        //     configMax.closedLoop.d(m_lastD);
+        //     m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        // }
         SmartDashboard.putNumber("turretEnc", m_turretEnc.getPosition());
 
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);

@@ -255,8 +255,9 @@ public class RobotContainer {
     private void configurePrimaryBindings() {
         joystick.a().onTrue(m_shootSeq);
         joystick.b().onTrue(m_stopShootSeq);
-        joystick.x().onTrue(m_trackHub);
-        joystick.x().onFalse(m_trackHub);
+        // joystick.x().onTrue(m_trackHub);
+        // joystick.x().onFalse(m_trackHub);
+        joystick.x().onTrue(m_agitateIntake);
         joystick.y().onTrue(m_toggleTurret);
         joystick.povUp().onTrue(m_runIntake2);
         joystick.povRight().onTrue(m_stopIntakeSeq);
@@ -463,22 +464,30 @@ public class RobotContainer {
 
     InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_runIntake2 = new InstantCommand(() -> intake.runIntake());
+    InstantCommand m_runIntake3 = new InstantCommand(() -> intake.runIntake());
     InstantCommand m_stopIntakeArms = new InstantCommand(()-> intake.stopArms());
     InstantCommand m_stopIntakeArms2 = new InstantCommand(()-> intake.stopArms());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake2 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake3 = new InstantCommand(() -> intake.stopIntake());
+    InstantCommand m_stopIntake4 = new InstantCommand(() -> intake.stopIntake());
+    InstantCommand m_stopIntake5 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_runKicker = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
     // InstantCommand m_runKicker2 = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
     InstantCommand m_stopKicker = new InstantCommand(()-> transfer.stopFeeder());
     // InstantCommand m_stopKicker2 = new InstantCommand(()-> transfer.stopFeeder());
 //    InstantCommand m_deployIntake = new InstantCommand(()-> intake.deploy(SmartDashboard.getNumber("Deploy Turns", 0.0)));
     InstantCommand m_homeIntake = new InstantCommand(() -> intake.deploy(Intake.m_home));
+    InstantCommand m_homeIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_home));
     InstantCommand m_frameIntake = new InstantCommand(() -> intake.deploy(Intake.m_frame));
     InstantCommand m_frameIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_frame));
     InstantCommand m_frameIntake3 = new InstantCommand(() -> intake.deploy(Intake.m_frame));
+    InstantCommand m_frameIntake4 = new InstantCommand(() -> intake.deploy(Intake.m_frame));
     InstantCommand m_partialIntake = new InstantCommand(() -> intake.deploy(Intake.m_partial));
+    InstantCommand m_partialIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_partial));
     InstantCommand m_extendIntake = new InstantCommand(() -> intake.deploy(Intake.m_extend));
+    InstantCommand m_extendIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_extend));
+    InstantCommand m_extendIntake3 = new InstantCommand(() -> intake.deploy(Intake.m_extend));
     InstantCommand m_resetPrevDist = new InstantCommand(() -> shooter.resetPrevDist());
 
     InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed());
@@ -528,6 +537,8 @@ public class RobotContainer {
     WaitCommand m_waitHalfSec3 = new WaitCommand(0.5);
     WaitCommand m_waitHalfSec4 = new WaitCommand(0.5);
     WaitCommand m_waitHalfSec5 = new WaitCommand(0.5);
+    WaitCommand m_waitHalfSec6 = new WaitCommand(0.5);
+    WaitCommand m_waitHalfSec7 = new WaitCommand(0.5);
     WaitCommand m_waitTwoSec = new WaitCommand(2.0);
 
     // Shooter is always has the flywheel ramped, so we can skip the delay and just start/stop the kicker
@@ -537,6 +548,7 @@ public class RobotContainer {
     SequentialCommandGroup m_intakeSeq = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
     SequentialCommandGroup m_stopIntakeSeq = new SequentialCommandGroup(/* m_frameIntake, */ m_stopIntake2);
     SequentialCommandGroup m_homeIntakeSeq = new SequentialCommandGroup(/* m_frameIntake3, */ m_waitHalfSec5, m_stopIntake3, m_homeIntake);
+    SequentialCommandGroup m_agitateIntake = new SequentialCommandGroup(m_extendIntake2, m_waitHalfSec6, m_homeIntake2, m_stopIntake5, m_waitHalfSec7, m_extendIntake3, m_runIntake3);
 
     private Rotation2d getBumpAlignAngle(double currentRot){
         double alignDeg = Math.round((currentRot - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees

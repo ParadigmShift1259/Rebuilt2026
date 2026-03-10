@@ -13,12 +13,6 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Cycle1CollectDepotSide.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
             "pathName": "Cycle1ReturnDepotSide.0"
           }
         },
