@@ -350,7 +350,7 @@ public class Shooter extends SubsystemBase {
             robotRot *= -1.0;
         }
         m_distance = Math.sqrt(Math.pow(xDist + offsetX, 2) + Math.pow(yDist + offsetY, 2));
-        m_turretAngle = Math.atan2(yDist + 0.14 + offsetY, xDist + 0.18 + offsetX); // 0,14 and 0.18 are shooter offsets
+        m_turretAngle = Math.atan2(yDist + offsetY, xDist + 0.18 + offsetX); // 0,14 and 0.18 are shooter offsets
         // if (m_isBlue) {
         //      m_turretAngle = NegPiToPiRads(m_turretAngle);
         // }
