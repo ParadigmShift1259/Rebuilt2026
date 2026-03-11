@@ -92,13 +92,13 @@ public class Shooter extends SubsystemBase {
 
     private double m_turretAngle = 0.0;
     // private static double m_radToTurns = 12.7 / (Math.PI / 2);
-    private static double m_radToTurns = 12.2 / (Math.PI / 2);
+    private static double m_maxTurns = 12.2;
+    private static double m_radToTurns = m_maxTurns / (Math.PI / 2);
 
     private Pose2d m_robotPose = Pose2d.kZero;
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
     private Geofencing m_geofenceNeutZone;
     private boolean m_isBlue = false;
-    private boolean feed180 = false;
     public boolean m_moveTurret = false;
 
     public Shooter(){
@@ -212,8 +212,8 @@ public class Shooter extends SubsystemBase {
         double targX = Constants.c_hubY;
         double targY = m_hubX;
         if (shootingState == ShootingState.hubShoot){
-            // yDist = m_robotPose.getY() - Constants.c_hubY;
-            // xDist = m_robotPose.getX() - m_hubX;   
+            yDist = m_robotPose.getY() - Constants.c_hubY;
+            xDist = m_robotPose.getX() - m_hubX;   
         }
         else if (shootingState == ShootingState.feedShoot){
             if (m_robotPose.getY() < 3.4){
@@ -345,20 +345,28 @@ public class Shooter extends SubsystemBase {
     public void calculateTurretAngle(double x, double y){
         SmartDashboard.putNumber("robotToTargetX", x);
         SmartDashboard.putNumber("robotToTargetY", y);
+        SmartDashboard.putNumber("OffsetX", offsetX);
+        SmartDashboard.putNumber("OffsetY", offsetY);
 
         double robotRot = m_robotPose.getRotation().getRadians();
-        if (m_isBlue) {
+        boolean negateX = (m_isBlue && shootingState == ShootingState.hubShoot) || (!m_isBlue && shootingState == ShootingState.feedShoot);
+
+        if (negateX) {
             xDist *= -1.0;
             robotRot = m_robotPose.getRotation().rotateBy(Rotation2d.k180deg).getRadians();
         }
-        else {
+        else if (m_isBlue && shootingState == ShootingState.feedShoot) {
             robotRot *= -1.0;
         }
         m_distance = Math.sqrt(Math.pow(xDist + offsetX, 2) + Math.pow(yDist + offsetY, 2));
-        m_turretAngle = Math.atan2(yDist + 0.14 + offsetY, xDist + 0.18 + offsetX); // 0,14 and 0.18 are shooter offsets
-        if (m_isBlue && m_turretAngle < -Math.PI){
-            m_turretAngle %= Math.PI *-1.0;
+        m_turretAngle = Math.atan2(yDist + Constants.m_turretOffsetY + offsetY, xDist + Constants.m_turretOffsetX + offsetX);
+        if (m_isBlue && m_turretAngle < -Math.PI) {
+            m_turretAngle %= (-1.0 * Math.PI);
         }
+
+        SmartDashboard.putNumber("turretDegCalc0", m_turretAngle * 180.0 / Math.PI);
+        SmartDashboard.putNumber("turretRobotRot", robotRot * 180.0 / Math.PI);
+
         m_turretAngle += robotRot;
         SmartDashboard.putNumber("turretRadCalc", m_turretAngle);
         double turns = ((m_turretAngle) * m_radToTurns * -1.0);
@@ -366,26 +374,16 @@ public class Shooter extends SubsystemBase {
             turns = -turns;
         }
 
-        if (turns > 12.7){
-            turns = 12.7;
+        if (turns > m_maxTurns){
+            turns = m_maxTurns;
         }
-        else if (turns < -12.7){
-            turns = -12.7;
+        else if (turns < -m_maxTurns){
+            turns = -m_maxTurns;
         }
         SmartDashboard.putNumber("turretTurnsCalc", turns);
         if (m_moveTurret) {
             m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
         }
-    }
-
-    // Convert any angle theta in radians to its equivalent on the interval [0, 2pi]
-    private double ZeroTo2PiRads(double theta)
-    {
-        theta %= 2.0 * Math.PI;
-        if (theta < 0)
-            theta += 2.0 * Math.PI;
-            
-        return theta;
     }
 
     // Convert any angle theta in radians to its equivalent on the interval [-pi, pi]
@@ -398,10 +396,6 @@ public class Shooter extends SubsystemBase {
         
         return theta;
     }
-
-//     public void aimTurret(double angle){
-//         m_turretCtlr.setSetpoint(getAimingRotations(angle), ControlType.kPosition);
-//     }
 
 //     public void moveHood(double angle){
 //         m_hoodCtlr.setSetpoint(angle, ControlType.kPosition);

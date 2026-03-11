@@ -151,6 +151,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         // drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.k180deg));
+drivetrain.resetPose(new Pose2d(8.0, 6.0, Rotation2d.kZero));
         NamedCommands.registerCommand("runIntake", m_intakeSeq);
         NamedCommands.registerCommand("toggleTurretOn", m_toggleTurretOn);
         NamedCommands.registerCommand("toggleTurretOff", m_toggleTurretOff);
