@@ -402,7 +402,8 @@ drivetrain.resetPose(new Pose2d(8.0, 6.0, Rotation2d.kZero));
         // Moved the distance calc to shooter to keep the flywheeel ramped up
         shooter.setIsBlue(isBlue);
         shooter.setHubX(hubX);
-        shooter.setRobotPose(new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation().rotateBy(Rotation2d.k180deg)));
+        //shooter.setRobotPose(new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation().rotateBy(Rotation2d.k180deg)));
+        shooter.setRobotPose(drivetrain.getPose());
         shooter.setRobotSpeed(drivetrain.getFieldRelativeSpeeds());
         shooter.setNeutralZone(m_geofenceNeutZone);
 

@@ -12,7 +12,7 @@ public class Constants {
     public static boolean defaultFlywheel = false; //False means the flywheel is on
     public static double rpmBoost = -50.0;
 
-    public static double m_turretOffsetY = 0.14;;
+    public static double m_turretOffsetY = 0.14;
     public static double m_turretOffsetX = 0.18;
 
     public static final String LIMELIGHT_NAME = "limelight-fuel";

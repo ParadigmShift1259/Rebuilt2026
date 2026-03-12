@@ -208,18 +208,17 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("turretEnc", m_turretEnc.getPosition());
 
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
-        // SmartDashboard.putBoolean("isShooting", isShooting);
         double targX = Constants.c_hubY;
         double targY = m_hubX;
         if (shootingState == ShootingState.hubShoot){
-            yDist = m_robotPose.getY() - Constants.c_hubY;
-            xDist = m_robotPose.getX() - m_hubX;   
+            targX = Constants.c_hubY;
+            targY = m_hubX;   
         }
         else if (shootingState == ShootingState.feedShoot){
-            if (m_robotPose.getY() < 3.4){
+            if (m_robotPose.getY() < 3.4){ // close
                 targY = 2.0;
             }
-            else if (m_robotPose.getY() > 4.6){
+            else if (m_robotPose.getY() > 4.6){ // away
                 targY = 6.0;  
             }
 
@@ -232,8 +231,8 @@ public class Shooter extends SubsystemBase {
         }
         SmartDashboard.putNumber("targetX", targX);
         SmartDashboard.putNumber("targetY", targY);
-        xDist = m_robotPose.getX() - targX;   
-        yDist = m_robotPose.getY() - targY;
+        xDist = targX - m_robotPose.getX();   
+        yDist = targY - m_robotPose.getY();
 
         calculateTurretAngle(xDist, yDist);        
 
@@ -349,31 +348,45 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("OffsetY", offsetY);
 
         double robotRot = m_robotPose.getRotation().getRadians();
-        boolean negateX = (m_isBlue && shootingState == ShootingState.hubShoot) || (!m_isBlue && shootingState == ShootingState.feedShoot);
+        SmartDashboard.putNumber("turretRobotRot0", robotRot * 180.0 / Math.PI);
+        int quad = 1;
 
-        if (negateX) {
-            xDist *= -1.0;
-            robotRot = m_robotPose.getRotation().rotateBy(Rotation2d.k180deg).getRadians();
+        if (x >= 0.0) {
+            if (y > 0.0) {
+                quad = 2;
+            }
+            else {
+                quad = 1;
+            }
         }
-        else if (m_isBlue && shootingState == ShootingState.feedShoot) {
-            robotRot *= -1.0;
+        else {
+            if (y > 0.0) {
+                quad = 3;
+            }
+            else {
+                quad = 4;
+            }
         }
+        SmartDashboard.putNumber("turretQuad", quad);
+        
         m_distance = Math.sqrt(Math.pow(xDist + offsetX, 2) + Math.pow(yDist + offsetY, 2));
         m_turretAngle = Math.atan2(yDist + Constants.m_turretOffsetY + offsetY, xDist + Constants.m_turretOffsetX + offsetX);
-        if (m_isBlue && m_turretAngle < -Math.PI) {
-            m_turretAngle %= (-1.0 * Math.PI);
-        }
-
         SmartDashboard.putNumber("turretDegCalc0", m_turretAngle * 180.0 / Math.PI);
-        SmartDashboard.putNumber("turretRobotRot", robotRot * 180.0 / Math.PI);
 
-        m_turretAngle += robotRot;
-        SmartDashboard.putNumber("turretRadCalc", m_turretAngle);
-        double turns = ((m_turretAngle) * m_radToTurns * -1.0);
-        if (m_isBlue){
-            turns = -turns;
+        if (quad == 1) {
+            m_turretAngle = -1.0 * (m_turretAngle - robotRot);
+        }
+        else if (quad == 4) {
+            m_turretAngle = -1.0 * ((m_turretAngle % Math.PI) - robotRot);
+        }
+        else { // q2 and 3
+            m_turretAngle = -1.0 * ((m_turretAngle % Math.PI) + robotRot);
         }
 
+        SmartDashboard.putNumber("turretRobotRot", robotRot * 180.0 / Math.PI);
+        SmartDashboard.putNumber("turretRadCalc", m_turretAngle);
+
+        double turns = ((m_turretAngle) * m_radToTurns);
         if (turns > m_maxTurns){
             turns = m_maxTurns;
         }
@@ -384,17 +397,6 @@ public class Shooter extends SubsystemBase {
         if (m_moveTurret) {
             m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
         }
-    }
-
-    // Convert any angle theta in radians to its equivalent on the interval [-pi, pi]
-    private double NegPiToPiRads(double theta)
-    {
-        if (theta > Math.PI)
-            theta -= -1.0 * (theta - 2.0 * Math.PI);
-        else if (theta < Math.PI)
-            theta -= -1.0;
-        
-        return theta;
     }
 
 //     public void moveHood(double angle){
