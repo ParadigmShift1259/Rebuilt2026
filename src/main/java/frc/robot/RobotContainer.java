@@ -45,7 +45,6 @@ import frc.robot.subsystems.Transfer;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Shooter;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ShootCommand;
 import frc.robot.ShiftHelpers;
 
 @Logged
@@ -152,6 +151,7 @@ public class RobotContainer {
     public RobotContainer() {
         // drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.k180deg));
         NamedCommands.registerCommand("runIntake", m_intakeSeq);
+        // NamedCommands.registerCommand("agitateIntake", agitateCommandAuto);
         NamedCommands.registerCommand("toggleTurretOn", m_toggleTurretOn);
         NamedCommands.registerCommand("toggleTurretOff", m_toggleTurretOff);
         NamedCommands.registerCommand("stopIntake", m_stopIntake);
@@ -318,25 +318,26 @@ public class RobotContainer {
         // ├───────┼───────┼───────┤───────┤
         // │Black1 │White1 │ Red1  │Yellow3│        
         // │  LB   │   LT  │  RT   │  DL   │        
-        // └───────┴───────┴───────┘───────┘          
+        // └───────┴───────┴───────┘───────┘     
+        buttonBox.a().onTrue(m_runIntakeReverse);
+        buttonBox.a().onFalse(m_intakeSeq);
         buttonBox.x().onTrue(m_homeIntakeSeq);
         buttonBox.y().onTrue(m_toggleFlywheel);      
         buttonBox.rightBumper().onTrue(m_toggleIntakeRoller);      
         buttonBox.leftBumper().onTrue(m_intakeSeq);
 
         buttonBox.back().onTrue(m_resetPrevDist);
-        //buttonBox.leftStick().onTrue(m_);
-        //buttonBox.b().onTrue(m_);
         buttonBox.leftTrigger().onTrue(m_stopIntakeSeq);
 
         buttonBox.start().onTrue(m_resetQuest);
         buttonBox.rightStick().onTrue(new InstantCommand(() -> drivetrain.getPigeon2().reset()));
         //buttonBox.a().onTrue(m_);
         buttonBox.rightTrigger().onTrue(m_shootSeq);
+        buttonBox.rightTrigger().whileFalse(m_stopShootSeq);
 
         buttonBox.povUp().onTrue(m_resetTurret);
         buttonBox.povDown().onTrue(m_toggleTurret);
-        //buttonBox.povRight().onTrue(m_);
+        buttonBox.povRight().whileTrue(agitateCommand.repeatedly());
         buttonBox.povLeft().onTrue(m_stopShootSeq);
     }
 
@@ -462,9 +463,10 @@ public class RobotContainer {
          m_field.setRobotPose(drivetrain.getPose());
     }
 
-    InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake());
-    InstantCommand m_runIntake2 = new InstantCommand(() -> intake.runIntake());
-    InstantCommand m_runIntake3 = new InstantCommand(() -> intake.runIntake());
+    InstantCommand m_runIntake = new InstantCommand(() -> intake.runIntake(false));
+    InstantCommand m_runIntake2 = new InstantCommand(() -> intake.runIntake(false));
+    InstantCommand m_runIntake3 = new InstantCommand(() -> intake.runIntake(false));
+    InstantCommand m_runIntakeReverse = new InstantCommand(() -> intake.runIntake(true));
     InstantCommand m_stopIntakeArms = new InstantCommand(()-> intake.stopArms());
     InstantCommand m_stopIntakeArms2 = new InstantCommand(()-> intake.stopArms());
     InstantCommand m_stopIntake = new InstantCommand(() -> intake.stopIntake());
@@ -490,9 +492,11 @@ public class RobotContainer {
     InstantCommand m_extendIntake3 = new InstantCommand(() -> intake.deploy(Intake.m_extend));
     InstantCommand m_resetPrevDist = new InstantCommand(() -> shooter.resetPrevDist());
 
-    InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed());
-    InstantCommand m_runSpindexer2 = new InstantCommand(() -> transfer.setSpinDexSpeed());
+    InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
+    InstantCommand m_runSpindexer2 = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
+    InstantCommand m_runSpindexerReverse = new InstantCommand(() -> transfer.setSpinDexSpeed(true));
     InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
+    InstantCommand m_stopSpindexer2 = new InstantCommand(() -> transfer.stopSpinDex());
     // InstantCommand m_stopSpindexer2 = new InstantCommand(() -> transfer.stopSpinDex());
 
     //InstantCommand m_runShooter = new InstantCommand(() -> shooter.setRPM(SmartDashboard.getNumber("inputRPM", 1000.0)));
@@ -549,6 +553,9 @@ public class RobotContainer {
     SequentialCommandGroup m_stopIntakeSeq = new SequentialCommandGroup(/* m_frameIntake, */ m_stopIntake2);
     SequentialCommandGroup m_homeIntakeSeq = new SequentialCommandGroup(/* m_frameIntake3, */ m_waitHalfSec5, m_stopIntake3, m_homeIntake);
     SequentialCommandGroup m_agitateIntake = new SequentialCommandGroup(m_extendIntake2, m_waitHalfSec6, m_homeIntake2, m_stopIntake5, m_waitHalfSec7, m_extendIntake3, m_runIntake3);
+
+    Command agitateCommand = m_agitateIntake;
+    // Command agitateCommandAuto = agitateCommand.repeatedly().withTimeout(5);
 
     private Rotation2d getBumpAlignAngle(double currentRot){
         double alignDeg = Math.round((currentRot - 45.0) / 90.0) * 90.0 + 45.0; // Rounds to the nearest 45 degrees

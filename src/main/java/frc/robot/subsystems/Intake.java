@@ -136,7 +136,7 @@ public class Intake extends SubsystemBase {
         m_followClc.setSetpoint(0, ControlType.kPosition);
     }
 
-    public void runIntake() {
+    public void runIntake(boolean reverse) {
         m_isRunning = true;
         m_minRPM = 20000.0;
         m_maxRPM = 0.0;
@@ -144,7 +144,7 @@ public class Intake extends SubsystemBase {
         boolean isTesting = SmartDashboard.getBoolean("disableIntakeRoller", false); // for reducing noise during testing
         if (!isTesting) {
             double volt = SmartDashboard.getNumber("intakeVoltage", m_defaultIntakeSpeed);
-            m_rollerMotor.setVoltage(-volt);
+            m_rollerMotor.setVoltage(-volt * (reverse ? -1.0 : 1.0));
         }
         else {
             stopIntake();

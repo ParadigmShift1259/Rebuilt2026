@@ -47,9 +47,9 @@ public class Transfer extends SubsystemBase {
         SmartDashboard.putNumber("SpindexerRPM", m_spinDex.getEncoder().getVelocity());
     }
 
-    public void setSpinDexSpeed(){
+    public void setSpinDexSpeed(boolean reverse){
         double speed = SmartDashboard.getNumber("spinSpeed", defaultSpinSpeed);
-        m_spinDex.set(speed);
+        m_spinDex.set(speed * (reverse ? -1.0 : 1.0));
     }
 
     public void setFeederSpeed(double speed){
