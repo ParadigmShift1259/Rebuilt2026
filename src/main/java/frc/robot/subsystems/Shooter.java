@@ -208,17 +208,17 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("turretEnc", m_turretEnc.getPosition());
 
         SmartDashboard.putNumber("ShooterRPM", m_flywheelMotorLead.getVelocity().getValueAsDouble() * 60);
-        double targX = Constants.c_hubY;
-        double targY = m_hubX;
+        double targX = m_hubX;
+        double targY = Constants.c_hubY;
         if (shootingState == ShootingState.hubShoot){
-            targX = Constants.c_hubY;
-            targY = m_hubX;   
+            targX = m_hubX;   
+            targY = Constants.c_hubY;
         }
         else if (shootingState == ShootingState.feedShoot){
-            if (m_robotPose.getY() < 3.4){ // close
+            if (m_robotPose.getY() < 4.0){ // close
                 targY = 2.0;
             }
-            else if (m_robotPose.getY() > 4.6){ // away
+            else {
                 targY = 6.0;  
             }
 
@@ -349,39 +349,26 @@ public class Shooter extends SubsystemBase {
 
         double robotRot = m_robotPose.getRotation().getRadians();
         SmartDashboard.putNumber("turretRobotRot0", robotRot * 180.0 / Math.PI);
-        int quad = 1;
-
-        if (x >= 0.0) {
-            if (y > 0.0) {
-                quad = 2;
-            }
-            else {
-                quad = 1;
-            }
-        }
-        else {
-            if (y > 0.0) {
-                quad = 3;
-            }
-            else {
-                quad = 4;
-            }
-        }
-        SmartDashboard.putNumber("turretQuad", quad);
         
         m_distance = Math.sqrt(Math.pow(xDist + offsetX, 2) + Math.pow(yDist + offsetY, 2));
         m_turretAngle = Math.atan2(yDist + Constants.m_turretOffsetY + offsetY, xDist + Constants.m_turretOffsetX + offsetX);
         SmartDashboard.putNumber("turretDegCalc0", m_turretAngle * 180.0 / Math.PI);
 
-        if (quad == 1) {
-            m_turretAngle = -1.0 * (m_turretAngle - robotRot);
+        if (robotRot < -Math.PI / 2) {
+            robotRot += Math.PI;
         }
-        else if (quad == 4) {
-            m_turretAngle = -1.0 * ((m_turretAngle % Math.PI) - robotRot);
+        else if (robotRot > Math.PI / 2) {
+            robotRot -= Math.PI;
         }
-        else { // q2 and 3
-            m_turretAngle = -1.0 * ((m_turretAngle % Math.PI) + robotRot);
+
+        if (m_turretAngle < -Math.PI / 2) {
+            m_turretAngle += Math.PI;
         }
+        else if (m_turretAngle > Math.PI / 2) {
+            m_turretAngle -= Math.PI;
+        }
+
+        m_turretAngle = -1.0 * (m_turretAngle - robotRot);
 
         SmartDashboard.putNumber("turretRobotRot", robotRot * 180.0 / Math.PI);
         SmartDashboard.putNumber("turretRadCalc", m_turretAngle);

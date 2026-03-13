@@ -389,6 +389,9 @@ drivetrain.resetPose(new Pose2d(8.0, 6.0, Rotation2d.kZero));
         }
         
         isBlue = isBlue();
+        m_geofenceAlliBump = isBlue ? Constants.m_geofenceBlueBump : Constants.m_geofenceRedBump;
+        m_geofenceOppBump  = isBlue ? Constants.m_geofenceRedBump : Constants.m_geofenceBlueBump;
+        m_geofenceNeutZone = isBlue ? Constants.m_geofenceNeutZoneIfBlue : Constants.m_geofenceNeutZoneIfRed;
 
         if (isBlue){
             hubX = hubXBlue;
