@@ -45,7 +45,7 @@ public class Intake extends SubsystemBase {
 
     public static final double m_home = 0.0;
     public static final double m_frame = 3.5;
-    public static final double m_partial = 8.0;
+    public static final double m_partial = 6.0;
     public static final double m_extend = 14.3;
 
     public static final double m_defaultIntakeSpeed = -7.0;

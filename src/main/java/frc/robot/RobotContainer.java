@@ -152,7 +152,7 @@ public class RobotContainer {
         // drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.k180deg));
 // for sim testing drivetrain.resetPose(new Pose2d(8.0, 6.0, Rotation2d.kZero));
         NamedCommands.registerCommand("runIntake", m_intakeSeq);
-        // NamedCommands.registerCommand("agitateIntake", agitateCommandAuto);
+        NamedCommands.registerCommand("agitateIntake", m_agitateIntake);
         NamedCommands.registerCommand("toggleTurretOn", m_toggleTurretOn);
         NamedCommands.registerCommand("toggleTurretOff", m_toggleTurretOff);
         NamedCommands.registerCommand("stopIntake", m_stopIntake);
@@ -340,7 +340,7 @@ public class RobotContainer {
 
         buttonBox.povUp().onTrue(m_resetTurret);
         buttonBox.povDown().onTrue(m_toggleTurret);
-        buttonBox.povRight().whileTrue(agitateCommand.repeatedly());
+        buttonBox.povRight().whileTrue(agitateCommand.repeatedly().finallyDo(() -> {intake.runIntake(false); intake.deploy(Intake.m_extend);} ));
         buttonBox.povLeft().onTrue(m_stopShootSeq);
     }
 
@@ -558,7 +558,7 @@ public class RobotContainer {
     SequentialCommandGroup m_intakeSeq = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
     SequentialCommandGroup m_stopIntakeSeq = new SequentialCommandGroup(/* m_frameIntake, */ m_stopIntake2);
     SequentialCommandGroup m_homeIntakeSeq = new SequentialCommandGroup(/* m_frameIntake3, */ m_waitHalfSec5, m_stopIntake3, m_homeIntake);
-    SequentialCommandGroup m_agitateIntake = new SequentialCommandGroup(m_extendIntake2, m_waitHalfSec6, m_homeIntake2, m_stopIntake5, m_waitHalfSec7, m_extendIntake3, m_runIntake3);
+    SequentialCommandGroup m_agitateIntake = new SequentialCommandGroup(m_extendIntake2, m_waitHalfSec6, m_partialIntake2, m_stopIntake5, m_waitHalfSec7, m_extendIntake3, m_runIntake3);
 
     Command agitateCommand = m_agitateIntake;
     // Command agitateCommandAuto = agitateCommand.repeatedly().withTimeout(5);
