@@ -25,19 +25,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Cycle2MidDepotSide.0"
+            "pathName": "DepotCycle.0"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Cycle2MidCenterDepotSide.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle2ReturnDepot.0"
+            "pathName": "DepotAim.0"
           }
         }
       ]

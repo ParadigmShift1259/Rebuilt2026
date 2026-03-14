@@ -139,8 +139,8 @@ public class RobotContainer {
 
     // private double[] tarPose;
     // private Transform2d targPose3d;
-    private double tarX = 0.0;
-    private double tarY = 0.0;
+    // private double tarX = 0.0;
+    // private double tarY = 0.0;
 
 
     enum JogState{noJog, leftJog, rightJog};
@@ -150,6 +150,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         // drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.k180deg));
+// for sim testing drivetrain.resetPose(new Pose2d(8.0, 6.0, Rotation2d.kZero));
         NamedCommands.registerCommand("runIntake", m_intakeSeq);
         // NamedCommands.registerCommand("agitateIntake", agitateCommandAuto);
         NamedCommands.registerCommand("toggleTurretOn", m_toggleTurretOn);
@@ -327,6 +328,8 @@ public class RobotContainer {
         buttonBox.leftBumper().onTrue(m_intakeSeq);
 
         buttonBox.back().onTrue(m_resetPrevDist);
+        //buttonBox.leftStick().onTrue(m_);
+        //buttonBox.b().onTrue(m_);
         buttonBox.leftTrigger().onTrue(m_stopIntakeSeq);
 
         buttonBox.start().onTrue(m_resetQuest);
@@ -390,6 +393,9 @@ public class RobotContainer {
         }
         
         isBlue = isBlue();
+        m_geofenceAlliBump = isBlue ? Constants.m_geofenceBlueBump : Constants.m_geofenceRedBump;
+        m_geofenceOppBump  = isBlue ? Constants.m_geofenceRedBump : Constants.m_geofenceBlueBump;
+        m_geofenceNeutZone = isBlue ? Constants.m_geofenceNeutZoneIfBlue : Constants.m_geofenceNeutZoneIfRed;
 
         if (isBlue){
             hubX = hubXBlue;
@@ -403,7 +409,7 @@ public class RobotContainer {
         // Moved the distance calc to shooter to keep the flywheeel ramped up
         shooter.setIsBlue(isBlue);
         shooter.setHubX(hubX);
-        shooter.setRobotPose(new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation().rotateBy(Rotation2d.k180deg)));
+        shooter.setRobotPose(drivetrain.getPose());
         shooter.setRobotSpeed(drivetrain.getFieldRelativeSpeeds());
         shooter.setNeutralZone(m_geofenceNeutZone);
 
@@ -451,8 +457,8 @@ public class RobotContainer {
         SmartDashboard.putBoolean("IsInTransition", isinTransition);
         // SmartDashboard.putBoolean("IsTrackingFuel", isTrackingFuel);
 
-        SmartDashboard.putNumber("TargetX", tarX);
-        SmartDashboard.putNumber("TargetY", tarY);
+        // SmartDashboard.putNumber("TargetX", tarX);
+        // SmartDashboard.putNumber("TargetY", tarY);
 
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
