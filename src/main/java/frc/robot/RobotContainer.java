@@ -340,7 +340,7 @@ public class RobotContainer {
 
         buttonBox.povUp().onTrue(m_resetTurret);
         buttonBox.povDown().onTrue(m_toggleTurret);
-        buttonBox.povRight().whileTrue(agitateCommand.repeatedly().finallyDo(() -> {intake.runIntake(false); intake.deploy(Intake.m_extend);} ));
+        buttonBox.povRight().whileTrue(agitateCommand.repeatedly());
         buttonBox.povLeft().onTrue(m_stopShootSeq);
     }
 

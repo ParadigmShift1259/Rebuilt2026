@@ -47,21 +47,21 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.75
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "agitateIntake"
           }
         },
         {
-          "type": "wait",
+          "type": "path",
           "data": {
-            "waitTime": 0.75
+            "pathName": "OutpostReturn.0"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
           }
         }
       ]
