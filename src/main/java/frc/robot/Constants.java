@@ -19,7 +19,12 @@ public class Constants {
     public static double m_defaultNegXVelOffsetDegrade = 0.8;
     public static double m_defaultNegYVelOffsetDegrade = 0.8;
 
-    public static double m_turretLimitAngle = Math.PI / 2.0;// + (15.0 * Math.PI / 180);
+    //public static double m_turretExtraAngle = 15.0 * Math.PI / 180;
+    public static double m_turretExtraAngle = 30.0 * Math.PI / 180;
+    public static double m_turretLimitAngle = (Math.PI / 2.0) + m_turretExtraAngle;
+    //private static double m_maxTurns = 14.2;  // 90 deg
+    //private static double m_maxTurns = 14.2;  // 105 deg (+15)
+    public static double m_maxTurns = 16.3;    // 120 deg (+30)
 
     // public static final String LIMELIGHT_NAME = "limelight-fuel";
     public static final String LIMELIGHT_NAME = "limelight-hub";
