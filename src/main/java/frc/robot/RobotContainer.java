@@ -125,6 +125,7 @@ public class RobotContainer {
     // private boolean isTrackingFuel = false;
     private boolean isTrackingHub = false;
     private boolean slowmode = false;
+    private boolean m_bOverrideBumpControl = false;
     private boolean isBlue = false;
 
     // private final double X_START_BUMP = 1.0;
@@ -191,7 +192,7 @@ public class RobotContainer {
     
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
-                if (m_geofenceAlliBump.isInZone(drivetrain.getPose()) || m_geofenceOppBump.isInZone(drivetrain.getPose())) {
+                if (!m_bOverrideBumpControl && (m_geofenceAlliBump.isInZone(drivetrain.getPose()) || m_geofenceOppBump.isInZone(drivetrain.getPose()))) {
                     if (!isAligning) {
                         isAligning = true;
                         rotDeg = drivetrain.getRotationDegrees(); // gets once per fence entry
@@ -282,13 +283,15 @@ public class RobotContainer {
         // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
         joystick.start().onTrue(m_slowmode);
+        
+        joystick.rightTrigger().onTrue(m_overrideBumpControl);
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        // joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
         // joystick.leftBumper().onTrue(new SequentialCommandGroup(drivetrain.runOnce(drivetrain::seedFieldCentric)
@@ -524,7 +527,11 @@ public class RobotContainer {
             MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed;=
         }
     });
-    
+
+    InstantCommand m_overrideBumpControl = new InstantCommand(() -> {
+        m_bOverrideBumpControl = !m_bOverrideBumpControl;
+    });
+
     InstantCommand m_jogLeft = new InstantCommand(() -> jogState = JogState.leftJog);
     InstantCommand m_jogRight = new InstantCommand(() -> jogState = JogState.rightJog);
     InstantCommand m_jogStop = new InstantCommand(() -> jogState = JogState.noJog);
@@ -555,7 +562,8 @@ public class RobotContainer {
     SequentialCommandGroup m_stopShootSeq = new SequentialCommandGroup(m_stopKicker, m_stopSpindexer);
     SequentialCommandGroup m_shootSeq = new SequentialCommandGroup(/* m_partialIntake, */ m_runKicker, m_waitQuarterSec, m_stopIntakeArms2, m_runSpindexer2);
 
-    SequentialCommandGroup m_intakeSeq = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
+    SequentialCommandGroup 
+    m_intakeSeq = new SequentialCommandGroup(m_extendIntake, m_waitHalfSec3, m_runIntake, m_stopIntakeArms);
     SequentialCommandGroup m_stopIntakeSeq = new SequentialCommandGroup(/* m_frameIntake, */ m_stopIntake2);
     SequentialCommandGroup m_homeIntakeSeq = new SequentialCommandGroup(/* m_frameIntake3, */ m_waitHalfSec5, m_stopIntake3, m_homeIntake);
     SequentialCommandGroup m_agitateIntake = new SequentialCommandGroup(m_extendIntake2, m_waitHalfSec6, m_partialIntake2, m_stopIntake5, m_waitHalfSec7, m_extendIntake3, m_runIntake3);
