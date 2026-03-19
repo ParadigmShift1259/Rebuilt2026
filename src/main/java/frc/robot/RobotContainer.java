@@ -307,19 +307,19 @@ public class RobotContainer {
 
     public void configureSecondaryBindings() {
         // Physical layout and XBox assignment
-        // ┌───────┌───────┬───────┐───────┐
-        // │Green1 │White2 │ Blue2 │Green1 │
-        // │  X    │  Back │ Start │  DU   │
-        // ├───────├───────┼───────┤───────┤
-        // │Yellow1│Green2 │ Red2  │ Blue3 │
-        // │  Y    │  LS   │  RS   │  DD   │
-        // ├───────├───────┼───────┤───────┤
-        // │ Blue1 │Black2 │Yellow2│ Red3  │
-        // │  RB   │  B    │  A    │  DR   │
-        // ├───────┼───────┼───────┤───────┤
-        // │Black1 │White1 │ Red1  │Yellow3│        
-        // │  LB   │   LT  │  RT   │  DL   │        
-        // └───────┴───────┴───────┘───────┘     
+        // +-------+---------------+-------+
+        // ¦Green1 ¦White2 ¦ Blue2 ¦Green1 ¦
+        // ¦  X    ¦  Back ¦ Start ¦  DU   ¦
+        // +-------+-------+-------¦-------¦
+        // ¦Yellow1¦Green2 ¦ Red2  ¦ Blue3 ¦
+        // ¦  Y    ¦  LS   ¦  RS   ¦  DD   ¦
+        // +-------+-------+-------¦-------¦
+        // ¦ Blue1 ¦Black2 ¦Yellow2¦ Red3  ¦
+        // ¦  RB   ¦  B    ¦  A    ¦  DR   ¦
+        // +-------+-------+-------¦-------¦
+        // ¦Black1 ¦White1 ¦ Red1  ¦Yellow3¦        
+        // ¦  LB   ¦   LT  ¦  RT   ¦  DL   ¦        
+        // +-----------------------+-------+         
         buttonBox.a().onTrue(m_runIntakeReverse);
         buttonBox.a().onFalse(m_intakeSeq);
         buttonBox.x().onTrue(m_homeIntakeSeq);
