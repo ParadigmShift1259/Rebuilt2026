@@ -13,19 +13,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Cycle1CollectOutpostSide.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle1ReturnOutpostSide.0"
+            "pathName": "Cycle1ReturnOutpostSideCycle.0"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "toggleTurret"
+            "name": "toggleTurretOn"
           }
         },
         {
@@ -35,15 +29,21 @@
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 3.0
+            "name": "agitateIntake"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "toggleTurret"
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
           }
         },
         {
@@ -55,25 +55,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Cycle2MidOutpostSide.0"
+            "pathName": "Cycle2MidOutpostSideCycle.0"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Cycle2CollectOutpostSide.0"
+            "pathName": "Cycle2MidCenterOutpostSide.0"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "NeutToAlliDepotSide.0"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "toggleTurret"
+            "pathName": "Cycle2ReturnOutpostSideCycle.0"
           }
         },
         {
@@ -83,15 +77,15 @@
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 3.0
+            "name": "agitateIntake"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "StopShooter"
+            "name": "agitateIntake"
           }
         }
       ]

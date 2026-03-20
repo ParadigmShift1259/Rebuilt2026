@@ -23,15 +23,51 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "toggleTurretOn"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootCommand"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShooter"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "DepotCycle.0"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "DepotAim.0"
+            "name": "ShootCommand"
           }
         }
       ]

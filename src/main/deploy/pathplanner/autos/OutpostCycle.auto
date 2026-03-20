@@ -5,12 +5,6 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "runIntake"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "AlliToNeutOutpostSide.0"
@@ -43,7 +37,25 @@
         {
           "type": "named",
           "data": {
-            "name": "agitateIntake"
+            "name": "StopShooter"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.75
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "OutpostReturn.0"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootCommand"
           }
         },
         {
@@ -53,9 +65,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "OutpostReturn.0"
+            "name": "agitateIntake"
           }
         },
         {

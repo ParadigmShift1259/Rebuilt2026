@@ -80,6 +80,7 @@ public class RobotContainer {
     private double rotDeg = 0.0;
     private double distance = 0.0;
     private boolean megatag1Reset = false;
+    private boolean m_trackQuest = true;
     private int count = 0;
 
     Field2d m_field = new Field2d();
@@ -257,26 +258,15 @@ public class RobotContainer {
     private void configurePrimaryBindings() {
         joystick.a().onTrue(m_shootSeq);
         joystick.b().onTrue(m_stopShootSeq);
-        // joystick.x().onTrue(m_trackHub);
-        // joystick.x().onFalse(m_trackHub);
         joystick.x().onTrue(m_agitateIntake);
         joystick.y().onTrue(m_toggleTurret);
         joystick.povUp().onTrue(m_runIntake2);
         joystick.povRight().onTrue(m_stopIntakeSeq);
         joystick.povLeft().onTrue(m_intakeSeq);
-        // joystick.povLeft().onTrue(m_deployIntake);
         joystick.povDown().onTrue(m_homeIntakeSeq);
-        //joystick.x().onTrue(m_runSpindexer);
-        //joystick.y().onTrue(m_stopSpindexer);
-        // joystick.a().onTrue(m_trackFuel);
-        // joystick.a().onFalse(m_trackFuel);
-        // joystick.x().onTrue(m_resetQuest);
-        // joystick.x().onTrue(DriveCommands.driveToPoseCommand(drivetrain,
-        //     () -> drivetrain.getPose().transformBy(vision.photonGetTargetPose())));
 
-        // joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
-        joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
-        joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
         // joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
@@ -285,6 +275,7 @@ public class RobotContainer {
         joystick.start().onTrue(m_slowmode);
         
         joystick.rightTrigger().onTrue(m_overrideBumpControl);
+        joystick.rightBumper().onTrue(m_toggleQuest);
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -297,13 +288,6 @@ public class RobotContainer {
         // joystick.leftBumper().onTrue(new SequentialCommandGroup(drivetrain.runOnce(drivetrain::seedFieldCentric)
         //                             , new InstantCommand(() -> drivetrain.getPigeon2().reset())));  
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));  
-
-        // joystick.leftTrigger().onTrue(m_jogLeft);
-        // joystick.leftTrigger().onFalse(m_jogStop);
-        // joystick.rightTrigger().onTrue(m_jogRight);
-        // joystick.rightTrigger().onFalse(m_jogStop);
-        // joystick.rightTrigger().onTrue(m_runShooter);
-        // joystick.leftTrigger().onTrue(m_stopShooter);
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
@@ -377,7 +361,7 @@ public class RobotContainer {
 
         SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
 
-        if (vision.isTracking()){
+        if (vision.isTracking() && m_trackQuest){
             drivetrain.addVisionMeasurement(vision.getQuestRobotPose(), vision.getTimestamp(), QUESTNAV_STD_DEVS);
         }
         
@@ -530,6 +514,10 @@ public class RobotContainer {
 
     InstantCommand m_overrideBumpControl = new InstantCommand(() -> {
         m_bOverrideBumpControl = !m_bOverrideBumpControl;
+    });
+
+    InstantCommand m_toggleQuest = new InstantCommand(() -> {
+        m_trackQuest = !m_trackQuest;
     });
 
     InstantCommand m_jogLeft = new InstantCommand(() -> jogState = JogState.leftJog);
