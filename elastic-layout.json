@@ -1582,19 +1582,6 @@
         "layouts": [],
         "containers": [
           {
-            "title": "limelight-fuel",
-            "x": 512.0,
-            "y": 512.0,
-            "width": 384.0,
-            "height": 384.0,
-            "type": "Camera Stream",
-            "properties": {
-              "topic": "/CameraPublisher/limelight-fuel",
-              "period": 0.06,
-              "rotation_turns": 0
-            }
-          },
-          {
             "title": "RobotPose",
             "x": 0.0,
             "y": 0.0,
@@ -1713,6 +1700,19 @@
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": true
+            }
+          },
+          {
+            "title": "limelight-hub",
+            "x": 512.0,
+            "y": 512.0,
+            "width": 384.0,
+            "height": 384.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-hub",
+              "period": 0.06,
+              "rotation_turns": 0
             }
           }
         ]

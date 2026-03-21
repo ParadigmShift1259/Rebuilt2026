@@ -23,12 +23,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "enableFlywheel"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "OutpostCycle.0"
@@ -79,7 +73,7 @@
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": true
 }
