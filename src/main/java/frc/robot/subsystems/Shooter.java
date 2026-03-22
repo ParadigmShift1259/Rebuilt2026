@@ -84,9 +84,9 @@ public class Shooter extends SubsystemBase {
     public double m_lastD = 0.0;
 
     private double m_turretAngle = 0.0;
-    private static double m_maxTurns = 14.2;
+    private static double m_maxTurns = 12.5;
     // private static double m_radToTurns = m_maxTurns / Constants.m_turretLimitAngle;
-    private static double m_radToTurns = 12.0 / (Math.PI / 2);
+    private static double m_radToTurns = 12.5 / (Math.PI / 2);
 
     private Pose2d m_robotPose = Pose2d.kZero;
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
