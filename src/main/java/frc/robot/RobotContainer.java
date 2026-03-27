@@ -52,7 +52,7 @@ public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
-    private final double defaultFeederSpeed = 0.3;
+    private final double defaultFeederSpeed = 0.5;
     private final double hubXBlue = 4.6;
     private final double hubXRed = 11.91;
     private double hubX = 0.0;
@@ -294,28 +294,28 @@ public class RobotContainer {
 
     public void configureSecondaryBindings() {
         // Physical layout and XBox assignment
-        // ┌───────┌───────┬───────┐───────┐
-        // │Green1 │White2 │ Blue2 │Green1 │
-        // │  X    │  Back │ Start │  DU   │
-        // ├───────├───────┼───────┤───────┤
-        // │Yellow1│Green2 │ Red2  │ Blue3 │
-        // │  Y    │  LS   │  RS   │  DD   │
-        // ├───────├───────┼───────┤───────┤
-        // │ Blue1 │Black2 │Yellow2│ Red3  │
-        // │  RB   │  B    │  A    │  DR   │
-        // ├───────┼───────┼───────┤───────┤
-        // │Black1 │White1 │ Red1  │Yellow3│        
-        // │  LB   │   LT  │  RT   │  DL   │        
-        // └───────┴───────┴───────┘───────┘     
+        // +-------+---------------+-------+
+        // ¦Green1 ¦White2 ¦ Blue2 ¦Green1 ¦
+        // ¦  X    ¦  Back ¦ Start ¦  DU   ¦
+        // +-------+-------+-------¦-------¦
+        // ¦Yellow1¦Green2 ¦ Red2  ¦ Blue3 ¦
+        // ¦  Y    ¦  LS   ¦  RS   ¦  DD   ¦
+        // +-------+-------+-------¦-------¦
+        // ¦ Blue1 ¦Black2 ¦Yellow2¦ Red3  ¦
+        // ¦  RB   ¦  B    ¦  A    ¦  DR   ¦
+        // +-------+-------+-------¦-------¦
+        // ¦Black1 ¦White1 ¦ Red1  ¦Yellow3¦        
+        // ¦  LB   ¦   LT  ¦  RT   ¦  DL   ¦        
+        // +-----------------------+-------+     
         buttonBox.a().onTrue(m_runIntakeReverse);
         buttonBox.a().onFalse(m_intakeSeq);
         buttonBox.x().onTrue(m_homeIntakeSeq);
-        buttonBox.y().onTrue(m_toggleFlywheel);      
+        //buttonBox.y().onTrue(m_toggleFlywheel);      
         buttonBox.rightBumper().onTrue(m_toggleIntakeRoller);      
         buttonBox.leftBumper().onTrue(m_intakeSeq);
 
         buttonBox.back().onTrue(m_resetPrevDist);
-        //buttonBox.leftStick().onTrue(m_);
+        // Move turret to dashboard value  buttonBox.leftStick().onTrue(m_testTurret);
         //buttonBox.b().onTrue(m_);
         buttonBox.leftTrigger().onTrue(m_stopIntakeSeq);
 
@@ -375,8 +375,10 @@ public class RobotContainer {
                 poseEst = vision.getBotPoseEstimateMegaTag2();
             }
 
-            SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
-            drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
+            if (poseEst != null) {
+                SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
+                drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
+            }
         }
         
         isBlue = isBlue();
@@ -484,6 +486,7 @@ public class RobotContainer {
     InstantCommand m_extendIntake2 = new InstantCommand(() -> intake.deploy(Intake.m_extend));
     InstantCommand m_extendIntake3 = new InstantCommand(() -> intake.deploy(Intake.m_extend));
     InstantCommand m_resetPrevDist = new InstantCommand(() -> shooter.resetPrevDist());
+    //InstantCommand m_testTurret = new InstantCommand(() -> shooter.testTurret());
 
     InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
     InstantCommand m_runSpindexer2 = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
@@ -528,9 +531,10 @@ public class RobotContainer {
     InstantCommand m_toggleTurret = new InstantCommand(() -> shooter.m_moveTurret = !shooter.m_moveTurret);
     InstantCommand m_toggleTurretOn = new InstantCommand(() -> shooter.m_moveTurret = true);
     InstantCommand m_toggleTurretOff = new InstantCommand(() -> shooter.m_moveTurret = false);
-    InstantCommand m_toggleFlywheel = new InstantCommand(() -> { boolean isTesting = SmartDashboard.getBoolean("disableShooter", Constants.defaultFlywheel);
-                                                                 SmartDashboard.putBoolean("disableShooter", !isTesting); 
-                                                               } );
+    // InstantCommand m_toggleFlywheel = new InstantCommand(() -> { 
+    //     boolean isTesting = SmartDashboard.getBoolean("disableShooter", Constants.defaultFlywheel);
+    //     SmartDashboard.putBoolean("disableShooter", !isTesting); 
+    // } );
     InstantCommand m_toggleIntakeRoller = new InstantCommand(() -> { boolean isTesting = SmartDashboard.getBoolean("disableIntakeRoller", false);
                                                                  SmartDashboard.putBoolean("disableIntakeRoller", !isTesting); 
                                                                } );

@@ -1,17 +1,12 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.RobotBase;
 
 import frc.robot.ConstantsCANIDS;
 import frc.robot.Geofencing;
-import frc.robot.RobotContainer;
-import frc.robot.generated.TunerConstants;
 import frc.robot.Constants;
 
 import static edu.wpi.first.units.Units.*;
-
-import java.util.function.DoubleUnaryOperator;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,16 +14,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj.simulation.EncoderSim;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -48,9 +35,6 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
-import frc.robot.subsystems.Drive;
-
 
 @Logged
 public class Shooter extends SubsystemBase {
@@ -96,6 +80,7 @@ public class Shooter extends SubsystemBase {
 
     public Shooter(){
         SmartDashboard.putNumber("offsetRPM", Constants.rpmBoost);
+        //SmartDashboard.putNumber("turretTurnsTest", 0.0);
 
         SmartDashboard.putNumber("turretRad", 0.0);
         m_turretEnc.setPosition(0.0);
@@ -231,9 +216,9 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("ShooterDistance", m_distance);
         SmartDashboard.putNumber("TurretDegCalc", m_turretAngle * 180.0 / Math.PI);
         
-        boolean isTesting = SmartDashboard.getBoolean("disableShooter", Constants.defaultFlywheel); // for reducing noise during testing
+        //boolean isTesting = SmartDashboard.getBoolean("disableShooter", Constants.defaultFlywheel); // for reducing noise during testing
         // if (!isTesting) {
-        setRPMDistanceAndVelo(m_ChassisSpeeds);
+            setRPMDistanceAndVelo(m_ChassisSpeeds);
         // }
         // else {
         //     stopShooter();
@@ -399,6 +384,18 @@ public class Shooter extends SubsystemBase {
             m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
         }
     }
+
+    // public void testTurret() {
+    //     double turns = SmartDashboard.getNumber("turretTurnsTest", 0.0);
+    //     if (turns > m_maxTurns){
+    //         turns = m_maxTurns;
+    //     }
+    //     else if (turns < -m_maxTurns){
+    //         turns = -m_maxTurns;
+    //     }
+    //     SmartDashboard.putNumber("turretTurnsTest", turns);
+    //     m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
+    // }
 
 /* Testing sim stuff */
 
