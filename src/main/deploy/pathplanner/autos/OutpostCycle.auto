@@ -31,25 +31,13 @@
         {
           "type": "named",
           "data": {
-            "name": "StopShooter"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.75
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "OutpostReturn.0"
+            "name": "agitateIntake"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "ShootCommand"
+            "name": "agitateIntake"
           }
         },
         {

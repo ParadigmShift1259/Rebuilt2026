@@ -22,7 +22,7 @@ import com.revrobotics.PersistMode;
 @Logged
 public class Transfer extends SubsystemBase {
 
-    private final double defaultSpinSpeed = -0.6;
+    private final double defaultSpinSpeed = -0.75;
 
     private SparkMax m_spinDex = new SparkMax(ConstantsCANIDS.kSpindexerID, SparkMax.MotorType.kBrushless);
     private TalonFX m_kickerMotor = new TalonFX(ConstantsCANIDS.kFeederID);

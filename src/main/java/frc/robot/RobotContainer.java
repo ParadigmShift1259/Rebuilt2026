@@ -52,7 +52,7 @@ public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
-    private final double defaultFeederSpeed = 0.3;
+    private final double defaultFeederSpeed = 0.5;
     private final double hubXBlue = 4.6;
     private final double hubXRed = 11.91;
     private double hubX = 0.0;
@@ -77,6 +77,7 @@ public class RobotContainer {
         );
 
     private boolean isAligning = false;
+    private boolean brakeMode = false;
     private double rotDeg = 0.0;
     private double distance = 0.0;
     private boolean megatag1Reset = false;
@@ -108,6 +109,8 @@ public class RobotContainer {
         .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate* 0.1)
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
         .withHeadingPID(4.0, 0.0, 0.0);
+
+    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
@@ -143,7 +146,6 @@ public class RobotContainer {
     // private Transform2d targPose3d;
     // private double tarX = 0.0;
     // private double tarY = 0.0;
-
 
     enum JogState{noJog, leftJog, rightJog};
     private JogState jogState = JogState.noJog;
@@ -198,8 +200,8 @@ public class RobotContainer {
                         isAligning = true;
                         rotDeg = drivetrain.getRotationDegrees(); // gets once per fence entry
                     }
-                    return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.3)
-                                     .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.3)
+                    return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.9)
+                                     .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.9)
                                      .withTargetDirection(getBumpAlignAngle(rotDeg));
                 }
                 // else if (isInRotation()) {
@@ -227,6 +229,9 @@ public class RobotContainer {
                     return driveAngleRobot.withVelocityX(-joystick.getLeftY() * MaxSpeed)
                                      .withVelocityY(-joystick.getLeftX() * MaxSpeed)
                                      .withTargetDirection(targetRot);
+                }
+                else if (brakeMode){
+                    return brake;
                 }
                 else if (jogState != JogState.noJog) {
                     double angle = 0.5; // Half a radian per sec
@@ -276,6 +281,9 @@ public class RobotContainer {
         
         joystick.rightTrigger().onTrue(m_overrideBumpControl);
         joystick.rightBumper().onTrue(m_toggleQuest);
+
+        joystick.leftTrigger().onTrue(new InstantCommand(() -> brakeMode = true));
+        joystick.leftTrigger().onFalse(new InstantCommand(() -> brakeMode = false));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
