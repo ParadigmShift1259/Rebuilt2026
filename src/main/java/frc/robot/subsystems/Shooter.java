@@ -45,8 +45,6 @@ public class Shooter extends SubsystemBase {
     private InterpolatingDoubleTreeMap RPMtable = new InterpolatingDoubleTreeMap();
     public InterpolatingDoubleTreeMap TOFtable = new InterpolatingDoubleTreeMap();
 
-    private Servo m_servo = new Servo(0);
-
     private SparkMax m_turretMot = new SparkMax(ConstantsCANIDS.kTurretID, SparkMax.MotorType.kBrushless);
     private SparkClosedLoopController m_turretCtlr = m_turretMot.getClosedLoopController();
     private RelativeEncoder m_turretEnc = m_turretMot.getEncoder();
@@ -77,6 +75,7 @@ public class Shooter extends SubsystemBase {
     private Geofencing m_geofenceNeutZone;
     private boolean m_isBlue = false;
     public boolean m_moveTurret = false;
+    private double m_lastTurns = 0;
 
     public Shooter(){
         SmartDashboard.putNumber("offsetRPM", Constants.rpmBoost);
@@ -102,7 +101,7 @@ public class Shooter extends SubsystemBase {
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
-        fdb.SensorToMechanismRatio = 1; // TODO figure out gear ratio
+        fdb.SensorToMechanismRatio = 1;
         
         MotionMagicConfigs mm = cfg.MotionMagic;
         mm.withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
@@ -226,13 +225,6 @@ public class Shooter extends SubsystemBase {
     }
     public void resetPrevDist() { m_prevDistance = 0.0; }
 
-    public double getAngularDisplacement(Pose2d currentPose, Pose2d targetPose, Rotation2d turretAngle){
-        currentPose.transformBy(new Transform2d(0.0, 0.0, Rotation2d.kZero)); // offset of robot center to turret center
-        double xDisplacement = targetPose.getX() - currentPose.getX();
-        double yDisplacement = targetPose.getY() - currentPose.getY();
-        return Math.atan2(yDisplacement, xDisplacement) - currentPose.getRotation().getRadians() - turretAngle.getRadians();
-    }
-
     public void setRPM(double rpm){
         //if (RobotBase.isReal()) {
             m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm / 60.0));
@@ -302,16 +294,11 @@ public class Shooter extends SubsystemBase {
         // }
     }
 
-    public void setServo(double value){
-        m_servo.set(value);
-    }
-
     public void resetTurret() {
-        // SmartDashboard.putNumber("turretRad", 0.0);
         m_turretCtlr.setSetpoint(0.0, ControlType.kPosition);
     }
 
-    public void calculateTurretAngle(double x, double y){
+    public void calculateTurretAngle(double x, double y) {
         SmartDashboard.putNumber("robotToTargetX", x);
         SmartDashboard.putNumber("robotToTargetY", y);
         SmartDashboard.putNumber("OffsetX", offsetX);
@@ -384,18 +371,6 @@ public class Shooter extends SubsystemBase {
             m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
         }
     }
-
-    // public void testTurret() {
-    //     double turns = SmartDashboard.getNumber("turretTurnsTest", 0.0);
-    //     if (turns > m_maxTurns){
-    //         turns = m_maxTurns;
-    //     }
-    //     else if (turns < -m_maxTurns){
-    //         turns = -m_maxTurns;
-    //     }
-    //     SmartDashboard.putNumber("turretTurnsTest", turns);
-    //     m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
-    // }
 
 /* Testing sim stuff */
 

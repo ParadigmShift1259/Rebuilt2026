@@ -48,7 +48,6 @@ public class Robot extends TimedRobot {
     public Robot() {
         DataLogManager.start(); // Optional to mirror the NetworkTables-logged data to a file on disk
         Epilogue.bind(this);
-        CameraServer.startAutomaticCapture();
     }
 
     @Override

@@ -26,9 +26,9 @@ public class Vision extends SubsystemBase {
     private double m_timestamp = 0.0;
     private Pose2d m_robotPose = Pose2d.kZero;
 
-    private final Transform2d ROBOT_TO_QUEST = new Transform2d(-0.22, 0.225, Rotation2d.k180deg);
+//    private final Transform2d ROBOT_TO_QUEST = new Transform2d(-0.22, 0.225, Rotation2d.k180deg); // Robot 1
+    private final Transform2d ROBOT_TO_QUEST = new Transform2d(-0.24, -0.35, new Rotation2d(-3.0 * Math.PI / 4)); // Robot 2
     private final Transform3d ROBOT_TO_QUEST3d = new Transform3d(ROBOT_TO_QUEST);
-
 
     public double getTimestamp() { return m_timestamp; }
     //public Pose2d getQuestRobotPose() { return m_robotPose.transformBy(ROBOT_TO_QUEST); }
