@@ -45,8 +45,6 @@ public class Shooter extends SubsystemBase {
     private InterpolatingDoubleTreeMap RPMtable = new InterpolatingDoubleTreeMap();
     public InterpolatingDoubleTreeMap TOFtable = new InterpolatingDoubleTreeMap();
 
-    private Servo m_servo = new Servo(0);
-
     private SparkMax m_turretMot = new SparkMax(ConstantsCANIDS.kTurretID, SparkMax.MotorType.kBrushless);
     private SparkClosedLoopController m_turretCtlr = m_turretMot.getClosedLoopController();
     private RelativeEncoder m_turretEnc = m_turretMot.getEncoder();
@@ -68,19 +66,18 @@ public class Shooter extends SubsystemBase {
     public double m_lastD = 0.0;
 
     private double m_turretAngle = 0.0;
-    private static double m_maxTurns = 12.5;
-    // private static double m_radToTurns = m_maxTurns / Constants.m_turretLimitAngle;
-    private static double m_radToTurns = 12.5 / (Math.PI / 2);
+    private static double m_maxTurns = +Constants.m_maxTurns;
+    private static double m_radToTurns = m_maxTurns / Constants.m_turretLimitAngle;
 
     private Pose2d m_robotPose = Pose2d.kZero;
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
     private Geofencing m_geofenceNeutZone;
     private boolean m_isBlue = false;
     public boolean m_moveTurret = false;
+    private double m_lastTurns = 0;
 
     public Shooter(){
         SmartDashboard.putNumber("offsetRPM", Constants.rpmBoost);
-        //SmartDashboard.putNumber("turretTurnsTest", 0.0);
 
         SmartDashboard.putNumber("turretRad", 0.0);
         m_turretEnc.setPosition(0.0);
@@ -102,7 +99,7 @@ public class Shooter extends SubsystemBase {
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
-        fdb.SensorToMechanismRatio = 1; // TODO figure out gear ratio
+        fdb.SensorToMechanismRatio = 1;
         
         MotionMagicConfigs mm = cfg.MotionMagic;
         mm.withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
@@ -226,13 +223,6 @@ public class Shooter extends SubsystemBase {
     }
     public void resetPrevDist() { m_prevDistance = 0.0; }
 
-    public double getAngularDisplacement(Pose2d currentPose, Pose2d targetPose, Rotation2d turretAngle){
-        currentPose.transformBy(new Transform2d(0.0, 0.0, Rotation2d.kZero)); // offset of robot center to turret center
-        double xDisplacement = targetPose.getX() - currentPose.getX();
-        double yDisplacement = targetPose.getY() - currentPose.getY();
-        return Math.atan2(yDisplacement, xDisplacement) - currentPose.getRotation().getRadians() - turretAngle.getRadians();
-    }
-
     public void setRPM(double rpm){
         //if (RobotBase.isReal()) {
             m_flywheelMotorLead.setControl(m_vvReq.withVelocity(rpm / 60.0));
@@ -302,16 +292,11 @@ public class Shooter extends SubsystemBase {
         // }
     }
 
-    public void setServo(double value){
-        m_servo.set(value);
-    }
-
     public void resetTurret() {
-        // SmartDashboard.putNumber("turretRad", 0.0);
         m_turretCtlr.setSetpoint(0.0, ControlType.kPosition);
     }
 
-    public void calculateTurretAngle(double x, double y){
+    public void calculateTurretAngle(double x, double y) {
         SmartDashboard.putNumber("robotToTargetX", x);
         SmartDashboard.putNumber("robotToTargetY", y);
         SmartDashboard.putNumber("OffsetX", offsetX);
@@ -326,33 +311,35 @@ public class Shooter extends SubsystemBase {
         m_turretAngle = robotToTargetAngle;
         SmartDashboard.putNumber("turretDegCalc0", m_turretAngle * 180.0 / Math.PI);
 
-        if (robotRot < -Math.PI / 2) {
-            robotRot += Math.PI;
-        }
-        else if (robotRot > Math.PI / 2) {
-            robotRot -= Math.PI;
-        }
+        boolean bRedHubBlueFeed =  ((!m_isBlue && shootingState == ShootingState.hubShoot)
+                                 || ( m_isBlue && shootingState == ShootingState.feedShoot));
 
-        if (m_turretAngle < -Math.PI / 2) {
-            m_turretAngle += Math.PI;
-        }
-        else if (m_turretAngle > Math.PI / 2) {
-            m_turretAngle -= Math.PI;
-        }
+        boolean bBlueHubRedFeed  = (( m_isBlue && shootingState == ShootingState.hubShoot)
+                                ||  (!m_isBlue && shootingState == ShootingState.feedShoot));
 
-        // if (robotRot < -Constants.m_turretLimitAngle) {
-        //     robotRot += Math.PI;
-        // }
-        // else if (robotRot > Constants.m_turretLimitAngle) {
-        //     robotRot -= Math.PI;
-        // }
+        if (bRedHubBlueFeed) {
+            if (robotRot < 0.0) {
+                robotRot += Math.PI;
+            }
+            else if (robotRot > 0.0) {
+                robotRot -= Math.PI;
+            }
 
-        // if (m_turretAngle < -Constants.m_turretLimitAngle) {
-        //     m_turretAngle += Math.PI;
-        // }
-        // else if (m_turretAngle > Constants.m_turretLimitAngle) {
-        //     m_turretAngle -= Math.PI;
-        // }
+            if (m_turretAngle < -Constants.m_turretLimitAngle) {
+                m_turretAngle += Math.PI;
+            }
+            else if (m_turretAngle > Constants.m_turretLimitAngle) {
+                m_turretAngle -= Math.PI;
+            }
+        }
+        else if (bBlueHubRedFeed) {
+            if (m_turretAngle - robotRot < -Constants.m_turretLimitAngle) {
+                m_turretAngle += Math.PI;
+            }
+            else if (m_turretAngle - robotRot > Constants.m_turretLimitAngle) {
+                m_turretAngle -= Math.PI;
+            }
+        }
 
         m_turretAngle = -1.0 * (m_turretAngle - robotRot);
 
@@ -361,41 +348,32 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putNumber("robotFieldRot", robotFieldRot * 180.0 / Math.PI);
         SmartDashboard.putNumber("robotToTargetAngle", robotToTargetAngle * 180.0 / Math.PI);
-        boolean bRobotRotZero = (Math.abs(robotFieldRot) < Constants.m_turretLimitAngle);
-        boolean bRobotRot180 = (Math.abs(robotFieldRot) > Constants.m_turretLimitAngle);
-        boolean bDisallowTurniungZero = bRobotRotZero
-                                    && ((!m_isBlue && shootingState == ShootingState.hubShoot)  // Red Hub and Blue Feed
+        boolean bTurretFacingZero = (Math.abs(m_turretAngle - robotFieldRot) < Constants.m_turretLimitAngle);
+        boolean bTurrentFacing180 = (Math.abs(m_turretAngle - robotFieldRot) > Constants.m_turretLimitAngle);
+        boolean bDisallowTurniungZero = bTurretFacingZero         // Red Hub and Blue Feed
+                                    && ((!m_isBlue && shootingState == ShootingState.hubShoot)
                                      || ( m_isBlue && shootingState == ShootingState.feedShoot));
 
-        boolean bDisallowTurniung180  = bRobotRot180
-                                     && (( m_isBlue && shootingState == ShootingState.hubShoot)   // Blue Hub and Red Feed
+        boolean bDisallowTurniung180  = bTurrentFacing180         // Blue Hub and Red Feed
+                                     && (( m_isBlue && shootingState == ShootingState.hubShoot)
                                      ||  (!m_isBlue && shootingState == ShootingState.feedShoot));
 
-        double turns = ((m_turretAngle) * m_radToTurns);
-        if (turns > m_maxTurns){
-            turns = m_maxTurns;
-        }
-        else if (turns < -m_maxTurns){
-            turns = -m_maxTurns;
-        }
-        SmartDashboard.putNumber("turretTurnsCalc", turns);
+        SmartDashboard.putBoolean("bDisallowTurniungZero", bDisallowTurniungZero);
+        SmartDashboard.putBoolean("bDisallowTurniung180", bDisallowTurniung180);
         if (m_moveTurret && !(bDisallowTurniungZero || bDisallowTurniung180)) {
         //if (m_moveTurret) {
+            double turns = ((m_turretAngle) * m_radToTurns);
+            if (turns > m_maxTurns){
+                turns = m_maxTurns;
+            }
+            else if (turns < -m_maxTurns){
+                turns = -m_maxTurns;
+            }
+            m_lastTurns = turns;
             m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
         }
+        SmartDashboard.putNumber("turretTurnsCalc", m_lastTurns);
     }
-
-    // public void testTurret() {
-    //     double turns = SmartDashboard.getNumber("turretTurnsTest", 0.0);
-    //     if (turns > m_maxTurns){
-    //         turns = m_maxTurns;
-    //     }
-    //     else if (turns < -m_maxTurns){
-    //         turns = -m_maxTurns;
-    //     }
-    //     SmartDashboard.putNumber("turretTurnsTest", turns);
-    //     m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
-    // }
 
 /* Testing sim stuff */
 
