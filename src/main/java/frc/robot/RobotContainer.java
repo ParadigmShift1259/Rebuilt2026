@@ -325,8 +325,8 @@ public class RobotContainer {
         buttonBox.leftBumper().onTrue(m_intakeSeq);             // Black 1
 
         buttonBox.back().onTrue(m_resetPrevDist);               // White 2 
-        //buttonBox.leftStick().onTrue(m_);                       // Green 2
-        //buttonBox.b().onTrue();                                 // Black 2
+        buttonBox.leftStick().onTrue(m_incRpmBoost);            // Green 2
+        buttonBox.b().onTrue(m_decRpmBoost);                    // Black 2
         buttonBox.leftTrigger().onTrue(m_stopIntakeSeq);        // White 1
 
         buttonBox.start().onTrue(m_resetQuest);                                                     // Blue 2 
@@ -531,6 +531,19 @@ public class RobotContainer {
     InstantCommand m_extendIntake3 = new InstantCommand(() -> intake.deploy(Intake.m_extend));
     InstantCommand m_resetPrevDist = new InstantCommand(() -> shooter.resetPrevDist());
 
+    InstantCommand m_incRpmBoost = new InstantCommand(() -> {
+        double offsetRPM = SmartDashboard.getNumber("offsetRPM", Constants.rpmBoost) + 5.0;
+        if (offsetRPM <= 50.0) {
+            SmartDashboard.putNumber("offsetRPM", offsetRPM);
+        }
+    });
+    InstantCommand m_decRpmBoost = new InstantCommand(() -> {
+        double offsetRPM = SmartDashboard.getNumber("offsetRPM", Constants.rpmBoost) - 5.0;
+        if (offsetRPM >= -50.0) {
+            SmartDashboard.putNumber("offsetRPM", offsetRPM);
+        }
+    });
+
     InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
     InstantCommand m_runSpindexer2 = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
     InstantCommand m_runSpindexerReverse = new InstantCommand(() -> transfer.setSpinDexSpeed(true));
@@ -584,10 +597,12 @@ public class RobotContainer {
     WaitCommand m_waitHalfSec3 = new WaitCommand(0.5);
     //WaitCommand m_waitHalfSec4 = new WaitCommand(0.5);
     WaitCommand m_waitHalfSec5 = new WaitCommand(0.5);
-    WaitCommand m_waitHalfSec6 = new WaitCommand(0.5);
-    WaitCommand m_waitHalfSec7 = new WaitCommand(0.5);
-    WaitCommand m_waitHalfSec8 = new WaitCommand(0.5);
-    WaitCommand m_waitHalfSec9 = new WaitCommand(0.5);
+
+    static final double c_halfSec = 0.5;    // Shorten delay time for agitation?
+    WaitCommand m_waitHalfSec6 = new WaitCommand(c_halfSec);
+    WaitCommand m_waitHalfSec7 = new WaitCommand(c_halfSec);
+    WaitCommand m_waitHalfSec8 = new WaitCommand(c_halfSec);
+    WaitCommand m_waitHalfSec9 = new WaitCommand(c_halfSec);
 
     // Shooter is always has the flywheel ramped, so we can skip the delay and just start/stop the kicker
     SequentialCommandGroup m_stopShootSeq = new SequentialCommandGroup(m_stopKicker, m_stopSpindexer);
