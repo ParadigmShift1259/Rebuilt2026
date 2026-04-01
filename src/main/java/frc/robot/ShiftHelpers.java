@@ -2,7 +2,6 @@ package frc.robot;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.subsystems.Drive;
 
 @Logged
 public class ShiftHelpers {

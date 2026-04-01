@@ -10,23 +10,16 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -44,8 +37,6 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Transfer;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Shooter;
-import frc.robot.commands.DriveCommands;
-import frc.robot.ShiftHelpers;
 
 @Logged
 public class RobotContainer {
@@ -79,10 +70,7 @@ public class RobotContainer {
     private boolean isAligning = false;
     private boolean brakeMode = false;
     private double rotDeg = 0.0;
-    private double distance = 0.0;
-    private boolean megatag1Reset = false;
     private boolean m_trackQuest = true;
-    private int count = 0;
 
     Field2d m_field = new Field2d();
     private Geofencing m_geofenceAlliBump;
@@ -126,26 +114,13 @@ public class RobotContainer {
     public final Transfer transfer = new Transfer();
 
     private boolean isinTransition = false;
-    // private boolean isTrackingFuel = false;
     private boolean isTrackingHub = false;
     private boolean slowmode = false;
     private boolean m_bOverrideBumpControl = false;
     private boolean isBlue = false;
 
-    // private final double X_START_BUMP = 1.0;
-    // private final double X_STOP_BUMP = 4.0;
-    // private final double TRANSITION_OFFSET = 0.25;
-    // private final double X_START_TRANSITION = X_START_BUMP - TRANSITION_OFFSET;
-    // private final double X_STOP_TRANSITION = X_STOP_BUMP + TRANSITION_OFFSET;
-
-    private double rotFuelTracking = 0.0;
     private double robotX = 0.0;
     private double robotY = 0.0;
-
-    // private double[] tarPose;
-    // private Transform2d targPose3d;
-    // private double tarX = 0.0;
-    // private double tarY = 0.0;
 
     enum JogState{noJog, leftJog, rightJog};
     private JogState jogState = JogState.noJog;
@@ -422,24 +397,9 @@ public class RobotContainer {
 
         updateDashboardFieldMap();
 
-        // m_field.getObject("Fuel").setPose(drivetrain.getFieldX() + getDistanceXToFuel(vision.photonGetFuelPitch()), drivetrain.getFieldY() + getDistanceYToFuel(vision.getFuelAngle()), Rotation2d.kZero);
         SmartDashboard.putData("RobotPose", m_field);
 
         isinTransition = false;
-        // isinTransition = (x > X_START_TRANSITION && x < X_START_BUMP) || (x > X_STOP_BUMP && x < X_STOP_TRANSITION);
-
-        // if (vision.photonIsTrackingFuel()) {
-        //     rotFuelTracking = vision.photonGetFuelAngle();
-        //     targPose3d = vision.photonGetTargetPose();
-        //     tarX = targPose3d.getX();
-        //     tarY = targPose3d.getY();
-        // }
-        // else if (vision.isTrackingFuel()) {
-        //     rotFuelTracking = vision.getFuelAngle();
-        //     tarPose = vision.getTargetPose();
-        //     tarX = tarPose[0];
-        //     tarY = tarPose[1];
-        // }
 
         robotX = drivetrain.getFieldX();
         robotY = drivetrain.getFieldY();
@@ -454,10 +414,6 @@ public class RobotContainer {
 
         SmartDashboard.putBoolean("IsInBump", m_geofenceAlliBump.isInZone(drivetrain.getPose()));
         SmartDashboard.putBoolean("IsInTransition", isinTransition);
-        // SmartDashboard.putBoolean("IsTrackingFuel", isTrackingFuel);
-
-        // SmartDashboard.putNumber("TargetX", tarX);
-        // SmartDashboard.putNumber("TargetY", tarY);
 
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
@@ -641,20 +597,20 @@ public class RobotContainer {
         // return (DriverStationSim.getAllianceStationId().toString().contains("Blue")); // isBlue doesn't work in sim and no direct way to get alliance, so need to check id (ex. Blue1)
     }
 
-    private boolean isInRotation(){
-        double rot = drivetrain.getRotationDegrees();
-        boolean isTop = Constants.m_geofenceNeutTop.isInZone(drivetrain.getPose());
-        boolean isBot = Constants.m_geofenceNeutBottom.isInZone(drivetrain.getPose());
-        if (!isTop && !isBot){
-            return false;
-        }
-        double angle1 = 160.0;
-        double angle2 = 20.0;
-        if (isTop){
-            angle1 = -20.0;
-            angle2 = -160.0;
-        }
+    // private boolean isInRotation(){
+    //     double rot = drivetrain.getRotationDegrees();
+    //     boolean isTop = Constants.m_geofenceNeutTop.isInZone(drivetrain.getPose());
+    //     boolean isBot = Constants.m_geofenceNeutBottom.isInZone(drivetrain.getPose());
+    //     if (!isTop && !isBot){
+    //         return false;
+    //     }
+    //     double angle1 = 160.0;
+    //     double angle2 = 20.0;
+    //     if (isTop){
+    //         angle1 = -20.0;
+    //         angle2 = -160.0;
+    //     }
         
-        return (rot < angle1 && rot > angle2);
-    }
+    //     return (rot < angle1 && rot > angle2);
+    // }
 }

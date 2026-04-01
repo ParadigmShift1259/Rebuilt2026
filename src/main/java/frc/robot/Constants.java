@@ -1,7 +1,5 @@
 package frc.robot;
 
-import org.opencv.core.Mat;
-
 public class Constants {
     public static Geofencing m_geofenceNeutZoneIfBlue = new Geofencing(8.04, 4.053, 0.0, 16.51);
     public static Geofencing m_geofenceNeutZoneIfRed = new Geofencing(8.04, 0.0, 0.0, 12.417);
