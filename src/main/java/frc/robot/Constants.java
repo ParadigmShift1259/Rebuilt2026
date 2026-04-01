@@ -12,7 +12,9 @@ public class Constants {
     public static double c_hubY = 4.0;
 
     public static boolean defaultFlywheel = false; //False means the flywheel is on
-    public static double rpmBoost = 0.0; //-50.0;
+    public static double rpmBoost = -35.0;
+    public static double bumpLimitFactor = 0.5;     // Use early in Quals to save wear and tear
+    //public static double bumpLimitFactor = 0.9;   // Use later in Quals when under heavy defense
 
     public static double m_turretOffsetY = 0.14;
     public static double m_turretOffsetX = 0;//0.18;

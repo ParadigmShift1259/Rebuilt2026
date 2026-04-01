@@ -203,8 +203,8 @@ public class RobotContainer {
                         isAligning = true;
                         rotDeg = drivetrain.getRotationDegrees(); // gets once per fence entry
                     }
-                    return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.9)
-                                     .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.9)
+                    return driveAngle.withVelocityX(-joystick.getLeftY() * MaxSpeed * Constants.bumpLimitFactor)
+                                     .withVelocityY(-joystick.getLeftX() * MaxSpeed * Constants.bumpLimitFactor)
                                      .withTargetDirection(getBumpAlignAngle(rotDeg));
                 }
                 // else if (isInRotation()) {

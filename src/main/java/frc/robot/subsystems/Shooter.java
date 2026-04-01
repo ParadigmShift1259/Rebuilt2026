@@ -231,7 +231,7 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("ShooterDistance", m_distance);
         SmartDashboard.putNumber("TurretDegCalc", m_turretAngle * 180.0 / Math.PI);
         
-        boolean isTesting = SmartDashboard.getBoolean("disableShooter", Constants.defaultFlywheel); // for reducing noise during testing
+        //boolean isTesting = SmartDashboard.getBoolean("disableShooter", Constants.defaultFlywheel); // for reducing noise during testing
         // if (!isTesting) {
         setRPMDistanceAndVelo(m_ChassisSpeeds);
         // }
