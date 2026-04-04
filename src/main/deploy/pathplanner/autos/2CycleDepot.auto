@@ -75,42 +75,6 @@
           "data": {
             "name": "StopShooter"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle2MidDepotSide.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle2MidCenterDepotSide.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle2ReturnDepot.0"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "ShootCommand"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "agitateIntake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "agitateIntake"
-          }
         }
       ]
     }

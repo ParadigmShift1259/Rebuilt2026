@@ -595,6 +595,9 @@ public class RobotContainer {
 
     //WaitCommand m_waitHalfSec = new WaitCommand(0.5);
     WaitCommand m_waitQuarterSec = new WaitCommand(0.25);
+    WaitCommand m_waitQuarterSec2 = new WaitCommand(0.25);
+    WaitCommand m_waitQuarterSec3 = new WaitCommand(0.25);
+
     //WaitCommand m_waitHalfSec2 = new WaitCommand(0.5);
     WaitCommand m_waitHalfSec3 = new WaitCommand(0.5);
     //WaitCommand m_waitHalfSec4 = new WaitCommand(0.5);
@@ -614,8 +617,8 @@ public class RobotContainer {
     SequentialCommandGroup m_stopIntakeSeq = new SequentialCommandGroup(/* m_frameIntake, */ m_stopIntake2);
     SequentialCommandGroup m_homeIntakeSeq = new SequentialCommandGroup(/* m_frameIntake3, */ m_waitHalfSec5, m_stopIntake3, m_homeIntake);
 //    SequentialCommandGroup m_agitateIntake = new SequentialCommandGroup(m_extendIntake2, m_waitHalfSec6, m_partialIntake2, m_stopIntake5, m_waitHalfSec7, m_extendIntake3, m_runIntake3);
-    SequentialCommandGroup m_agitateIntake = new SequentialCommandGroup(m_midExtend3, m_waitHalfSec6, m_frameIntake, m_stopIntake5, m_waitHalfSec7, m_midExtend4, m_runIntake3);
-    SequentialCommandGroup m_shortAgitateIntake = new SequentialCommandGroup(m_midExtend, m_waitHalfSec8, m_partialIntake3, m_stopIntake6, m_waitHalfSec9, m_midExtend2, m_runIntake4);
+    SequentialCommandGroup m_agitateIntake = new SequentialCommandGroup(m_midExtend3, m_waitHalfSec6, m_stopIntake5, m_frameIntake, m_waitHalfSec7, m_midExtend4, m_runIntake3);
+    SequentialCommandGroup m_shortAgitateIntake = new SequentialCommandGroup(m_midExtend, m_waitHalfSec8, m_stopIntake6, m_partialIntake3, m_waitHalfSec9, m_midExtend2, m_runIntake4);
 
     Command agitateCommand = m_agitateIntake;
     Command shortAgitateCommand = m_shortAgitateIntake;
