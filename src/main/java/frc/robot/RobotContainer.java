@@ -581,9 +581,11 @@ public class RobotContainer {
     // InstantCommand m_jogStop = new InstantCommand(() -> jogState = JogState.noJog);
     
     InstantCommand m_resetTurret = new InstantCommand(() -> shooter.resetTurret());
-    InstantCommand m_toggleTurret = new InstantCommand(() -> shooter.m_moveTurret = !shooter.m_moveTurret);
+// Keep turret on all the time during competition        InstantCommand m_toggleTurret = new InstantCommand(() -> shooter.m_moveTurret = !shooter.m_moveTurret);
+    InstantCommand m_toggleTurret = new InstantCommand(() -> shooter.m_moveTurret = true);
     InstantCommand m_toggleTurretOn = new InstantCommand(() -> shooter.m_moveTurret = true);
-    InstantCommand m_toggleTurretOff = new InstantCommand(() -> shooter.m_moveTurret = false);
+// Keep turret on all the time during competition    InstantCommand m_toggleTurretOff = new InstantCommand(() -> shooter.m_moveTurret = false);
+    InstantCommand m_toggleTurretOff = new InstantCommand(() -> shooter.m_moveTurret = true);
     InstantCommand m_toggleFlywheel = new InstantCommand(() -> { boolean isTesting = SmartDashboard.getBoolean("disableShooter", Constants.defaultFlywheel);
                                                                  SmartDashboard.putBoolean("disableShooter", !isTesting); 
                                                                } );

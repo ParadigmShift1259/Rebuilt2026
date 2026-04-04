@@ -49,6 +49,24 @@
         {
           "type": "named",
           "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "StopShooter"
           }
         },
@@ -91,7 +109,7 @@
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": null,
   "choreoAuto": true
 }

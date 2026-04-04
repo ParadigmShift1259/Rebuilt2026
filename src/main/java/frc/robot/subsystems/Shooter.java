@@ -92,7 +92,8 @@ public class Shooter extends SubsystemBase {
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
     private Geofencing m_geofenceNeutZone;
     private boolean m_isBlue = false;
-    public boolean m_moveTurret = false;
+// Keep turret on all the time during competition    public boolean m_moveTurret = false;
+    public boolean m_moveTurret = true;
 
     public Shooter(){
         SmartDashboard.putNumber("offsetRPM", Constants.rpmBoost);
