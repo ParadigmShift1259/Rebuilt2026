@@ -14,17 +14,19 @@ public class Constants {
     public static boolean defaultFlywheel = false; //False means the flywheel is on
     public static double rpmBoost = -50.0;
 
-    public static double m_turretOffsetY = 0.14;
-    public static double m_turretOffsetX = 0;//0.18;
+    public static double m_turretOffsetY = 0.0;//0.14;
+    public static double m_turretOffsetX = 0.0;//0.18;
     public static double m_defaultNegXVelOffsetDegrade = 0.8;
     public static double m_defaultNegYVelOffsetDegrade = 0.8;
 
+    public static double m_turretZeroAngle = 40.0 * Math.PI / 180;   // TODO Confirm
     //public static double m_turretExtraAngle = 15.0 * Math.PI / 180;
-    public static double m_turretExtraAngle = 30.0 * Math.PI / 180;
-    public static double m_turretLimitAngle = (Math.PI / 2.0) + m_turretExtraAngle;
-    //private static double m_maxTurns = 14.2;  // 90 deg
+    // public static double m_turretExtraAngle = 30.0 * Math.PI / 180;
+    // public static double m_turretLimitAngle = (Math.PI / 2.0) + m_turretExtraAngle;
+    //private static double m_maxTurns = 12.2;  // 90 deg
     //private static double m_maxTurns = 14.2;  // 105 deg (+15)
-    public static double m_maxTurns = 16.3;    // 120 deg (+30)
+    // public static double m_maxTurns = 16.3;    // 120 deg (+30)
+    public static double m_maxTurns = 22.0;// test with lesser turns first 24.4;    // 300 deg
 
     // public static final String LIMELIGHT_NAME = "limelight-fuel";
     public static final String LIMELIGHT_NAME = "limelight-hub";

@@ -320,6 +320,7 @@ public class Shooter extends SubsystemBase {
                                 ||  (!m_isBlue && shootingState == ShootingState.feedShoot));
 
         if (bRedHubBlueFeed) {
+            // Invert axes
             if (robotRot < 0.0) {
                 robotRot += Math.PI;
             }
@@ -327,43 +328,45 @@ public class Shooter extends SubsystemBase {
                 robotRot -= Math.PI;
             }
 
-            if (m_turretAngle < -Constants.m_turretLimitAngle) {
-                m_turretAngle += Math.PI;
-            }
-            else if (m_turretAngle > Constants.m_turretLimitAngle) {
-                m_turretAngle -= Math.PI;
-            }
+            // Do not need for 360 turret
+            // if (m_turretAngle < -Constants.m_turretLimitAngle) {
+            //     m_turretAngle += Math.PI;
+            // }
+            // else if (m_turretAngle > Constants.m_turretLimitAngle) {
+            //     m_turretAngle -= Math.PI;
+            // }
         }
-        else if (bBlueHubRedFeed) {
-            if (m_turretAngle - robotRot < -Constants.m_turretLimitAngle) {
-                m_turretAngle += Math.PI;
-            }
-            else if (m_turretAngle - robotRot > Constants.m_turretLimitAngle) {
-                m_turretAngle -= Math.PI;
-            }
-        }
+        // else if (bBlueHubRedFeed) {
+        //     // Do not need for 360 turret
+        //     if (m_turretAngle - robotRot < -Constants.m_turretLimitAngle) {
+        //         m_turretAngle += Math.PI;
+        //     }
+        //     else if (m_turretAngle - robotRot > Constants.m_turretLimitAngle) {
+        //         m_turretAngle -= Math.PI;
+        //     }
+        // }
 
-        m_turretAngle = -1.0 * (m_turretAngle - robotRot);
+        m_turretAngle = -1.0 * (m_turretAngle - robotRot) + Constants.m_turretZeroAngle;
 
         SmartDashboard.putNumber("turretRobotRot", robotRot * 180.0 / Math.PI);
         SmartDashboard.putNumber("turretRadCalc", m_turretAngle);
 
         SmartDashboard.putNumber("robotFieldRot", robotFieldRot * 180.0 / Math.PI);
         SmartDashboard.putNumber("robotToTargetAngle", robotToTargetAngle * 180.0 / Math.PI);
-        boolean bTurretFacingZero = (Math.abs(m_turretAngle - robotFieldRot) < Constants.m_turretLimitAngle);
-        boolean bTurrentFacing180 = (Math.abs(m_turretAngle - robotFieldRot) > Constants.m_turretLimitAngle);
-        boolean bDisallowTurniungZero = bTurretFacingZero         // Red Hub and Blue Feed
-                                    && ((!m_isBlue && shootingState == ShootingState.hubShoot)
-                                     || ( m_isBlue && shootingState == ShootingState.feedShoot));
+        // boolean bTurretFacingZero = (Math.abs(m_turretAngle - robotFieldRot) < Constants.m_turretLimitAngle);
+        // boolean bTurrentFacing180 = (Math.abs(m_turretAngle - robotFieldRot) > Constants.m_turretLimitAngle);
+        // boolean bDisallowTurniungZero = bTurretFacingZero         // Red Hub and Blue Feed
+        //                             && ((!m_isBlue && shootingState == ShootingState.hubShoot)
+        //                              || ( m_isBlue && shootingState == ShootingState.feedShoot));
 
-        boolean bDisallowTurniung180  = bTurrentFacing180         // Blue Hub and Red Feed
-                                     && (( m_isBlue && shootingState == ShootingState.hubShoot)
-                                     ||  (!m_isBlue && shootingState == ShootingState.feedShoot));
+        // boolean bDisallowTurniung180  = bTurrentFacing180         // Blue Hub and Red Feed
+        //                              && (( m_isBlue && shootingState == ShootingState.hubShoot)
+        //                              ||  (!m_isBlue && shootingState == ShootingState.feedShoot));
 
-        SmartDashboard.putBoolean("bDisallowTurniungZero", bDisallowTurniungZero);
-        SmartDashboard.putBoolean("bDisallowTurniung180", bDisallowTurniung180);
-        if (m_moveTurret && !(bDisallowTurniungZero || bDisallowTurniung180)) {
-        //if (m_moveTurret) {
+        // SmartDashboard.putBoolean("bDisallowTurniungZero", bDisallowTurniungZero);
+        // SmartDashboard.putBoolean("bDisallowTurniung180", bDisallowTurniung180);
+        // if (m_moveTurret && !(bDisallowTurniungZero || bDisallowTurniung180)) {
+        if (m_moveTurret) {
             double turns = ((m_turretAngle) * m_radToTurns);
             if (turns > m_maxTurns){
                 turns = m_maxTurns;
