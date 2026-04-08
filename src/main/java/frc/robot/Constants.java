@@ -26,7 +26,8 @@ public class Constants {
     //private static double m_maxTurns = 12.2;  // 90 deg
     //private static double m_maxTurns = 14.2;  // 105 deg (+15)
     // public static double m_maxTurns = 16.3;    // 120 deg (+30)
-    public static double m_maxTurns = 22.0;// test with lesser turns first 24.4;    // 300 deg
+    public static double m_maxTurnsPos = 30.9;
+    public static double m_maxTurnsNeg = -19.6;
 
     // public static final String LIMELIGHT_NAME = "limelight-fuel";
     public static final String LIMELIGHT_NAME = "limelight-hub";

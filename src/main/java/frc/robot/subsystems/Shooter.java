@@ -66,15 +66,14 @@ public class Shooter extends SubsystemBase {
     public double m_lastD = 0.0;
 
     private double m_turretAngle = 0.0;
-    private static double m_maxTurns = Constants.m_maxTurns;
-    private static double m_radToTurns = m_maxTurns / Constants.m_turretLimitAngle;
+    private static double m_radToTurns = 12.2 / (Math.PI / 2);
 
     private Pose2d m_robotPose = Pose2d.kZero;
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
     private Geofencing m_geofenceNeutZone;
     private boolean m_isBlue = false;
-    //public boolean m_moveTurret = true; // for sim only
-    public boolean m_moveTurret = false;
+    public boolean m_moveTurret = true; // for sim only
+    // public boolean m_moveTurret = false;
     private double m_lastTurns = 0;
 
     public Shooter(){
@@ -368,11 +367,11 @@ public class Shooter extends SubsystemBase {
         // if (m_moveTurret && !(bDisallowTurniungZero || bDisallowTurniung180)) {
         if (m_moveTurret) {
             double turns = ((m_turretAngle) * m_radToTurns);
-            if (turns > m_maxTurns){
-                turns = m_maxTurns;
+            if (turns > Constants.m_maxTurnsPos){
+                turns = Constants.m_maxTurnsPos;
             }
-            else if (turns < -m_maxTurns){
-                turns = -m_maxTurns;
+            else if (turns < Constants.m_maxTurnsNeg){
+                turns = Constants.m_maxTurnsNeg;
             }
             m_lastTurns = turns;
             m_turretCtlr.setSetpoint(turns, ControlType.kPosition);
