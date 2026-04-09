@@ -44,8 +44,9 @@ public class Intake extends SubsystemBase {
     private boolean m_isRunning = false;
 
     public static final double m_home = 0.0;
-    public static final double m_frame = 3.5;
-    public static final double m_partial = 8.0;
+    public static final double m_frame = 5.0;//3.5;
+    public static final double m_partial = 6.0;
+    public static final double m_midExtend = 10.5;
     public static final double m_extend = 14.3;
 
     public static final double m_defaultIntakeSpeed = -7.0;
@@ -120,6 +121,11 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putNumber("minRPM", m_minRPM);
     }
     
+    public void resetEnc(double pos) {
+        m_deployEnc.setPosition(pos);
+        m_followEnc.setPosition(pos);
+    }
+
     public void deploy(double pos) {
         if (pos > m_extend){
             pos = m_extend;
