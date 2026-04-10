@@ -8,6 +8,8 @@ import frc.robot.Constants;
 
 import static edu.wpi.first.units.Units.*;
 
+import javax.lang.model.util.ElementScanner14;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -73,6 +75,7 @@ public class Shooter extends SubsystemBase {
     private Geofencing m_geofenceNeutZone;
     private boolean m_isBlue = false;
     public boolean m_moveTurret = true; // for sim only
+    private boolean m_bInDeadZone = false;
     // public boolean m_moveTurret = false;
     private double m_lastTurns = 0;
 
@@ -152,6 +155,7 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("NegYVelOffsetDegrade", Constants.m_defaultNegYVelOffsetDegrade);
     }
 
+    public boolean InDeadZone() { return m_bInDeadZone; }
     public void setHubX(double hubX) { m_hubX = hubX; }
     public void setRobotPose(Pose2d pose) { m_robotPose = pose; }
     public void setRobotSpeed(ChassisSpeeds speeds) { m_ChassisSpeeds = speeds; }
@@ -337,6 +341,20 @@ public class Shooter extends SubsystemBase {
         if (m_moveTurret) {
             m_radToTurns = SmartDashboard.getNumber("ticksPer90", 12.2) / (Math.PI / 2);
             double turns = ((m_turretAngle) * m_radToTurns);
+
+            SmartDashboard.putNumber("turretTurnsPreClamp", turns);
+            if (turns > Constants.m_maxTurnsPos + 1){
+                m_bInDeadZone = true;
+                turns = Constants.m_maxTurnsPos;
+            }
+            else if (turns < Constants.m_maxTurnsNeg - 1){
+                m_bInDeadZone = true;
+                turns = Constants.m_maxTurnsNeg;
+            }
+            else {
+                m_bInDeadZone = false;
+            }
+
             if (turns > Constants.m_maxTurnsPos){
                 turns = Constants.m_maxTurnsPos;
             }

@@ -851,7 +851,7 @@
         "containers": [
           {
             "title": "robotPose",
-            "x": 896.0,
+            "x": 1024.0,
             "y": 128.0,
             "width": 512.0,
             "height": 128.0,
@@ -864,23 +864,9 @@
             }
           },
           {
-            "title": "PigeonHeading",
-            "x": 1280.0,
-            "y": 0.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/PigeonHeading",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": true
-            }
-          },
-          {
             "title": "PigeonYaw",
-            "x": 1152.0,
-            "y": 0.0,
+            "x": 0.0,
+            "y": 128.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
@@ -894,23 +880,7 @@
           {
             "title": "PoseRotation",
             "x": 0.0,
-            "y": 256.0,
-            "width": 512.0,
-            "height": 256.0,
-            "type": "Graph",
-            "properties": {
-              "topic": "/SmartDashboard/PoseRotation",
-              "period": 0.033,
-              "data_type": "double",
-              "time_displayed": 5.0,
-              "color": 4278238420,
-              "line_width": 2.0
-            }
-          },
-          {
-            "title": "PoseRotation",
-            "x": 512.0,
-            "y": 256.0,
+            "y": 0.0,
             "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
@@ -919,22 +889,6 @@
               "period": 0.033,
               "data_type": "double",
               "show_submit_button": true
-            }
-          },
-          {
-            "title": "PigeonYaw",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 512.0,
-            "height": 256.0,
-            "type": "Graph",
-            "properties": {
-              "topic": "/SmartDashboard/PigeonYaw",
-              "period": 0.033,
-              "data_type": "double",
-              "time_displayed": 5.0,
-              "color": 4278238420,
-              "line_width": 2.0
             }
           },
           {
@@ -952,8 +906,8 @@
           },
           {
             "title": "ShooterDistance",
-            "x": 896.0,
-            "y": 256.0,
+            "x": 1152.0,
+            "y": 640.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
@@ -987,8 +941,8 @@
           },
           {
             "title": "SOTF Distance",
-            "x": 896.0,
-            "y": 384.0,
+            "x": 1280.0,
+            "y": 640.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
@@ -1030,8 +984,8 @@
           {
             "title": "turretRadCalc",
             "x": 768.0,
-            "y": 256.0,
-            "width": 128.0,
+            "y": 384.0,
+            "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
@@ -1043,8 +997,8 @@
           },
           {
             "title": "turretTurnsCalc",
-            "x": 768.0,
-            "y": 384.0,
+            "x": 640.0,
+            "y": 128.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
@@ -1057,7 +1011,7 @@
           },
           {
             "title": "SOTFX",
-            "x": 896.0,
+            "x": 1280.0,
             "y": 512.0,
             "width": 128.0,
             "height": 128.0,
@@ -1071,7 +1025,7 @@
           },
           {
             "title": "SOTFY",
-            "x": 1024.0,
+            "x": 1408.0,
             "y": 512.0,
             "width": 128.0,
             "height": 128.0,
@@ -1112,20 +1066,6 @@
             }
           },
           {
-            "title": "offsetRPM",
-            "x": 768.0,
-            "y": 512.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/offsetRPM",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": true
-            }
-          },
-          {
             "title": "isBlue",
             "x": 1152.0,
             "y": 512.0,
@@ -1144,8 +1084,8 @@
           },
           {
             "title": "targetX",
-            "x": 256.0,
-            "y": 640.0,
+            "x": 384.0,
+            "y": 512.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
@@ -1186,9 +1126,9 @@
           },
           {
             "title": "robotToTargetY",
-            "x": 384.0,
-            "y": 512.0,
-            "width": 128.0,
+            "x": 128.0,
+            "y": 640.0,
+            "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
@@ -1214,9 +1154,9 @@
           },
           {
             "title": "turretRobotRot",
-            "x": 0.0,
+            "x": 768.0,
             "y": 512.0,
-            "width": 128.0,
+            "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
@@ -1242,13 +1182,96 @@
           },
           {
             "title": "robotFieldRot",
-            "x": 896.0,
-            "y": 0.0,
+            "x": 0.0,
+            "y": 256.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
               "topic": "/SmartDashboard/robotFieldRot",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": true
+            }
+          },
+          {
+            "title": "Auto Mode",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Mode",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "offsetRPM",
+            "x": 1408.0,
+            "y": 640.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/offsetRPM",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": true
+            }
+          },
+          {
+            "title": "turretRobotRot0",
+            "x": 768.0,
+            "y": 640.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/turretRobotRot0",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": true
+            }
+          },
+          {
+            "title": "ticksPer90",
+            "x": 1024.0,
+            "y": 512.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/ticksPer90",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": true
+            }
+          },
+          {
+            "title": "turretTurnsPreClamp",
+            "x": 512.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/turretTurnsPreClamp",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": true
+            }
+          },
+          {
+            "title": "DeployLeadRotations",
+            "x": 0.0,
+            "y": 512.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/DeployLeadRotations",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": true
@@ -1572,6 +1595,20 @@
               "data_type": "double",
               "show_submit_button": true
             }
+          },
+          {
+            "title": "offsetRPM",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/offsetRPM",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": true
+            }
           }
         ]
       }
@@ -1581,19 +1618,6 @@
       "grid_layout": {
         "layouts": [],
         "containers": [
-          {
-            "title": "limelight-fuel",
-            "x": 512.0,
-            "y": 512.0,
-            "width": 384.0,
-            "height": 384.0,
-            "type": "Camera Stream",
-            "properties": {
-              "topic": "/CameraPublisher/limelight-fuel",
-              "period": 0.06,
-              "rotation_turns": 0
-            }
-          },
           {
             "title": "RobotPose",
             "x": 0.0,
@@ -1648,7 +1672,7 @@
             "title": "Shift Time",
             "x": 896.0,
             "y": 0.0,
-            "width": 768.0,
+            "width": 640.0,
             "height": 384.0,
             "type": "Match Time",
             "properties": {
@@ -1662,16 +1686,55 @@
           },
           {
             "title": "ShooterDistance",
-            "x": 256.0,
-            "y": 768.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
+            "x": 1536.0,
+            "y": 256.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Large Text Display",
             "properties": {
               "topic": "/SmartDashboard/ShooterDistance",
               "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "QuestPoseX",
+            "x": 1536.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/QuestPoseX",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "offsetRPM",
+            "x": 1536.0,
+            "y": 512.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/offsetRPM",
+              "period": 0.06,
               "data_type": "double",
               "show_submit_button": true
+            }
+          },
+          {
+            "title": "limelight-hub",
+            "x": 512.0,
+            "y": 512.0,
+            "width": 384.0,
+            "height": 384.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-hub",
+              "period": 0.06,
+              "rotation_turns": 0
             }
           },
           {
@@ -1685,34 +1748,6 @@
               "topic": "/CameraPublisher/Passthrough",
               "period": 0.06,
               "rotation_turns": 0
-            }
-          },
-          {
-            "title": "QuestPoseX",
-            "x": 1536.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/QuestPoseX",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": true
-            }
-          },
-          {
-            "title": "offsetRPM",
-            "x": 1536.0,
-            "y": 512.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/offsetRPM",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": true
             }
           }
         ]

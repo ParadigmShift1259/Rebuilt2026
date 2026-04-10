@@ -502,7 +502,11 @@ public class RobotContainer {
     InstantCommand m_stopIntake5 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake6 = new InstantCommand(() -> intake.stopIntake());
 
-    InstantCommand m_runKicker = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
+    InstantCommand m_runKicker = new InstantCommand(() -> {
+        if (!shooter.InDeadZone()){
+            transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed));
+        }
+    });
     InstantCommand m_stopKicker = new InstantCommand(()-> transfer.stopFeeder());
 
     InstantCommand m_homeIntake = new InstantCommand(() -> intake.deploy(Intake.m_home));
@@ -554,8 +558,16 @@ public class RobotContainer {
     InstantCommand m_resetIntakeDeployHome = new InstantCommand(() -> intake.resetEnc(Intake.m_home));
     InstantCommand m_resetIntakeDeployExtend = new InstantCommand(() -> intake.resetEnc(Intake.m_extend));
 
-    InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
-    InstantCommand m_runSpindexer2 = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
+    InstantCommand m_runSpindexer = new InstantCommand(() -> {
+        if (!shooter.InDeadZone()){
+            transfer.setSpinDexSpeed(false);
+        }
+    });
+    InstantCommand m_runSpindexer2 = new InstantCommand(() -> {
+        if (!shooter.InDeadZone()){
+            transfer.setSpinDexSpeed(false);
+        }
+    });
     InstantCommand m_runSpindexerReverse = new InstantCommand(() -> transfer.setSpinDexSpeed(true));
     InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
     InstantCommand m_stopSpindexer2 = new InstantCommand(() -> transfer.stopSpinDex());
