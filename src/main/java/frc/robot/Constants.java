@@ -12,7 +12,7 @@ public class Constants {
     public static double c_hubY = 4.0;
 
     public static boolean defaultFlywheel = false; //False means the flywheel is on
-    public static double rpmBoost = -35.0;
+    public static double rpmBoost = -5.0;
     public static double bumpLimitFactor = 0.5;     // Use early in Quals to save wear and tear
     //public static double bumpLimitFactor = 0.9;   // Use later in Quals when under heavy defense
 
@@ -21,7 +21,12 @@ public class Constants {
     public static double m_defaultNegXVelOffsetDegrade = 0.8;
     public static double m_defaultNegYVelOffsetDegrade = 0.8;
 
-    public static double m_turretLimitAngle = Math.PI / 2.0;// + (15.0 * Math.PI / 180);
+    //public static double m_turretLimitAngle = Math.PI / 2.0;
+    //public static double m_turretLimitAngle = (Math.PI / 2.0) + (15.0 * Math.PI / 180);
+    public static double m_turretLimitAngle = (Math.PI / 2.0) + (30.0 * Math.PI / 180);
+    //public static double m_maxTurns = 12.5;  // 90 deg
+    //public static double m_maxTurns = 14.2;  // 105 deg (+15)
+    public static double m_maxTurns = 16.3;    // 120 deg (+30)
 
     // public static final String LIMELIGHT_NAME = "limelight-fuel";
     public static final String LIMELIGHT_NAME = "limelight-hub";

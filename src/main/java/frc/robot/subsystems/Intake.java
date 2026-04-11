@@ -121,6 +121,11 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putNumber("minRPM", m_minRPM);
     }
     
+    public void resetEnc(double pos) {
+        m_deployEnc.setPosition(pos);
+        m_followEnc.setPosition(pos);
+    }
+
     public void deploy(double pos) {
         if (pos > m_extend){
             pos = m_extend;

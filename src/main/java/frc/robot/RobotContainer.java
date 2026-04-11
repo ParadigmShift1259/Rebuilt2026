@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import javax.lang.model.util.ElementScanner14;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -327,6 +329,8 @@ public class RobotContainer {
         buttonBox.back().onTrue(m_resetPrevDist);               // White 2 
         buttonBox.leftStick().onTrue(m_incRpmBoost);            // Green 2
         buttonBox.b().onTrue(m_decRpmBoost);                    // Black 2
+        //buttonBox.leftStick().onTrue(m_resetIntakeDeployHome);  // Green 2
+        //buttonBox.b().onTrue(m_resetIntakeDeployExtend);        // Black 2
         buttonBox.leftTrigger().onTrue(m_stopIntakeSeq);        // White 1
 
         buttonBox.start().onTrue(m_resetQuest);                                                     // Blue 2 
@@ -385,8 +389,10 @@ public class RobotContainer {
                 poseEst = vision.getBotPoseEstimateMegaTag2();
             }
 
-            SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
-            drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
+            if (poseEst != null) {
+                SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
+                drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
+            }
         }
         
         isBlue = isBlue();
@@ -482,7 +488,14 @@ public class RobotContainer {
     InstantCommand m_stopIntake5 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake6 = new InstantCommand(() -> intake.stopIntake());
 
-    InstantCommand m_runKicker = new InstantCommand(() -> transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed)));
+    InstantCommand m_runKicker = new InstantCommand(() -> {
+        if (!shooter.InDeadZone()){
+            transfer.setFeederSpeed(SmartDashboard.getNumber("FeederSpeed", defaultFeederSpeed));
+        }
+        else {
+            transfer.stopFeeder();
+        }
+    });
     InstantCommand m_stopKicker = new InstantCommand(()-> transfer.stopFeeder());
 
     InstantCommand m_homeIntake = new InstantCommand(() -> intake.deploy(Intake.m_home));
@@ -531,6 +544,9 @@ public class RobotContainer {
     InstantCommand m_extendIntake3 = new InstantCommand(() -> intake.deploy(Intake.m_extend));
     InstantCommand m_resetPrevDist = new InstantCommand(() -> shooter.resetPrevDist());
 
+    InstantCommand m_resetIntakeDeployHome = new InstantCommand(() -> intake.resetEnc(Intake.m_home));
+    InstantCommand m_resetIntakeDeployExtend = new InstantCommand(() -> intake.resetEnc(Intake.m_extend));
+
     InstantCommand m_incRpmBoost = new InstantCommand(() -> {
         double offsetRPM = SmartDashboard.getNumber("offsetRPM", Constants.rpmBoost) + 5.0;
         if (offsetRPM <= 50.0) {
@@ -544,8 +560,23 @@ public class RobotContainer {
         }
     });
 
-    InstantCommand m_runSpindexer = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
-    InstantCommand m_runSpindexer2 = new InstantCommand(() -> transfer.setSpinDexSpeed(false));
+    InstantCommand m_runSpindexer = new InstantCommand(() -> {
+        if (!shooter.InDeadZone()){
+            transfer.setSpinDexSpeed(false);
+        }
+        else {
+            transfer.stopSpinDex();
+        }
+    });
+    InstantCommand m_runSpindexer2 = new InstantCommand(() -> {
+        if (!shooter.InDeadZone()){
+            transfer.setSpinDexSpeed(false);
+        }
+        else {
+            transfer.stopSpinDex();
+        }
+    });
+
     InstantCommand m_runSpindexerReverse = new InstantCommand(() -> transfer.setSpinDexSpeed(true));
     InstantCommand m_stopSpindexer = new InstantCommand(() -> transfer.stopSpinDex());
     InstantCommand m_stopSpindexer2 = new InstantCommand(() -> transfer.stopSpinDex());
@@ -598,7 +629,7 @@ public class RobotContainer {
     //WaitCommand m_waitHalfSec4 = new WaitCommand(0.5);
     WaitCommand m_waitHalfSec5 = new WaitCommand(0.5);
 
-    static final double c_halfSec = 0.5;    // Shorten delay time for agitation?
+    static final double c_halfSec = 0.5;    // Shorten delay time for agitation
     WaitCommand m_waitHalfSec6 = new WaitCommand(c_halfSec);
     WaitCommand m_waitHalfSec7 = new WaitCommand(c_halfSec);
     WaitCommand m_waitHalfSec8 = new WaitCommand(c_halfSec);
