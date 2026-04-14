@@ -5,6 +5,8 @@ import org.opencv.core.Mat;
 public class Constants {
     public static Geofencing m_geofenceNeutZoneIfBlue = new Geofencing(8.04, 4.053, 0.0, 16.51);
     public static Geofencing m_geofenceNeutZoneIfRed = new Geofencing(8.04, 0.0, 0.0, 12.417);
+    public static Geofencing m_geofenceEnemyZoneIfRed = new Geofencing(8.04, 0.0, 0.0, 4.0);
+    public static Geofencing m_geofenceEnemyZoneIfBlue = new Geofencing(8.04, 12.0, 0.0, 16.51);
     public static Geofencing m_geofenceNeutTop = new Geofencing(8.04, 0.0, 6.9, 16.51);
     public static Geofencing m_geofenceNeutBottom = new Geofencing(1.143, 0.0, 0.0, 16.51);
     public static Geofencing m_geofenceRedBump = new Geofencing(6.4912, 11.3 - 0.4, 1.589, 12.417 + 0.4);

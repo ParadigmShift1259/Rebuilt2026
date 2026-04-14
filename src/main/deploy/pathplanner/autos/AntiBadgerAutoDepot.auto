@@ -13,19 +13,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "AlliToNeutDepotSide.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle1ReturnDepotSide.0"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "toggleTurretOn"
+            "pathName": "AntiBadgerAlliToNuet.0"
           }
         },
         {
@@ -85,7 +73,7 @@
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": true
 }

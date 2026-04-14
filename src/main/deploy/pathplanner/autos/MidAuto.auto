@@ -13,19 +13,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "AlliToNeutDepotSide.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle1ReturnDepotSide.0"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "toggleTurretOn"
+            "pathName": "MidCycle.0"
           }
         },
         {
@@ -61,31 +49,43 @@
         {
           "type": "named",
           "data": {
+            "name": "StopShooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepotCycle.0"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootCommand"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "agitateIntake"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "StopShooter"
+            "name": "agitateIntake"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "runIntake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle2MidDepotSide.0"
+            "name": "agitateIntake"
           }
         }
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": true
 }

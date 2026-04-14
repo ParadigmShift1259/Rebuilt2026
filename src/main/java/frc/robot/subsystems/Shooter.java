@@ -86,6 +86,7 @@ public class Shooter extends SubsystemBase {
     private Pose2d m_robotPose = Pose2d.kZero;
     private ChassisSpeeds m_ChassisSpeeds = new ChassisSpeeds();
     private Geofencing m_geofenceNeutZone;
+    private Geofencing m_geofenceEnemyAllianceZone;
     private boolean m_isBlue = false;
     public boolean m_moveTurret = true;
     private boolean m_bInDeadZone = false;
@@ -171,6 +172,7 @@ public class Shooter extends SubsystemBase {
     public void setRobotPose(Pose2d pose) { m_robotPose = pose; }
     public void setRobotSpeed(ChassisSpeeds speeds) { m_ChassisSpeeds = speeds; }
     public void setNeutralZone(Geofencing neutZone) { m_geofenceNeutZone = neutZone; }
+    public void setEnemyZone(Geofencing enemyZone) { m_geofenceEnemyAllianceZone = enemyZone; }
     public void setIsBlue(boolean isBlue) { m_isBlue = isBlue; }
 
     @Override
@@ -252,6 +254,7 @@ public class Shooter extends SubsystemBase {
 
     public void setRPMDistanceAndVelo(ChassisSpeeds speeds){
         double offsetDistance = m_distance;
+        boolean enemyZone = m_geofenceEnemyAllianceZone.isInZone(m_robotPose);
         double offsetRPM = SmartDashboard.getNumber("offsetRPM", Constants.rpmBoost);
         for (int i = 0; i < 20; i++){   // Loop 20 times to let the algorithm converge
             offsetX = speeds.vxMetersPerSecond * TOFtable.get(offsetDistance);
@@ -276,7 +279,7 @@ public class Shooter extends SubsystemBase {
 
         // Making sure the shots dont fall off with repeated pid calls
         if (Math.abs(m_distance - m_prevDistance) > 0.3) {
-            m_flywheelMotorLead.setControl(m_vvReq.withVelocity((RPMtable.get(m_distance) + offsetRPM) / 60.0));
+            m_flywheelMotorLead.setControl(m_vvReq.withVelocity(((RPMtable.get(m_distance) + offsetRPM) / 60.0) + (enemyZone ? 4000.0 : 0.0)));
             m_prevDistance = m_distance;
         }
     }

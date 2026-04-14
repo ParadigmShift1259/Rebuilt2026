@@ -53,39 +53,15 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Cycle2MidOutpostSideCycle.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle2MidCenterOutpostSide.0"
+            "name": "runIntake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Cycle2ReturnOutpostSideCycle.0"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "ShootCommand"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "agitateIntake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "agitateIntake"
+            "pathName": "Cycle2MidOutpostSideCycle.0"
           }
         }
       ]

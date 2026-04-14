@@ -90,6 +90,7 @@ public class RobotContainer {
     private Geofencing m_geofenceAlliBump;
     private Geofencing m_geofenceOppBump;
     private Geofencing m_geofenceNeutZone;
+    private Geofencing m_geofenceEnemyZone;
 
     private Pose2d startAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
     private Pose2d feederOutpostSideStart = new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4));
@@ -192,6 +193,7 @@ public class RobotContainer {
         m_geofenceAlliBump = isBlue ? Constants.m_geofenceBlueBump : Constants.m_geofenceRedBump;
         m_geofenceOppBump  = isBlue ? Constants.m_geofenceRedBump : Constants.m_geofenceBlueBump;
         m_geofenceNeutZone = isBlue ? Constants.m_geofenceNeutZoneIfBlue : Constants.m_geofenceNeutZoneIfRed;
+        m_geofenceEnemyZone = isBlue ? Constants.m_geofenceEnemyZoneIfBlue : Constants.m_geofenceEnemyZoneIfRed;
     }
 
     private void configureBindings() {
@@ -415,6 +417,7 @@ public class RobotContainer {
         shooter.setRobotPose(drivetrain.getPose());
         shooter.setRobotSpeed(drivetrain.getFieldRelativeSpeeds());
         shooter.setNeutralZone(m_geofenceNeutZone);
+        shooter.setEnemyZone(m_geofenceEnemyZone);
 
         SmartDashboard.putBoolean("NuetralZone?", m_geofenceNeutZone.isInZone(drivetrain.getPose()));
 
