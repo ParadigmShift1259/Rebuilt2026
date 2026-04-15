@@ -55,7 +55,19 @@
         {
           "type": "named",
           "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "StopShooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runIntake"
           }
         },
         {

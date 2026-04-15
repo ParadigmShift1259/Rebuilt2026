@@ -65,15 +65,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "runIntake"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "DepotCycle.0"
+            "pathName": "DepotCycle_copy1.0"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "ShootCommand"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
           }
         }
       ]
