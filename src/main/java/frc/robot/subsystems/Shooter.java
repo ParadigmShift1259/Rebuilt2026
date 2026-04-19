@@ -279,7 +279,7 @@ public class Shooter extends SubsystemBase {
 
         // Making sure the shots dont fall off with repeated pid calls
         if (Math.abs(m_distance - m_prevDistance) > 0.3) {
-            m_flywheelMotorLead.setControl(m_vvReq.withVelocity(((RPMtable.get(m_distance) + offsetRPM) / 60.0) + (enemyZone ? 4000.0 : 0.0)));
+            m_flywheelMotorLead.setControl(m_vvReq.withVelocity(((RPMtable.get(m_distance) + offsetRPM) / 60.0)));
             m_prevDistance = m_distance;
         }
     }

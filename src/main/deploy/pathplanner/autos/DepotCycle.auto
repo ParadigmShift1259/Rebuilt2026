@@ -61,6 +61,18 @@
         {
           "type": "named",
           "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "StopShooter"
           }
         },
