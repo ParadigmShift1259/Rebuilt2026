@@ -1766,6 +1766,26 @@
           }
         ]
       }
+    },
+    {
+      "name": "SYSTEMSCHECK",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Auto Mode",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 1536.0,
+            "height": 896.0,
+            "type": "Split Button Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Mode",
+              "period": 0.06
+            }
+          }
+        ]
+      }
     }
   ]
 }
