@@ -254,7 +254,7 @@ public class Shooter extends SubsystemBase {
 
     public void setRPMDistanceAndVelo(ChassisSpeeds speeds){
         double offsetDistance = m_distance;
-        boolean enemyZone = m_geofenceEnemyAllianceZone.isInZone(m_robotPose);
+        //boolean enemyZone = m_geofenceEnemyAllianceZone.isInZone(m_robotPose);
         double offsetRPM = SmartDashboard.getNumber("offsetRPM", Constants.rpmBoost);
         for (int i = 0; i < 20; i++){   // Loop 20 times to let the algorithm converge
             offsetX = speeds.vxMetersPerSecond * TOFtable.get(offsetDistance);
@@ -270,9 +270,7 @@ public class Shooter extends SubsystemBase {
             }
             offsetDistance = Math.sqrt(Math.pow(xDist - offsetX, 2) + Math.pow(yDist - offsetY, 2));
         }
-        // if (m_isBlue){
-        //     offsetX = -offsetX;
-        // }
+
         SmartDashboard.putNumber("SOTF Distance", offsetDistance);
         SmartDashboard.putNumber("SOTFX", offsetX); //SOTF stand for shooting on the fly
         SmartDashboard.putNumber("SOTFY", offsetY);
@@ -321,8 +319,8 @@ public class Shooter extends SubsystemBase {
 
         boolean bRedHubBlueFeed =  ((!m_isBlue && shootingState == ShootingState.hubShoot)
                                  || ( m_isBlue && shootingState == ShootingState.feedShoot));
-
-        if (bRedHubBlueFeed) {
+// TESTING REVERSE MOUNTED TURRET
+        if (!bRedHubBlueFeed) { // !bRedHubBlueFeed means bBlueHubRedFeed 
             // Invert axes
             if (robotRot < 0.0) {
                 robotRot += Math.PI;
@@ -347,15 +345,15 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putNumber("robotFieldRot", robotFieldRot * 180.0 / Math.PI);
         SmartDashboard.putNumber("robotToTargetAngle", robotToTargetAngle * 180.0 / Math.PI);
-        boolean bRobotRotZero = (Math.abs(robotFieldRot) < Constants.m_turretLimitAngle);
-        boolean bRobotRot180 = (Math.abs(robotFieldRot) > Constants.m_turretLimitAngle);
-        boolean bDisallowTurniungZero = bRobotRotZero
-                                    && ((!m_isBlue && shootingState == ShootingState.hubShoot)  // Red Hub and Blue Feed
-                                     || ( m_isBlue && shootingState == ShootingState.feedShoot));
+        //boolean bRobotRotZero = (Math.abs(robotFieldRot) < Constants.m_turretLimitAngle);
+        //boolean bRobotRot180 = (Math.abs(robotFieldRot) > Constants.m_turretLimitAngle);
+        // boolean bDisallowTurniungZero = bRobotRotZero
+        //                             && ((!m_isBlue && shootingState == ShootingState.hubShoot)  // Red Hub and Blue Feed
+        //                              || ( m_isBlue && shootingState == ShootingState.feedShoot));
 
-        boolean bDisallowTurniung180  = bRobotRot180
-                                     && (( m_isBlue && shootingState == ShootingState.hubShoot)   // Blue Hub and Red Feed
-                                     ||  (!m_isBlue && shootingState == ShootingState.feedShoot));
+        // boolean bDisallowTurniung180  = bRobotRot180
+        //                              && (( m_isBlue && shootingState == ShootingState.hubShoot)   // Blue Hub and Red Feed
+        //                              ||  (!m_isBlue && shootingState == ShootingState.feedShoot));
 
         double turns = ((m_turretAngle) * m_radToTurns);
         if (turns > m_maxTurns){
