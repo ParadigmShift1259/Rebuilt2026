@@ -184,8 +184,6 @@ public class RobotContainer {
 
         SmartDashboard.putNumber("FeederSpeed", defaultFeederSpeed);
 
-        SmartDashboard.putBoolean("MegaTag2", false);
-
         boolean isBlue = isBlue();
         m_geofenceAlliBump = isBlue ? Constants.m_geofenceBlueBump : Constants.m_geofenceRedBump;
         m_geofenceOppBump  = isBlue ? Constants.m_geofenceRedBump : Constants.m_geofenceBlueBump;
@@ -364,8 +362,6 @@ public class RobotContainer {
     }
 
     public void periodic() {
-        boolean megatag2 = SmartDashboard.getBoolean("MegaTag2", false);
-
         SmartDashboard.putBoolean("slowMode", slowmode);
         SmartDashboard.putBoolean("ReadyToShoot", isTrackingHub);
 
@@ -376,15 +372,7 @@ public class RobotContainer {
         }
         
         else if (vision.isLLTracking()){
-            LimelightHelpers.PoseEstimate poseEst;
-            if (!megatag2)
-            {
-                poseEst = vision.getBotPoseEstimate();
-            }
-            else {
-                poseEst = vision.getBotPoseEstimateMegaTag2();
-            }
-
+            LimelightHelpers.PoseEstimate poseEst = vision.getBotPoseEstimate();
             if (poseEst != null) {
                 SmartDashboard.putNumber("LLRotEst", poseEst.pose.getRotation().getDegrees());
                 drivetrain.addVisionMeasurement(poseEst.pose, poseEst.timestampSeconds, LIMELIGHT_STD_DEVS);
@@ -617,7 +605,6 @@ public class RobotContainer {
     private boolean isBlue(){
         var allianceOptional = DriverStation.getAlliance();
 
-
         if (allianceOptional.isPresent()){
             DriverStation.Alliance alliance = allianceOptional.get();
 
@@ -628,9 +615,9 @@ public class RobotContainer {
                     return true;
             }
         }
-        else{
-            System.out.println("Alliance Unknown");
-        }
+        // else{
+        //     System.out.println("Alliance Unknown");
+        // }
 
         return false;
         // if (DriverStation.getAlliance().get().equals(DriverStation.Alliance.Blue)){

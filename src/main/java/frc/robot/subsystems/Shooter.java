@@ -78,6 +78,7 @@ public class Shooter extends SubsystemBase {
     private double m_lastTurns = 0;
 
     public Shooter(){
+        SmartDashboard.putNumber("DemoDist", 2.0);
         SmartDashboard.putNumber("offsetRPM", Constants.rpmBoost);
         //SmartDashboard.putNumber("turretTurnsTest", 0.0);
 
@@ -308,7 +309,8 @@ public class Shooter extends SubsystemBase {
         double robotRot = robotFieldRot;
         SmartDashboard.putNumber("turretRobotRot0", robotRot * 180.0 / Math.PI);
         
-        m_distance = Math.sqrt(Math.pow(xDist - offsetX, 2) + Math.pow(yDist - offsetY, 2));
+        //m_distance = Math.sqrt(Math.pow(xDist - offsetX, 2) + Math.pow(yDist - offsetY, 2));
+        m_distance = SmartDashboard.getNumber("DemoDist", 2.0);
         double robotToTargetAngle = Math.atan2(yDist + Constants.m_turretOffsetY - offsetY, xDist + Constants.m_turretOffsetX - offsetX);
         m_turretAngle = robotToTargetAngle;
         SmartDashboard.putNumber("turretDegCalc0", m_turretAngle * 180.0 / Math.PI);

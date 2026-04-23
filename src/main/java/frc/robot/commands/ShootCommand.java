@@ -40,9 +40,9 @@ public class ShootCommand extends Command {
                     return true;
             }
         }
-        else{
-            System.out.println("Alliance Unknown");
-        }
+        // else{
+        //     System.out.println("Alliance Unknown");
+        // }
 
         return false;
         // if (DriverStation.getAlliance().get().equals(DriverStation.Alliance.Blue)){

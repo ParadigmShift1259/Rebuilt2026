@@ -72,7 +72,6 @@ public class Robot extends TimedRobot {
 
         if (m_robotContainer.vision.isLLTracking() && !m_questReset && count % 251 == 0){
             Pose2d questPose2d = m_robotContainer.vision.getLLRobotPose().toPose2d();
-            // Pose2d questPose2d = m_robotContainer.vision.getBotPoseMegaTag2();
             Pose3d questPose = new Pose3d(questPose2d.getX() //+ 0.38
                                         , questPose2d.getY() //- 0.145
                                         , 0.0

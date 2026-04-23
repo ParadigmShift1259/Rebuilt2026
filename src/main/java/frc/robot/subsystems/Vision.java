@@ -36,8 +36,6 @@ public class Vision extends SubsystemBase {
     // Always return blue since that is the origin and we want the field coordinates
     public Pose3d getLLRobotPose() {return LimelightHelpers.getBotPose3d_wpiBlue(Constants.LIMELIGHT_NAME); }
     public LimelightHelpers.PoseEstimate getBotPoseEstimate() { return LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.LIMELIGHT_NAME); }
-    public Pose2d getBotPoseMegaTag2() { return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Constants.LIMELIGHT_NAME).pose; }
-    public LimelightHelpers.PoseEstimate getBotPoseEstimateMegaTag2() { return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Constants.LIMELIGHT_NAME); }
     public LimelightHelpers.PoseEstimate getRedPoseEstimate() { return LimelightHelpers.getBotPoseEstimate_wpiRed(Constants.LIMELIGHT_NAME); }
     public boolean isTracking()  { return m_questNav.isTracking(); }
     public boolean isLLTracking() { return LimelightHelpers.getTA(Constants.LIMELIGHT_NAME) != 0; }
