@@ -5,22 +5,9 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "runIntake"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "AntiBadgerAlliToNuet.0"
-                }
-              }
-            ]
+            "pathName": "JustDepot.0"
           }
         },
         {
@@ -56,25 +43,7 @@
         {
           "type": "named",
           "data": {
-            "name": "agitateIntake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "StopShooter"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "runIntake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Cycle2MidDepotSide.0"
           }
         }
       ]

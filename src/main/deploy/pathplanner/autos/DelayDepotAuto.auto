@@ -5,15 +5,9 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "runIntake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "toggleTurretOn"
+            "pathName": "DelayFirst.0"
           }
         },
         {
@@ -23,9 +17,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "wait",
           "data": {
-            "pathName": "Secret1.0"
+            "waitTime": 1.5
           }
         },
         {
@@ -35,15 +29,15 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Secret2.0"
+            "name": "runIntake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Secret3.0"
+            "pathName": "DelayAlliToNuetDepotSide.0"
           }
         },
         {
@@ -51,11 +45,35 @@
           "data": {
             "name": "ShootCommand"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "agitateIntake"
+          }
         }
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": true
 }

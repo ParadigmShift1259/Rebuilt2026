@@ -151,7 +151,7 @@ public class Shooter extends SubsystemBase {
         configMax.idleMode(SparkMaxConfig.IdleMode.kBrake)
             .inverted(false)
             .closedLoopRampRate(0.0)
-            .smartCurrentLimit(20, 40)
+            // .smartCurrentLimit(20, 40)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
                        .p(0.15);
         m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);

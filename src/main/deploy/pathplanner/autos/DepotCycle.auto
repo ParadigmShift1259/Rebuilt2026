@@ -5,15 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "runIntake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "AlliToNeutDepotSide.0"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "AlliToNeutDepotSide.0"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "runIntake"
+                }
+              }
+            ]
           }
         },
         {
@@ -32,12 +39,6 @@
           "type": "named",
           "data": {
             "name": "ShootCommand"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "agitateIntake"
           }
         },
         {
