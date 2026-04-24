@@ -5,11 +5,14 @@ import frc.robot.ConstantsCANIDS;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Amps;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -58,12 +61,13 @@ public class Intake extends SubsystemBase {
         config.idleMode(SparkMaxConfig.IdleMode.kCoast)
             .inverted(true)
             .closedLoopRampRate(0.0)
+            .smartCurrentLimit(20, 30)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
-            .pid(0.1, 0.0, 0.0);
+                       .pid(0.1, 0.0, 0.0);
         m_deployMotorLead.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         config.idleMode(SparkMaxConfig.IdleMode.kCoast)
-            .inverted(false);
+              .inverted(false);
         m_deployMotorFollow.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         m_deployEnc.setPosition(0.0);
@@ -71,7 +75,16 @@ public class Intake extends SubsystemBase {
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
-        fdb.SensorToMechanismRatio = 1; // TODO figure out gear ratio
+        fdb.SensorToMechanismRatio = 1;
+        cfg.withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withStatorCurrentLimit(Amps.of(80))
+                    .withStatorCurrentLimitEnable(true)
+                    .withSupplyCurrentLimit(Amps.of(50))
+                    .withSupplyCurrentLimitEnable(true)
+                    .withSupplyCurrentLowerLimit(Amps.of(30))
+                    .withSupplyCurrentLowerTime(Seconds.of(1))
+            );
         
         MotionMagicConfigs mm = cfg.MotionMagic;
         mm.withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
@@ -95,7 +108,7 @@ public class Intake extends SubsystemBase {
             if (status.isOK()) break;
         }
         if (!status.isOK()) {
-            System.out.println("Could not configure device. Error: " + status.toString());
+            System.out.println("Could not configure intake roller motor. Error: " + status.toString());
         }
     }
 

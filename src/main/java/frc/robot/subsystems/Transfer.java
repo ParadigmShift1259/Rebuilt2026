@@ -1,21 +1,20 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Amps;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-// import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.ConstantsCANIDS;
 
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.ResetMode;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.PersistMode;
 
@@ -31,15 +30,28 @@ public class Transfer extends SubsystemBase {
         SmartDashboard.putNumber("spinSpeed", defaultSpinSpeed);
         SparkMaxConfig configMax = new SparkMaxConfig();
         configMax.idleMode(SparkMaxConfig.IdleMode.kCoast)
-            .inverted(false);
+                 .inverted(false)
+                 .smartCurrentLimit(20, 40);
         m_spinDex.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        
-        SparkFlexConfig configFlex = new SparkFlexConfig();
-        configFlex.idleMode(SparkMaxConfig.IdleMode.kCoast)
-            .inverted(false)
-            .closedLoopRampRate(0.0)
-            .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
-                        .p(0.2);
+
+        TalonFXConfiguration cfg = new TalonFXConfiguration();
+        cfg.withCurrentLimits(
+            new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(Amps.of(120))
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimit(Amps.of(50))
+                .withSupplyCurrentLimitEnable(true)
+                .withSupplyCurrentLowerLimit(Amps.of(30))
+                .withSupplyCurrentLowerTime(Seconds.of(1))
+        );
+        StatusCode status = StatusCode.StatusCodeNotInitialized;
+        for (int i = 0; i < 5; ++i) {
+            status = m_kickerMotor.getConfigurator().apply(cfg);
+            if (status.isOK()) break;
+        }
+        if (!status.isOK()) {
+            System.out.println("Could not configure kicker motor. Error: " + status.toString());
+        }
     }
 
     @Override

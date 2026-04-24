@@ -1,36 +1,21 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.RobotBase;
 
 import frc.robot.ConstantsCANIDS;
 import frc.robot.Geofencing;
-import frc.robot.RobotContainer;
-import frc.robot.generated.TunerConstants;
 import frc.robot.Constants;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.DoubleUnaryOperator;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj.simulation.EncoderSim;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -116,6 +101,16 @@ public class Shooter extends SubsystemBase {
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         FeedbackConfigs fdb = cfg.Feedback;
         fdb.SensorToMechanismRatio = 1;
+
+        cfg.withCurrentLimits(
+            new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(Amps.of(120))
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimit(Amps.of(50))
+                .withSupplyCurrentLimitEnable(true)
+                .withSupplyCurrentLowerLimit(Amps.of(30))
+                .withSupplyCurrentLowerTime(Seconds.of(1))
+        );
         
         MotionMagicConfigs mm = cfg.MotionMagic;
         mm.withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
@@ -140,7 +135,7 @@ public class Shooter extends SubsystemBase {
             if (status.isOK()) break;
         }
         if (!status.isOK()) {
-            System.out.println("Could not configure device. Error: " + status.toString());
+            System.out.println("Could not configure lead flywheel motor. Error: " + status.toString());
         }
 
         for (int i = 0; i < 5; ++i) {
@@ -148,7 +143,7 @@ public class Shooter extends SubsystemBase {
             if (status.isOK()) break;
         }
         if (!status.isOK()) {
-            System.out.println("Could not configure device. Error: " + status.toString());
+            System.out.println("Could not configure following flywheel motor. Error: " + status.toString());
         }
 
         m_flywheelMotorFollow.setControl(new Follower(m_flywheelMotorLead.getDeviceID(), MotorAlignmentValue.Opposed));
@@ -156,9 +151,9 @@ public class Shooter extends SubsystemBase {
         configMax.idleMode(SparkMaxConfig.IdleMode.kBrake)
             .inverted(false)
             .closedLoopRampRate(0.0)
+            .smartCurrentLimit(20, 40)
             .closedLoop.outputRange(-1.0,1.0, ClosedLoopSlot.kSlot0)
                        .p(0.15);
-                    //    .d(0.02);
         m_turretMot.configure(configMax, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         SmartDashboard.putNumber("turretP", 0.15);
