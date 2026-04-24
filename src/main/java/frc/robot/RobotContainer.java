@@ -128,7 +128,7 @@ public class RobotContainer {
     private boolean isinTransition = false;
     // private boolean isTrackingFuel = false;
     private boolean isTrackingHub = false;
-    private boolean slowmode = false;
+    private boolean slowmode = true;
     private boolean m_bOverrideBumpControl = false;
     private boolean isBlue = false;
 
@@ -278,7 +278,7 @@ public class RobotContainer {
         // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
-        joystick.start().onTrue(m_slowmode);
+        //demo joystick.start().onTrue(m_slowmode);
         
         joystick.rightTrigger().onTrue(m_overrideBumpControl);
         joystick.rightBumper().onTrue(m_toggleQuest);
