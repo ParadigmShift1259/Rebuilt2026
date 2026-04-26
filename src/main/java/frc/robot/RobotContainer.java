@@ -155,6 +155,7 @@ public class RobotContainer {
     public RobotContainer() {
         // drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.k180deg));
 // for sim testing drivetrain.resetPose(new Pose2d(8.0, 6.0, Rotation2d.kZero));
+        drivetrain.resetPose(getPoseHubRelative(2.743, 0.0, 0.0)); // DEMO ONLY
         NamedCommands.registerCommand("runIntake", m_intakeSeq);
         NamedCommands.registerCommand("agitateIntake", m_agitateIntake);
         NamedCommands.registerCommand("toggleTurretOn", m_toggleTurretOn);
@@ -269,7 +270,8 @@ public class RobotContainer {
         joystick.povUp().onTrue(m_runIntake2);
         joystick.povRight().onTrue(m_stopIntakeSeq);
         joystick.povLeft().onTrue(m_intakeSeq);
-        joystick.povDown().onTrue(m_homeIntakeSeq);
+        // joystick.povDown().onTrue(m_homeIntakeSeq);
+        joystick.povDown().onTrue(new InstantCommand(() -> drivetrain.resetPose(getPoseHubRelative(2.743, 0.0, 0.0))));
 
         // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
@@ -362,6 +364,7 @@ public class RobotContainer {
     }
 
     public void periodic() {
+
         SmartDashboard.putBoolean("slowMode", slowmode);
         SmartDashboard.putBoolean("ReadyToShoot", isTrackingHub);
 
@@ -450,6 +453,7 @@ public class RobotContainer {
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
         SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
+        // SmartDashboard.putNumber("slowSpeedSpeed", 0.3);
     }
 
     public void updateDashboardFieldMap() {
@@ -643,5 +647,25 @@ public class RobotContainer {
         }
         
         return (rot < angle1 && rot > angle2);
+    }
+
+    // DEMO ONLY
+    /**
+     * Assuming blue side, demo field (DF) is rotated 90 deg clockwise from real field (RF)
+     *
+     * From RDS pov
+     * +x is forward
+     * +y is left
+     * 
+     * @param xOff robot dist left from hub
+     * @param yOff robot dist back from hub (toward DDS)
+     * @param rotOff cc rot (from facing DDS right)
+     * @return global pose
+     */
+    Pose2d getPoseHubRelative(double xOff, double yOff, double rotOff)
+    {
+        double x = hubXBlue - xOff;
+        double y = Constants.c_hubY - yOff;
+        return new Pose2d(x, y, new Rotation2d(Degrees.of(rotOff)));
     }
 }
