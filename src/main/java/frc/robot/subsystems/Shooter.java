@@ -57,6 +57,8 @@ public class Shooter extends SubsystemBase {
     public double m_distance = 0.0;
     public double m_prevDistance = 0.0;
 
+    private boolean b_boost = false;
+
     double offsetX = 0.0;
     double offsetY = 0.0;
 
@@ -169,6 +171,7 @@ public class Shooter extends SubsystemBase {
     public void setNeutralZone(Geofencing neutZone) { m_geofenceNeutZone = neutZone; }
     public void setEnemyZone(Geofencing enemyZone) { m_geofenceEnemyAllianceZone = enemyZone; }
     public void setIsBlue(boolean isBlue) { m_isBlue = isBlue; }
+    public void setBoost(boolean boost) { b_boost = boost; }
 
     @Override
     public void periodic() {
@@ -274,7 +277,7 @@ public class Shooter extends SubsystemBase {
 
         // Making sure the shots dont fall off with repeated pid calls
         if (Math.abs(m_distance - m_prevDistance) > 0.3) {
-            m_flywheelMotorLead.setControl(m_vvReq.withVelocity(((RPMtable.get(m_distance) + offsetRPM) / 60.0)));
+            m_flywheelMotorLead.setControl(m_vvReq.withVelocity(((b_boost ? 5000.0 : 0.0) + (RPMtable.get(m_distance) + offsetRPM) / 60.0)));
             m_prevDistance = m_distance;
         }
     }

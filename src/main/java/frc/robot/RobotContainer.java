@@ -134,6 +134,7 @@ public class RobotContainer {
     private boolean slowmode = false;
     private boolean m_bOverrideBumpControl = false;
     private boolean isBlue = false;
+    private boolean m_fullBoost = false;
 
     // private final double X_START_BUMP = 1.0;
     // private final double X_STOP_BUMP = 4.0;
@@ -335,7 +336,8 @@ public class RobotContainer {
         //buttonBox.b().onTrue(m_resetIntakeDeployExtend);        // Black 2
         buttonBox.leftTrigger().onTrue(m_stopIntakeSeq);        // White 1
 
-        buttonBox.start().onTrue(m_resetQuest);                                                     // Blue 2 
+        buttonBox.start().whileTrue(m_boostTrue);                                                     // Blue 2 
+        buttonBox.start().whileFalse(m_boostFalse);                                                     // Blue 2 
         buttonBox.rightStick().onTrue(new InstantCommand(() -> drivetrain.getPigeon2().reset()));   // Red 2
         buttonBox.a().whileTrue(shortAgitateCommand.repeatedly());                                     // Yellow 2
         buttonBox.rightTrigger().onTrue(m_shootSeq);                                                // Red 1
@@ -415,6 +417,7 @@ public class RobotContainer {
         shooter.setIsBlue(isBlue);
         shooter.setHubX(hubX);
         shooter.setRobotPose(drivetrain.getPose());
+        shooter.setBoost(m_fullBoost);
         shooter.setRobotSpeed(drivetrain.getFieldRelativeSpeeds());
         shooter.setNeutralZone(m_geofenceNeutZone);
         shooter.setEnemyZone(m_geofenceEnemyZone);
@@ -490,6 +493,9 @@ public class RobotContainer {
     InstantCommand m_stopIntake4 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake5 = new InstantCommand(() -> intake.stopIntake());
     InstantCommand m_stopIntake6 = new InstantCommand(() -> intake.stopIntake());
+
+    InstantCommand m_boostTrue = new InstantCommand(() -> m_fullBoost = true);
+    InstantCommand m_boostFalse = new InstantCommand(() -> m_fullBoost = false);
 
     InstantCommand m_runKicker = new InstantCommand(() -> {
         if (!shooter.InDeadZone()){
