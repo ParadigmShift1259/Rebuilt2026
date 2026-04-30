@@ -344,7 +344,7 @@ public class RobotContainer {
         buttonBox.rightTrigger().whileFalse(m_stopShootSeq);                                        // Red 1
 
         buttonBox.povUp().onTrue(m_resetTurret);                                                    // Green 3
-        buttonBox.povDown().onTrue(m_toggleTurret);                                                 // Blue 3
+        // buttonBox.povDown().onTrue(m_toggleTurret);                                                 // Blue 3
         buttonBox.povRight().whileTrue(agitateCommand.repeatedly());                                // Red 3
         buttonBox.povLeft().onTrue(m_stopShootSeq);                                                 // Yellow 3
     }

@@ -47,7 +47,7 @@ public class Intake extends SubsystemBase {
     private boolean m_isRunning = false;
 
     public static final double m_home = 0.0;
-    public static final double m_frame = 5.0;//3.5;
+    public static final double m_frame = 3.5;//3.5;
     public static final double m_partial = 6.0;
     public static final double m_midExtend = 10.5;
     public static final double m_extend = 14.3;
