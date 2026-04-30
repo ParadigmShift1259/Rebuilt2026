@@ -336,7 +336,7 @@ public class RobotContainer {
         //buttonBox.b().onTrue(m_resetIntakeDeployExtend);        // Black 2
         buttonBox.leftTrigger().onTrue(m_stopIntakeSeq);        // White 1
 
-        buttonBox.start().whileTrue(m_boostTrue);                                                     // Blue 2 
+        buttonBox.start().onTrue(m_boostTrue);                                                     // Blue 2 
         buttonBox.start().whileFalse(m_boostFalse);                                                     // Blue 2 
         buttonBox.rightStick().onTrue(new InstantCommand(() -> drivetrain.getPigeon2().reset()));   // Red 2
         buttonBox.a().whileTrue(shortAgitateCommand.repeatedly());                                     // Yellow 2

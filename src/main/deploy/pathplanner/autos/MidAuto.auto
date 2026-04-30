@@ -5,15 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "runIntake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "MidCycle.0"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "runIntake"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "MidCycle.0"
+                }
+              }
+            ]
           }
         },
         {
