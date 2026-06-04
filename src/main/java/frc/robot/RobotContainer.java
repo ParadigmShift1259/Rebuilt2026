@@ -6,29 +6,20 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import javax.lang.model.util.ElementScanner14;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -46,8 +37,6 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Transfer;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Shooter;
-import frc.robot.commands.DriveCommands;
-import frc.robot.ShiftHelpers;
 
 @Logged
 public class RobotContainer {
@@ -81,10 +70,7 @@ public class RobotContainer {
     private boolean isAligning = false;
     private boolean brakeMode = false;
     private double rotDeg = 0.0;
-    private double distance = 0.0;
-    private boolean megatag1Reset = false;
     private boolean m_trackQuest = true;
-    private int count = 0;
 
     Field2d m_field = new Field2d();
     private Geofencing m_geofenceAlliBump;
@@ -96,7 +82,6 @@ public class RobotContainer {
     private Pose2d feederOutpostSideStart = new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4));
     private Pose2d feederDepotSideStart = new Pose2d(13.01, 2.66, new Rotation2d( 3 * Math.PI / 4));
     private Pose2d outpostToDepot = new Pose2d(13.06, 4.03, Rotation2d.k180deg);
-    // private Pose2d autoStartPoint = Pose2d.kZero;
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -129,27 +114,14 @@ public class RobotContainer {
     public final Transfer transfer = new Transfer();
 
     private boolean isinTransition = false;
-    // private boolean isTrackingFuel = false;
     private boolean isTrackingHub = false;
-    private boolean slowmode = false;
+    private boolean slowmode = true;    // Demo mode
     private boolean m_bOverrideBumpControl = false;
     private boolean isBlue = false;
     private boolean m_fullBoost = false;
 
-    // private final double X_START_BUMP = 1.0;
-    // private final double X_STOP_BUMP = 4.0;
-    // private final double TRANSITION_OFFSET = 0.25;
-    // private final double X_START_TRANSITION = X_START_BUMP - TRANSITION_OFFSET;
-    // private final double X_STOP_TRANSITION = X_STOP_BUMP + TRANSITION_OFFSET;
-
-    private double rotFuelTracking = 0.0;
     private double robotX = 0.0;
     private double robotY = 0.0;
-
-    // private double[] tarPose;
-    // private Transform2d targPose3d;
-    // private double tarX = 0.0;
-    // private double tarY = 0.0;
 
     enum JogState{noJog, leftJog, rightJog};
     private JogState jogState = JogState.noJog;
@@ -157,7 +129,8 @@ public class RobotContainer {
     public final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
-        // drivetrain.resetPose(new Pose2d(0.335, 0.355, Rotation2d.k180deg));
+        //drivetrain.resetPose(new Pose2d(2.0, 4.0, Rotation2d.k180deg));
+        drivetrain.resetPose(new Pose2d(2.0, 4.0, Rotation2d.kZero));   // Demo start in front of blue hub
 // for sim testing drivetrain.resetPose(new Pose2d(8.0, 6.0, Rotation2d.kZero));
         NamedCommands.registerCommand("runIntake", m_intakeSeq);
         NamedCommands.registerCommand("agitateIntake", m_agitateIntake);
@@ -285,7 +258,7 @@ public class RobotContainer {
         // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
-        joystick.start().onTrue(m_slowmode);
+        // demo mode joystick.start().onTrue(m_slowmode);
         
         joystick.rightTrigger().onTrue(m_overrideBumpControl);
         joystick.rightBumper().onTrue(m_toggleQuest);
@@ -464,10 +437,6 @@ public class RobotContainer {
 
         SmartDashboard.putBoolean("IsInBump", m_geofenceAlliBump.isInZone(drivetrain.getPose()));
         SmartDashboard.putBoolean("IsInTransition", isinTransition);
-        // SmartDashboard.putBoolean("IsTrackingFuel", isTrackingFuel);
-
-        // SmartDashboard.putNumber("TargetX", tarX);
-        // SmartDashboard.putNumber("TargetY", tarY);
 
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
@@ -678,9 +647,9 @@ public class RobotContainer {
                     return true;
             }
         }
-        else{
-            System.out.println("Alliance Unknown");
-        }
+        // else{
+        //     System.out.println("Alliance Unknown");
+        // }
 
         return false;
         // if (DriverStation.getAlliance().get().equals(DriverStation.Alliance.Blue)){

@@ -79,6 +79,7 @@ public class Shooter extends SubsystemBase {
     private boolean m_bInDeadZone = false;
 
     public Shooter(){
+        SmartDashboard.putNumber("DemoDist", 2.0);
         SmartDashboard.putNumber("offsetRPM", Constants.rpmBoost);
         SmartDashboard.putNumber("ticksPer90", 12.2);
 
@@ -310,7 +311,8 @@ public class Shooter extends SubsystemBase {
         double robotRot = robotFieldRot;
         SmartDashboard.putNumber("turretRobotRot0", robotRot * 180.0 / Math.PI);
         
-        m_distance = Math.sqrt(Math.pow(x - offsetX, 2) + Math.pow(y - offsetY, 2));
+        //m_distance = Math.sqrt(Math.pow(x - offsetX, 2) + Math.pow(y - offsetY, 2));
+        m_distance = SmartDashboard.getNumber("DemoDist", 2.0);
         double robotToTargetAngle = Math.atan2(y + Constants.m_turretOffsetY - offsetY
                                              , x + Constants.m_turretOffsetX - offsetX);
 
