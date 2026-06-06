@@ -2,6 +2,9 @@ package frc.robot;
 
 import org.opencv.core.Mat;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+
 public class Constants {
     public static Geofencing m_geofenceNeutZoneIfBlue = new Geofencing(8.04, 4.053, 0.0, 16.51);
     public static Geofencing m_geofenceNeutZoneIfRed = new Geofencing(8.04, 0.0, 0.0, 12.417);
@@ -14,9 +17,12 @@ public class Constants {
     public static double c_hubY = 4.0;
 
     public static boolean defaultFlywheel = false; //False means the flywheel is on
-    public static double rpmBoost = -5.0;
+    public static double rpmBoost = 0.0;
+    public static double offsetRpmAdjLimit = 800.0;
+    public static double turretTweakAdjLimit = 30.0;
     //public static double bumpLimitFactor = 0.5;     // Use early in Quals to save wear and tear
     public static double bumpLimitFactor = 0.9;   // Use later in Quals when under heavy defense
+    public static Pose2d poseDemoBlueHome = new Pose2d(2.612, 4.0, Rotation2d.kZero);
 
     public static double m_turretOffsetY = 0.14;
     public static double m_turretOffsetX = 0;//0.18;

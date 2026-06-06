@@ -56,6 +56,7 @@ public class Shooter extends SubsystemBase {
     private double xDist = 0.0;
     public double m_distance = 0.0;
     public double m_prevDistance = 0.0;
+    public double m_prevOffsetRPM = 2 * Constants.offsetRpmAdjLimit;
 
     private boolean b_boost = false;
 
@@ -79,6 +80,7 @@ public class Shooter extends SubsystemBase {
     private boolean m_bInDeadZone = false;
 
     public Shooter(){
+        SmartDashboard.putNumber("turretTweak", -5.0);
         SmartDashboard.putNumber("DemoDist", 2.0);
         SmartDashboard.putNumber("offsetRPM", Constants.rpmBoost);
         SmartDashboard.putNumber("ticksPer90", 12.2);
@@ -86,14 +88,25 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("turretRad", 0.0);
         m_turretEnc.setPosition(0.0);
         // Add calibration points (distance in meters -> shooter RPM)
-        RPMtable.put(2.6, 1850.0);
-        RPMtable.put(3.0, 1900.0);
-        RPMtable.put(3.5, 2000.0);
-        RPMtable.put(4.0, 2100.0);
-        RPMtable.put(4.5, 2200.0);
-        RPMtable.put(5.0, 2300.0);
-        RPMtable.put(5.5, 2400.0);
-        RPMtable.put(6.0, 2500.0);
+        // RPMtable.put(2.6, 1850.0);
+        // RPMtable.put(3.0, 1900.0);
+        // RPMtable.put(3.5, 2000.0);
+        // RPMtable.put(4.0, 2100.0);
+        // RPMtable.put(4.5, 2200.0);
+        // RPMtable.put(5.0, 2300.0);
+        // RPMtable.put(5.5, 2400.0);
+        // RPMtable.put(6.0, 2500.0);
+
+        // Demo mode shooting into garbage can
+        RPMtable.put(2.6, 1850.0 - 500.0);
+        RPMtable.put(3.0, 1900.0 - 250.0);
+        RPMtable.put(3.5, 2000.0 - 225.0);
+        RPMtable.put(4.0, 2100.0 - 200.0);
+        RPMtable.put(4.5, 2200.0 - 125.0);
+        RPMtable.put(5.0, 2300.0 - 75.0);
+        RPMtable.put(5.5, 2400.0 - 25.0);
+        RPMtable.put(6.0, 2500.0 - 0.0);
+
         //TOF = Time Of Flight
         TOFtable.put(5.68, 1.15);
         TOFtable.put(4.55, 1.13);
@@ -253,7 +266,7 @@ public class Shooter extends SubsystemBase {
 
     public void setRPMDistanceAndVelo(ChassisSpeeds speeds){
         double offsetDistance = m_distance;
-        boolean enemyZone = m_geofenceEnemyAllianceZone.isInZone(m_robotPose);
+        // boolean enemyZone = m_geofenceEnemyAllianceZone.isInZone(m_robotPose);
         double offsetRPM = SmartDashboard.getNumber("offsetRPM", Constants.rpmBoost);
         for (int i = 0; i < 20; i++){   // Loop 20 times to let the algorithm converge
             offsetX = speeds.vxMetersPerSecond * TOFtable.get(offsetDistance);
@@ -276,10 +289,14 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("SOTFX", offsetX); //SOTF stand for shooting on the fly
         SmartDashboard.putNumber("SOTFY", offsetY);
 
+        // offsetRPM += Math.abs(m_turretAngle) * 100.0;
+
         // Making sure the shots dont fall off with repeated pid calls
-        if (Math.abs(m_distance - m_prevDistance) > 0.3) {
-            m_flywheelMotorLead.setControl(m_vvReq.withVelocity(((b_boost ? 5000.0 : 0.0) + (RPMtable.get(m_distance) + offsetRPM) / 60.0)));
+        if (Math.abs(m_distance - m_prevDistance) > 0.3 || Math.abs(offsetRPM - m_prevOffsetRPM) > 10.0) {
+            m_flywheelMotorLead.setControl(m_vvReq.withVelocity(((RPMtable.get(m_distance) + offsetRPM) / 60.0)));
+            // m_flywheelMotorLead.setControl(m_vvReq.withVelocity(((b_boost ? 5000.0 : 0.0) + (RPMtable.get(m_distance) + offsetRPM) / 60.0)));
             m_prevDistance = m_distance;
+            m_prevOffsetRPM = offsetRPM;
         }
     }
 
@@ -311,8 +328,8 @@ public class Shooter extends SubsystemBase {
         double robotRot = robotFieldRot;
         SmartDashboard.putNumber("turretRobotRot0", robotRot * 180.0 / Math.PI);
         
-        //m_distance = Math.sqrt(Math.pow(x - offsetX, 2) + Math.pow(y - offsetY, 2));
-        m_distance = SmartDashboard.getNumber("DemoDist", 2.0);
+        m_distance = Math.sqrt(Math.pow(x - offsetX, 2) + Math.pow(y - offsetY, 2));
+        //m_distance = SmartDashboard.getNumber("DemoDist", 2.0);
         double robotToTargetAngle = Math.atan2(y + Constants.m_turretOffsetY - offsetY
                                              , x + Constants.m_turretOffsetX - offsetX);
 
@@ -341,6 +358,8 @@ public class Shooter extends SubsystemBase {
         }
 
         m_turretAngle = (robotRot - m_turretAngle);
+
+        m_turretAngle += SmartDashboard.getNumber("turretTweak", -5.0) * Math.PI / 180.0;
 
         SmartDashboard.putNumber("turretRobotRot", robotRot * 180.0 / Math.PI);
         SmartDashboard.putNumber("turretRadCalc", m_turretAngle);

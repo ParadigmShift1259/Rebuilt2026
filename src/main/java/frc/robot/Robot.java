@@ -61,7 +61,21 @@ public class Robot extends TimedRobot {
     public void disabledPeriodic() {
         if (count % 250 == 0){
             count = 0;
-            m_questReset = false;
+            // m_questReset = false;
+        }
+
+        if (!m_questReset){
+            Pose2d questPose2d = Constants.poseDemoBlueHome;
+            Pose3d questPose = new Pose3d(questPose2d.getX() //+ 0.38
+                                        , questPose2d.getY() //- 0.145
+                                        , 0.0
+                                        //, new Rotation3d(0.0, 0.0, 0.0));
+                                       , new Rotation3d(0.0, 0.0, questPose2d.getRotation().getRadians()));
+            m_robotContainer.vision.setQuestPose(questPose);
+            System.out.println("Resetting Quest with radians " + questPose.getRotation().getAngle());
+            System.out.println("Rereading quest pose in degrees " + m_robotContainer.vision.getQuestRobotPose().getRotation().getDegrees());
+            m_questReset = true;
+            m_robotContainer.updateDashboardFieldMap();
         }
 
         if (m_robotContainer.vision.isLLTracking() && !m_questReset && count % 251 == 0){

@@ -6,11 +6,15 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import javax.lang.model.util.ElementScanner14;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -37,10 +41,13 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Transfer;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Shooter;
+import frc.robot.commands.DriveCommands;  // Demo mode for driveToPoseCommand 
 
 @Logged
 public class RobotContainer {
-    private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private boolean slowmode = true;                // Demo mode slow down
+    private boolean m_bOverrideBumpControl = true;  // Demo mode no auto angle over bump
+    private double MaxSpeed = (slowmode ? 0.3 : 1.0) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     private final double defaultFeederSpeed = 0.6;//0.5;
@@ -78,10 +85,10 @@ public class RobotContainer {
     private Geofencing m_geofenceNeutZone;
     private Geofencing m_geofenceEnemyZone;
 
-    private Pose2d startAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
-    private Pose2d feederOutpostSideStart = new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4));
-    private Pose2d feederDepotSideStart = new Pose2d(13.01, 2.66, new Rotation2d( 3 * Math.PI / 4));
-    private Pose2d outpostToDepot = new Pose2d(13.06, 4.03, Rotation2d.k180deg);
+    // private Pose2d startAndClimbStart = new Pose2d(13.71, 4.0, new Rotation2d(Math.PI));
+    // private Pose2d feederOutpostSideStart = new Pose2d(13.01, 5.44, new Rotation2d( -3 * Math.PI / 4));
+    // private Pose2d feederDepotSideStart = new Pose2d(13.01, 2.66, new Rotation2d( 3 * Math.PI / 4));
+    // private Pose2d outpostToDepot = new Pose2d(13.06, 4.03, Rotation2d.k180deg);
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -113,10 +120,8 @@ public class RobotContainer {
     public final Shooter shooter = new Shooter();
     public final Transfer transfer = new Transfer();
 
-    private boolean isinTransition = false;
+    // private boolean isinTransition = false;
     private boolean isTrackingHub = false;
-    private boolean slowmode = true;    // Demo mode
-    private boolean m_bOverrideBumpControl = false;
     private boolean isBlue = false;
     private boolean m_fullBoost = false;
 
@@ -130,7 +135,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         //drivetrain.resetPose(new Pose2d(2.0, 4.0, Rotation2d.k180deg));
-        drivetrain.resetPose(new Pose2d(2.0, 4.0, Rotation2d.kZero));   // Demo start in front of blue hub
+        drivetrain.resetPose(Constants.poseDemoBlueHome);   // Demo start 2 meters in front of blue hub
 // for sim testing drivetrain.resetPose(new Pose2d(8.0, 6.0, Rotation2d.kZero));
         NamedCommands.registerCommand("runIntake", m_intakeSeq);
         NamedCommands.registerCommand("agitateIntake", m_agitateIntake);
@@ -251,6 +256,7 @@ public class RobotContainer {
         joystick.povLeft().onTrue(m_intakeSeq);
         joystick.povDown().onTrue(m_homeIntakeSeq);
 
+        joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
         // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
@@ -259,12 +265,16 @@ public class RobotContainer {
         // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
         // demo mode joystick.start().onTrue(m_slowmode);
+        joystick.start().onTrue(m_resetQuestToPose);
         
-        joystick.rightTrigger().onTrue(m_overrideBumpControl);
+        // joystick.rightTrigger().onTrue(m_overrideBumpControl);
         joystick.rightBumper().onTrue(m_toggleQuest);
 
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> brakeMode = true));
-        joystick.leftTrigger().onFalse(new InstantCommand(() -> brakeMode = false));
+        // joystick.leftTrigger().onTrue(new InstantCommand(() -> brakeMode = true));
+        // joystick.leftTrigger().onFalse(new InstantCommand(() -> brakeMode = false));
+
+        joystick.rightTrigger().onTrue(m_incTurretTweak);                                                // Red 1
+        joystick.leftTrigger().onTrue(m_decTurretTweak);                                                // 
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -303,7 +313,7 @@ public class RobotContainer {
         buttonBox.leftBumper().onTrue(m_intakeSeq);             // Black 1
 
         buttonBox.back().onTrue(m_resetPrevDist);               // White 2 
-        buttonBox.leftStick().onTrue(m_incRpmBoost);            // Green 2
+        // buttonBox.leftStick().onTrue(m_incRpmBoost);            // Green 2
         buttonBox.b().onTrue(m_decRpmBoost);                    // Black 2
         //buttonBox.leftStick().onTrue(m_resetIntakeDeployHome);  // Green 2
         //buttonBox.b().onTrue(m_resetIntakeDeployExtend);        // Black 2
@@ -323,6 +333,8 @@ public class RobotContainer {
     }
 
     public Pose2d getDriveToPose() {
+        return Constants.poseDemoBlueHome;
+        /*******************************************************************************
         String selectedAuto = SmartDashboard.getString("Auto Mode/selected", "noAuto");
         if (selectedAuto.equalsIgnoreCase("FeederOutpostAuto")) {
             return feederOutpostSideStart;
@@ -338,6 +350,7 @@ public class RobotContainer {
         }
 
         return Pose2d.kZero;
+        **********************************************************************************/
     }
 
     public Command getAutonomousCommand() {
@@ -408,7 +421,7 @@ public class RobotContainer {
         // m_field.getObject("Fuel").setPose(drivetrain.getFieldX() + getDistanceXToFuel(vision.photonGetFuelPitch()), drivetrain.getFieldY() + getDistanceYToFuel(vision.getFuelAngle()), Rotation2d.kZero);
         SmartDashboard.putData("RobotPose", m_field);
 
-        isinTransition = false;
+        // isinTransition = false;
         // isinTransition = (x > X_START_TRANSITION && x < X_START_BUMP) || (x > X_STOP_BUMP && x < X_STOP_TRANSITION);
 
         // if (vision.photonIsTrackingFuel()) {
@@ -436,7 +449,7 @@ public class RobotContainer {
         SmartDashboard.putString("SimAllianceID", DriverStationSim.getAllianceStationId().toString());
 
         SmartDashboard.putBoolean("IsInBump", m_geofenceAlliBump.isInZone(drivetrain.getPose()));
-        SmartDashboard.putBoolean("IsInTransition", isinTransition);
+        // SmartDashboard.putBoolean("IsInTransition", isinTransition);
 
         SmartDashboard.putBoolean("Shift Ours?", ShiftHelpers.currentShiftIsYours());
         SmartDashboard.putNumber("Shift Time", ShiftHelpers.timeLeftInShiftSeconds(DriverStation.getMatchTime()));
@@ -525,16 +538,45 @@ public class RobotContainer {
     InstantCommand m_resetIntakeDeployHome = new InstantCommand(() -> intake.resetEnc(Intake.m_home));
     InstantCommand m_resetIntakeDeployExtend = new InstantCommand(() -> intake.resetEnc(Intake.m_extend));
 
+    InstantCommand m_incTurretTweak = new InstantCommand(() -> {
+        double turretTweak = SmartDashboard.getNumber("turretTweak", -5.0) + 1.0;
+        if (turretTweak <= Constants.turretTweakAdjLimit) {
+            SmartDashboard.putNumber("turretTweak", turretTweak);
+        }
+        else
+        {
+            turretTweak = Constants.turretTweakAdjLimit;
+        }
+    });
+    InstantCommand m_decTurretTweak = new InstantCommand(() -> {
+        double turretTweak = SmartDashboard.getNumber("turretTweak", -5.0) - 1.0;
+        if (turretTweak >= -Constants.turretTweakAdjLimit) {
+            SmartDashboard.putNumber("turretTweak", turretTweak);
+        }
+        else
+        {
+            turretTweak = -Constants.turretTweakAdjLimit;
+        }
+    });
+
     InstantCommand m_incRpmBoost = new InstantCommand(() -> {
         double offsetRPM = SmartDashboard.getNumber("offsetRPM", Constants.rpmBoost) + 5.0;
-        if (offsetRPM <= 50.0) {
+        if (offsetRPM <= Constants.offsetRpmAdjLimit) {
             SmartDashboard.putNumber("offsetRPM", offsetRPM);
+        }
+        else
+        {
+            offsetRPM = Constants.offsetRpmAdjLimit;
         }
     });
     InstantCommand m_decRpmBoost = new InstantCommand(() -> {
         double offsetRPM = SmartDashboard.getNumber("offsetRPM", Constants.rpmBoost) - 5.0;
-        if (offsetRPM >= -50.0) {
+        if (offsetRPM >= -Constants.offsetRpmAdjLimit) {
             SmartDashboard.putNumber("offsetRPM", offsetRPM);
+        }
+        else
+        {
+            offsetRPM = -Constants.offsetRpmAdjLimit;
         }
     });
 
@@ -675,5 +717,20 @@ public class RobotContainer {
         }
         
         return (rot < angle1 && rot > angle2);
+    }
+
+    InstantCommand m_resetQuestToPose = new InstantCommand(() -> resetQustToPose(Constants.poseDemoBlueHome));
+
+    public void resetQustToPose(Pose2d questPose2d)
+    {
+        Pose3d questPose = new Pose3d(questPose2d.getX() //+ 0.38
+                                    , questPose2d.getY() //- 0.145
+                                    , 0.0
+                                    //, new Rotation3d(0.0, 0.0, 0.0));
+                                    , new Rotation3d(0.0, 0.0, questPose2d.getRotation().getRadians()));
+        vision.setQuestPose(questPose);
+        System.out.println("Resetting Quest with radians " + questPose.getRotation().getAngle());
+        System.out.println("Rereading quest pose in degrees " + vision.getQuestRobotPose().getRotation().getDegrees());
+        updateDashboardFieldMap();
     }
 }
