@@ -270,7 +270,7 @@ public class RobotContainer {
         joystick.rightTrigger().whileTrue(agitateCommand.repeatedly());
         joystick.rightTrigger().whileFalse(m_stopShootSeq);   
         joystick.rightTrigger().whileFalse(m_intakeSeq);
-        joystick.rightTrigger().whileFalse(m_runSpindexerReverse);
+        // joystick.rightTrigger().whileFalse(m_runSpindexerReverse);
         // joystick.a().onTrue(m_shootSeq);
         // joystick.b().onTrue(m_stopShootSeq);
         // joystick.x().onTrue(m_agitateIntake);
