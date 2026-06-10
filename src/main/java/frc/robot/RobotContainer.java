@@ -273,10 +273,10 @@ public class RobotContainer {
         // joystick.start().onTrue(m_slowmode);
         
         // joystick.rightTrigger().onTrue(m_overrideBumpControl);
-        joystick.rightBumper().onTrue(m_toggleQuest);
+        // joystick.rightBumper().onTrue(m_toggleQuest);
 
-        joystick.leftBumper().onTrue(new InstantCommand(() -> brakeMode = true));
-        joystick.leftBumper().onFalse(new InstantCommand(() -> brakeMode = false));
+        // joystick.leftBumper().onTrue(new InstantCommand(() -> brakeMode = true));
+        // joystick.leftBumper().onFalse(new InstantCommand(() -> brakeMode = false));
 
         // // Run SysId routines when holding back/start and X/Y.
         // // Note that each routine should be run exactly once in a single log.
@@ -291,8 +291,8 @@ public class RobotContainer {
         // joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));  
 
 
-        joystick.rightTrigger().onTrue(m_incTurretTweak);                                                // Red 1
-        joystick.leftTrigger().onTrue(m_decTurretTweak);                                                // 
+        joystick.rightBumper().whileTrue(m_incTurretTweak);                                                // Red 1
+        joystick.leftBumper().whileTrue(m_decTurretTweak);                                                // 
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
