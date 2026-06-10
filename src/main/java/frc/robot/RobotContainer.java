@@ -247,31 +247,49 @@ public class RobotContainer {
     }
 
     private void configurePrimaryBindings() {
-        joystick.a().onTrue(m_shootSeq);
-        joystick.b().onTrue(m_stopShootSeq);
-        joystick.x().onTrue(m_agitateIntake);
+
+        joystick.leftTrigger().onTrue(m_intakeSeq);             
+        joystick.rightTrigger().onTrue(m_shootSeq);
+        joystick.rightTrigger().whileTrue(agitateCommand.repeatedly());
+        joystick.rightTrigger().whileFalse(m_stopShootSeq);   
+        joystick.rightTrigger().whileFalse(m_intakeSeq);
+        joystick.rightTrigger().whileFalse(m_runSpindexerReverse);
+        // joystick.a().onTrue(m_shootSeq);
+        // joystick.b().onTrue(m_stopShootSeq);
+        // joystick.x().onTrue(m_agitateIntake);
         joystick.y().onTrue(m_toggleTurret);
-        joystick.povUp().onTrue(m_runIntake2);
-        joystick.povRight().onTrue(m_stopIntakeSeq);
-        joystick.povLeft().onTrue(m_intakeSeq);
-        joystick.povDown().onTrue(m_homeIntakeSeq);
+        // joystick.povUp().onTrue(m_runIntake2);
+        // joystick.povRight().onTrue(m_stopIntakeSeq);
+        // joystick.povLeft().onTrue(m_intakeSeq);
+        // joystick.povDown().onTrue(m_homeIntakeSeq);
 
-        joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
-        // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
-        // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
-        // joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
-        // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
-        // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // // joystick.y().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // // joystick.back().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
+        // // joystick.rightBumper().onTrue(DriveCommands.driveToPoseCommand(drivetrain, () -> getDriveToPose()));
 
-        // demo mode joystick.start().onTrue(m_slowmode);
-        joystick.start().onTrue(m_resetQuestToPose);
+        // joystick.start().onTrue(m_slowmode);
         
         // joystick.rightTrigger().onTrue(m_overrideBumpControl);
         joystick.rightBumper().onTrue(m_toggleQuest);
 
-        // joystick.leftTrigger().onTrue(new InstantCommand(() -> brakeMode = true));
-        // joystick.leftTrigger().onFalse(new InstantCommand(() -> brakeMode = false));
+        joystick.leftBumper().onTrue(new InstantCommand(() -> brakeMode = true));
+        joystick.leftBumper().onFalse(new InstantCommand(() -> brakeMode = false));
+
+        // // Run SysId routines when holding back/start and X/Y.
+        // // Note that each routine should be run exactly once in a single log.
+        // // joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // // joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // // joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // // joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+        // // Reset the field-centric heading on left bumper press.
+        // // joystick.leftBumper().onTrue(new SequentialCommandGroup(drivetrain.runOnce(drivetrain::seedFieldCentric)
+        // //                             , new InstantCommand(() -> drivetrain.getPigeon2().reset())));  
+        // joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));  
+
 
         joystick.rightTrigger().onTrue(m_incTurretTweak);                                                // Red 1
         joystick.leftTrigger().onTrue(m_decTurretTweak);                                                // 
@@ -286,7 +304,7 @@ public class RobotContainer {
         // Reset the field-centric heading on left bumper press.
         // joystick.leftBumper().onTrue(new SequentialCommandGroup(drivetrain.runOnce(drivetrain::seedFieldCentric)
         //                             , new InstantCommand(() -> drivetrain.getPigeon2().reset())));  
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));  
+        // joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));  
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
@@ -328,7 +346,7 @@ public class RobotContainer {
 
         buttonBox.povUp().onTrue(m_resetTurret);                                                    // Green 3
         // buttonBox.povDown().onTrue(m_toggleTurret);                                                 // Blue 3
-        buttonBox.povRight().whileTrue(agitateCommand.repeatedly());                                // Red 3
+        // buttonBox.povRight().whileTrue(agitateCommand.repeatedly());                                // Red 3
         buttonBox.povLeft().onTrue(m_stopShootSeq);                                                 // Yellow 3
     }
 
