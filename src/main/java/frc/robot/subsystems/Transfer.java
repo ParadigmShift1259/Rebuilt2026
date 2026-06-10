@@ -49,7 +49,7 @@ public class Transfer extends SubsystemBase {
 
     public void setSpinDexSpeed(boolean reverse){
         double speed = SmartDashboard.getNumber("spinSpeed", defaultSpinSpeed);
-        m_spinDex.set(speed * (reverse ? -1.0 : 1.0));
+        m_spinDex.set(speed * (reverse ? -0.5 : 1.0));
     }
 
     public void setFeederSpeed(double speed){
